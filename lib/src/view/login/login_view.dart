@@ -182,8 +182,13 @@ class _LoginViewState extends State<LoginView> {
   //TODO: ServiceCall
 
   void serviceCallLogin(Map<String, dynamic> parameter) {
-    Globs.showHUD();
-
+     Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(
+            builder: (context) => const OnBoardingView(),
+          ), (route) => false);
+Globs.hideHUD();
+          return
+    // Globs.showHUD();
+print('test');
     ServiceCall.post(parameter, SVKey.svLogin,
         withSuccess: (responseObj) async {
       Globs.hideHUD();
