@@ -1,5 +1,6 @@
 import 'package:dribbble_challenge/src/recipes/domain/recipe.dart';
 import 'package:dribbble_challenge/src/recipes/presentation/widget/home_screen/recipe_card_widget.dart';
+import 'package:dribbble_challenge/src/view/menu/item_details_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -17,10 +18,16 @@ class LoadedRecipesWidget extends StatelessWidget {
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamed(
-                'recipe_details',
-                arguments: recipes[index],
-              );
+              // Navigator.of(context).pushNamed(
+              //   'recipe_details',
+              //   arguments: recipes[index],
+              // );
+              Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ItemDetailsView()),
+                      );
+            
             },
             child: RecipeCardWidget(recipe: recipes[index]).animate().slideX(
                 duration: 200.ms,

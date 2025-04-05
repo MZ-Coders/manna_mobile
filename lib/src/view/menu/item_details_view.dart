@@ -1,8 +1,8 @@
+import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common_widget/round_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-import '../../common/color_extension.dart';
 import '../more/my_order_view.dart';
 
 class ItemDetailsView extends StatefulWidget {
@@ -21,7 +21,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: TColor.white,
+      backgroundColor: TColor.primaryText,
       body: Stack(
         alignment: Alignment.topCenter,
         children: [

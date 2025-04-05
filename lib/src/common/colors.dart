@@ -1,0 +1,11 @@
+import 'dart:ui';
+var kBlueColor = const Color(0xFF1DA1F2);
+var kBackgroundColor = const Color(0xFFf9f9fa);
+const kFontColor = Color(0xFF657786);
+const kBlueTextColor = Color(0xFF1e98d0);
+const primary = const Color(0xffFC6011);
+const primaryText = const Color(0xff4A4B4D);
+const secondaryText = const Color(0xff7C7D7E);
+const textfield = const Color(0xffF2F2F2);
+const placeholder = const Color(0xffB6B7B7);
+const white = const Color(0xffffffff);
