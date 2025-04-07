@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common_widget/round_icon_button.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,7 @@ class ItemDetailsView extends StatefulWidget {
 }
 
 class _ItemDetailsViewState extends State<ItemDetailsView> {
-  double price = 15;
+  double price = 16;
   int qty = 1;
   bool isFav = false;
 
@@ -369,7 +370,12 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                                         icon:
                                                             "assets/img/shopping_add.png",
                                                         color: TColor.primary,
-                                                        onPressed: () {}),
+                                                        onPressed: () {
+                                                          CartService.addToCart("Beef Burger", qty, 15.0);
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text("Adicionado ao carrinho!")),
+                                                          );
+                                                        }),
                                                   )
                                                 ],
                                               )),

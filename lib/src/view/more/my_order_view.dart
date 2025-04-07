@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -12,13 +13,15 @@ class MyOrderView extends StatefulWidget {
 }
 
 class _MyOrderViewState extends State<MyOrderView> {
-  List itemArr = [
-    {"name": "Beef Burger", "qty": "2", "price": 16.0},
-    {"name": "Classic Burger", "qty": "1", "price": 14.0},
-    {"name": "Cheese Chicken Burger", "qty": "1", "price": 17.0},
-    {"name": "Chicken Legs Basket", "qty": "1", "price": 15.0},
-    {"name": "French Fires Large", "qty": "1", "price": 6.0}
-  ];
+  // List itemArr = [
+  //   {"name": "Beef Burger", "qty": "2", "price": 16.0},
+  //   {"name": "Classic Burger", "qty": "1", "price": 14.0},
+  //   {"name": "Cheese Chicken Burger", "qty": "1", "price": 17.0},
+  //   {"name": "Chicken Legs Basket", "qty": "1", "price": 15.0},
+  //   {"name": "French Fires Large", "qty": "1", "price": 6.0}
+  // ];
+
+  List itemArr = CartService.getCartItems();
 
   @override
   Widget build(BuildContext context) {
@@ -274,7 +277,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "\$68",
+                           "\$${CartService.getTotal().toStringAsFixed(2)}",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 13,
