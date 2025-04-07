@@ -26,6 +26,7 @@ class AnimatedTitleWidget extends StatelessWidget {
               children: const [
                 TextSpan(
                   text: Strings.onBoardingTitle,
+                  style: TextStyle(color: AppColors.primarySpecial)
                 ),
                 TextSpan(
                     text: ' everyday',

@@ -38,8 +38,8 @@ class DribbleChallenge extends StatelessWidget {
         };
       },
       theme: mainTheme,
-      darkTheme: mainTheme,
-      themeMode: ThemeMode.dark,
+      // darkTheme: mainTheme,
+      // themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
     );
   }

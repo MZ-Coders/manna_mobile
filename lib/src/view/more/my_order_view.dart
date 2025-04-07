@@ -13,7 +13,7 @@ class MyOrderView extends StatefulWidget {
 
 class _MyOrderViewState extends State<MyOrderView> {
   List itemArr = [
-    {"name": "Beef Burger", "qty": "1", "price": 16.0},
+    {"name": "Beef Burger", "qty": "2", "price": 16.0},
     {"name": "Classic Burger", "qty": "1", "price": 14.0},
     {"name": "Cheese Chicken Burger", "qty": "1", "price": 17.0},
     {"name": "Chicken Legs Basket", "qty": "1", "price": 15.0},
@@ -360,4 +360,5 @@ class _MyOrderViewState extends State<MyOrderView> {
       ),
     );
   }
+
 }
