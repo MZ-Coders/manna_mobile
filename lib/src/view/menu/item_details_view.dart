@@ -1,13 +1,15 @@
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common_widget/round_icon_button.dart';
+import 'package:dribbble_challenge/src/recipes/domain/recipe.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../more/my_order_view.dart';
 
 class ItemDetailsView extends StatefulWidget {
-  const ItemDetailsView({super.key});
+  final Map<String, dynamic> recipe;
+  const ItemDetailsView({super.key, required this.recipe});
 
   @override
   State<ItemDetailsView> createState() => _ItemDetailsViewState();
@@ -21,13 +23,15 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
+    // this.price = widget.recipe['price'];
+    print('Título da receita: ${widget.recipe}');
     return Scaffold(
       backgroundColor: TColor.primaryText,
       body: Stack(
         alignment: Alignment.topCenter,
         children: [
           Image.asset(
-            "assets/img/detail_top.png",
+            widget.recipe['imageUrl'],
             width: media.width,
             height: media.width,
             fit: BoxFit.cover,
@@ -69,7 +73,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 25),
                                 child: Text(
-                                  "Tandoori Chicken Pizza",
+                                  widget.recipe['name'],
                                   style: TextStyle(
                                       color: TColor.primaryText,
                                       fontSize: 22,
@@ -171,7 +175,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 25),
                                 child: Text(
-                                  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ornare leo non mollis id cursus. Eu euismod faucibus in leo malesuada",
+                                  widget.recipe['description'],
                                   style: TextStyle(
                                       color: TColor.secondaryText,
                                       fontSize: 12),
