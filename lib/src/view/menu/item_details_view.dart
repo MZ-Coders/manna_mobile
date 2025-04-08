@@ -134,7 +134,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          "\$${price.toStringAsFixed(2)}",
+                                          "${price.toStringAsFixed(2)}\MZN",
                                           style: TextStyle(
                                               color: TColor.primaryText,
                                               fontSize: 31,
@@ -356,7 +356,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                                     height: 15,
                                                   ),
                                                   Text(
-                                                    "\$${(price * qty).toString()}",
+                                                    "${(price * qty).toStringAsFixed(2)}\MZN",
                                                     style: TextStyle(
                                                         color:
                                                             TColor.primaryText,

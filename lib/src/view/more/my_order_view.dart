@@ -217,7 +217,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                             width: 15,
                           ),
                           Text(
-                            "\$${cObj["price"].toString()}",
+                            "${cObj["price"].toString()}\MZN",
                             style: TextStyle(
                                 color: TColor.primaryText,
                                 fontSize: 13,
@@ -277,7 +277,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                           "\$${CartService.getTotal().toStringAsFixed(2)}",
+                           "${CartService.getTotal().toStringAsFixed(2)}\MZN",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 13,
@@ -300,7 +300,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "\$2",
+                          "2\MZN",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 13,
@@ -330,7 +330,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "\$70",
+                          "${(CartService.getTotal() + 2).toStringAsFixed(2)}\MZN",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 22,
