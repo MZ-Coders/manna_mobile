@@ -31,6 +31,7 @@ mixin _$Recipe {
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $RecipeCopyWith<Recipe> get copyWith => throw _privateConstructorUsedError;
+  double get price => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -45,7 +46,8 @@ abstract class $RecipeCopyWith<$Res> {
       Map<String, num> nutrition,
       List<String> ingredients,
       List<String> steps,
-      String id});
+      String id,
+      double price});
 }
 
 /// @nodoc
@@ -68,6 +70,7 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
     Object? ingredients = null,
     Object? steps = null,
     Object? id = null,
+    Object? price = null,
   }) {
     return _then(_value.copyWith(
       name: null == name
@@ -98,6 +101,10 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
+      price: null == price
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as double,
     ) as $Val);
   }
 }
@@ -115,7 +122,8 @@ abstract class _$$_RecipeCopyWith<$Res> implements $RecipeCopyWith<$Res> {
       Map<String, num> nutrition,
       List<String> ingredients,
       List<String> steps,
-      String id});
+      String id,
+      double price});
 }
 
 /// @nodoc
@@ -135,6 +143,7 @@ class __$$_RecipeCopyWithImpl<$Res>
     Object? ingredients = null,
     Object? steps = null,
     Object? id = null,
+    Object? price = null,
   }) {
     return _then(_$_Recipe(
       name: null == name
@@ -165,6 +174,10 @@ class __$$_RecipeCopyWithImpl<$Res>
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
+      price: null == price
+          ? _value.price
+          : id // ignore: cast_nullable_to_non_nullable
+              as double,
     ));
   }
 }
@@ -179,7 +192,8 @@ class _$_Recipe implements _Recipe {
       required final Map<String, num> nutrition,
       required final List<String> ingredients,
       required final List<String> steps,
-      required this.id})
+      required this.id,
+      required this.price})
       : _nutrition = nutrition,
         _ingredients = ingredients,
         _steps = steps;
@@ -220,9 +234,12 @@ class _$_Recipe implements _Recipe {
   @override
   final String id;
 
+   @override
+  final double price;
+
   @override
   String toString() {
-    return 'Recipe(name: $name, description: $description, imageUrl: $imageUrl, nutrition: $nutrition, ingredients: $ingredients, steps: $steps, id: $id)';
+    return 'Recipe(name: $name, description: $description, imageUrl: $imageUrl, nutrition: $nutrition, ingredients: $ingredients, steps: $steps, id: $id, price: $price)';
   }
 
   @override
@@ -240,7 +257,9 @@ class _$_Recipe implements _Recipe {
             const DeepCollectionEquality()
                 .equals(other._ingredients, _ingredients) &&
             const DeepCollectionEquality().equals(other._steps, _steps) &&
-            (identical(other.id, id) || other.id == id));
+            (identical(other.id, id) || other.id == id) &&
+             (identical(other.price, price) || other.price == price)
+            );
   }
 
   @JsonKey(ignore: true)
@@ -253,7 +272,8 @@ class _$_Recipe implements _Recipe {
       const DeepCollectionEquality().hash(_nutrition),
       const DeepCollectionEquality().hash(_ingredients),
       const DeepCollectionEquality().hash(_steps),
-      id);
+      id,
+      price);
 
   @JsonKey(ignore: true)
   @override
@@ -277,7 +297,8 @@ abstract class _Recipe implements Recipe {
       required final Map<String, num> nutrition,
       required final List<String> ingredients,
       required final List<String> steps,
-      required final String id}) = _$_Recipe;
+      required final String id,
+      required final double price}) = _$_Recipe;
 
   factory _Recipe.fromJson(Map<String, dynamic> json) = _$_Recipe.fromJson;
 
@@ -295,6 +316,8 @@ abstract class _Recipe implements Recipe {
   List<String> get steps;
   @override
   String get id;
+  @override
+  double get price;
   @override
   @JsonKey(ignore: true)
   _$$_RecipeCopyWith<_$_Recipe> get copyWith =>

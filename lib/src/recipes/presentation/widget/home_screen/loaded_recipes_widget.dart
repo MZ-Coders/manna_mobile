@@ -25,7 +25,7 @@ class LoadedRecipesWidget extends StatelessWidget {
               Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ItemDetailsView(recipe: recipes[index].toJson())),
+                            builder: (context) => ItemDetailsView(recipe2: recipes[index])),
                       );
             
             },

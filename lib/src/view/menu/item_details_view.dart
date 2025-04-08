@@ -8,8 +8,9 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../more/my_order_view.dart';
 
 class ItemDetailsView extends StatefulWidget {
-  final Map<String, dynamic> recipe;
-  const ItemDetailsView({super.key, required this.recipe});
+  // final Map<String, dynamic> recipe;
+  final Recipe recipe2;
+  const ItemDetailsView({super.key, required this.recipe2});
 
   @override
   State<ItemDetailsView> createState() => _ItemDetailsViewState();
@@ -23,15 +24,15 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
-    // this.price = widget.recipe['price'];
-    print('Título da receita: ${widget.recipe}');
+    this.price = widget.recipe2.price;
+    print('Título da receita: ${widget.recipe2}');
     return Scaffold(
       backgroundColor: TColor.primaryText,
       body: Stack(
         alignment: Alignment.topCenter,
         children: [
           Image.asset(
-            widget.recipe['imageUrl'],
+            widget.recipe2.imageUrl,
             width: media.width,
             height: media.width,
             fit: BoxFit.cover,
@@ -73,7 +74,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 25),
                                 child: Text(
-                                  widget.recipe['name'],
+                                  widget.recipe2.name,
                                   style: TextStyle(
                                       color: TColor.primaryText,
                                       fontSize: 22,
@@ -175,7 +176,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 25),
                                 child: Text(
-                                  widget.recipe['description'],
+                                  widget.recipe2.description,
                                   style: TextStyle(
                                       color: TColor.secondaryText,
                                       fontSize: 12),
@@ -375,7 +376,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                                             "assets/img/shopping_add.png",
                                                         color: TColor.primary,
                                                         onPressed: () {
-                                                          CartService.addToCart("Beef Burger", qty, 15.0);
+                                                          CartService.addToCart(widget.recipe2.name, qty, price);
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             SnackBar(content: Text("Adicionado ao carrinho!")),
                                                           );
