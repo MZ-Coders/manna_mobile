@@ -128,6 +128,7 @@ class _MenuViewState extends State<MenuView> {
                               MaterialPageRoute(
                                 builder: (context) => MenuItemsView(
                                   mObj: mObj,
+                                  recipes: [],
                                 ),
                               ),
                             );

@@ -1,14 +1,16 @@
 import 'package:dribbble_challenge/src/common_widget/round_textfield.dart';
+import 'package:dribbble_challenge/src/recipes/domain/recipe.dart';
+import 'package:dribbble_challenge/src/view/menu/item_details_view.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 
 import '../../common_widget/menu_item_row.dart';
 import '../more/my_order_view.dart';
-import 'item_details_view.dart';
 
 class MenuItemsView extends StatefulWidget {
   final Map mObj;
-  const MenuItemsView({super.key, required this.mObj});
+  final List<Recipe> recipes;
+  const MenuItemsView({super.key, required this.mObj, required this.recipes});
 
   @override
   State<MenuItemsView> createState() => _MenuItemsViewState();
@@ -169,7 +171,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ItemDetailsView()),
+                          builder: (context) =>
+                              ItemDetailsView(recipe: widget.recipes[index]),
+                        ),
                       );
                     },
                   );
