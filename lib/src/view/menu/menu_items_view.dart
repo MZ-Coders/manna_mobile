@@ -1,5 +1,6 @@
 import 'package:dribbble_challenge/src/common_widget/round_textfield.dart';
 import 'package:dribbble_challenge/src/recipes/domain/recipe.dart';
+import 'package:dribbble_challenge/src/view/menu/food_item_details_view.dart';
 import 'package:dribbble_challenge/src/view/menu/item_details_view.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -26,7 +27,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/dess_2.png",
@@ -34,7 +37,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cakes by Tella",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/dess_3.png",
@@ -42,7 +47,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Café Racer",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/dess_4.png",
@@ -50,7 +57,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/dess_1.png",
@@ -58,7 +67,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/dess_2.png",
@@ -66,7 +77,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cakes by Tella",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/dess_3.png",
@@ -74,7 +87,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Café Racer",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/dess_4.png",
@@ -82,7 +97,9 @@ class _MenuItemsViewState extends State<MenuItemsView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Minute by tuk tuk",
-      "food_type": "Desserts"
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
   ];
 
@@ -172,7 +189,8 @@ class _MenuItemsViewState extends State<MenuItemsView> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              ItemDetailsView(recipe: widget.recipes[index]),
+                              // ItemDetailsView(recipe: widget.recipes[index]),
+                              FoodItemDetailsView(foodDetails: mObj.cast<String, dynamic>())
                         ),
                       );
                     },

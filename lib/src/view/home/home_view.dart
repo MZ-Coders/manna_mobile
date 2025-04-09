@@ -1,5 +1,7 @@
 import 'package:dribbble_challenge/src/common/color_extension.dart';
+import 'package:dribbble_challenge/src/common_widget/menu_item_row.dart';
 import 'package:dribbble_challenge/src/common_widget/round_textfield.dart';
+import 'package:dribbble_challenge/src/view/menu/food_item_details_view.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/globs.dart';
@@ -20,6 +22,8 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   TextEditingController txtSearch = TextEditingController();
+
+  
 
   List catArr = [
     {"image": "assets/img/cat_offer.png", "name": "Offers"},
@@ -100,6 +104,90 @@ class _HomeViewState extends State<HomeView> {
       "food_type": "Western Food"
     },
   ];
+
+    List menuItemsArr = [
+    {
+      "image": "assets/img/dess_1.png",
+      "name": "French Apple Pie",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Minute by tuk tuk",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+    {
+      "image": "assets/img/dess_2.png",
+      "name": "Dark Chocolate Cake",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Cakes by Tella",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+    {
+      "image": "assets/img/dess_3.png",
+      "name": "Street Shake",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Café Racer",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+    {
+      "image": "assets/img/dess_4.png",
+      "name": "Fudgy Chewy Brownies",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Minute by tuk tuk",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+    {
+      "image": "assets/img/dess_1.png",
+      "name": "French Apple Pie",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Minute by tuk tuk",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+    {
+      "image": "assets/img/dess_2.png",
+      "name": "Dark Chocolate Cake",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Cakes by Tella",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+    {
+      "image": "assets/img/dess_3.png",
+      "name": "Street Shake",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Café Racer",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+    {
+      "image": "assets/img/dess_4.png",
+      "name": "Fudgy Chewy Brownies",
+      "rate": "4.9",
+      "rating": "124",
+      "type": "Minute by tuk tuk",
+      "food_type": "Desserts",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
+    },
+  ];
+
 
   @override
   Widget build(BuildContext context) {
@@ -222,6 +310,28 @@ class _HomeViewState extends State<HomeView> {
                   title: "Popular Restaurants",
                   onView: () {},
                 ),
+              ),
+                  ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: menuItemsArr.length,
+                itemBuilder: ((context, index) {
+                  var mObj = menuItemsArr[index] as Map? ?? {};
+                  return MenuItemRow(
+                    mObj: mObj,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              // ItemDetailsView(recipe: widget.recipes[index]),
+                              FoodItemDetailsView(foodDetails: mObj.cast<String, dynamic>())
+                        ),
+                      );
+                    },
+                  );
+                }),
               ),
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
