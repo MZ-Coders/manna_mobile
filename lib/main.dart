@@ -6,6 +6,7 @@ import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/common/locator.dart';
 import 'package:dribbble_challenge/src/common/my_http_overrides.dart';
 import 'package:dribbble_challenge/src/common/service_call.dart';
+import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
 import 'package:dribbble_challenge/src/view/login/welcome_view.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
@@ -98,13 +99,13 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         // useMaterial3: true,
       ),
-      home: widget.defaultHome,
+      home: const OnBoardingScreen(),
       navigatorKey: locator<NavigationService>().navigatorKey,
       onGenerateRoute: (routeSettings){
         switch (routeSettings.name) {
-          case "welcome":
-              return MaterialPageRoute(builder: (context) => const WelcomeView() );
-          case "Home":
+          // case "welcome":
+          //     return MaterialPageRoute(builder: (context) => const WelcomeView() );
+          case "home":
               return MaterialPageRoute(builder: (context) => const MainTabView() );
           default:
               return MaterialPageRoute(builder: (context) => Scaffold(
