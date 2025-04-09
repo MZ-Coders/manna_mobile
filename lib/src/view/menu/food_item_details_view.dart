@@ -25,7 +25,7 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
-    // this.price = widget.foodDetails.price;
+    this.price = widget.foodDetails["price"];
     print('Título da receita: ${widget.foodDetails}');
     return Scaffold(
       backgroundColor: TColor.primaryText,
