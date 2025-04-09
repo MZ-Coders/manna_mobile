@@ -1,6 +1,7 @@
 import 'package:dribbble_challenge/src/common_widget/tab_button.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home/home_view.dart';
 import '../menu/menu_view.dart';
@@ -13,15 +14,38 @@ class MainTabView extends StatefulWidget {
 
   @override
   State<MainTabView> createState() => _MainTabViewState();
+  
+}
+
+Future<String?> getTableId() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('table_id');
 }
 
 class _MainTabViewState extends State<MainTabView> {
   int selctTab = 2;
   PageStorageBucket storageBucket = PageStorageBucket();
   Widget selectPageView = const HomeView();
+  String? tableId;
+
+  @override
+  void initState() {
+    super.initState();
+    loadTableId();
+  }
+
+  Future<void> loadTableId() async {
+    final id = await getTableId();
+    setState(() {
+      tableId = id;
+    });
+    print('Table ID: $tableId'); // Aqui o valor real será exibido
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    print('Table ID: $tableId'); // Aqui o valor real será exibido}');
     return Scaffold(
       body: PageStorage(bucket: storageBucket, child: selectPageView),
       backgroundColor: const Color(0xfff5f5f5),

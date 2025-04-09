@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'dart:html' as html;
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/common/locator.dart';
@@ -8,6 +9,7 @@ import 'package:dribbble_challenge/src/common/service_call.dart';
 import 'package:dribbble_challenge/src/view/login/welcome_view.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +20,13 @@ void main() async {
   setUpLocator();
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
+  final tableId = getTableIdFromUrl();
+
+  if (tableId != null) {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('table_id', tableId);
+    print("Table ID: $tableId");
+  }
   prefs = await SharedPreferences.getInstance();
 
   if(Globs.udValueBool(Globs.userLogin)) {
@@ -25,6 +34,18 @@ void main() async {
   }
 
   runApp( const MyApp(defaultHome:  StartupView(),));
+}
+
+String? getTableIdFromUrl() {
+  if(kIsWeb) {
+    print("Is web");
+  final url = html.window.location.href;
+  final uri = Uri.parse(url);
+  print("URL: $url");
+  return uri.queryParameters['table_id'];
+  } else {
+    return " ... ";
+  }
 }
 
 void configLoading() {

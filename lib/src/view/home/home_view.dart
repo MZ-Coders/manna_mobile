@@ -3,6 +3,7 @@ import 'package:dribbble_challenge/src/common_widget/menu_item_row.dart';
 import 'package:dribbble_challenge/src/common_widget/round_textfield.dart';
 import 'package:dribbble_challenge/src/view/menu/food_item_details_view.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
@@ -20,10 +21,29 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
+Future<String?> getTableId() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('table_id');
+}
+
+
 class _HomeViewState extends State<HomeView> {
   TextEditingController txtSearch = TextEditingController();
+  String? tableId;
 
+    @override
+  void initState() {
+    super.initState();
+    loadTableId();
+  }
   
+   Future<void> loadTableId() async {
+    final id = await getTableId();
+    setState(() {
+      tableId = id;
+    });
+    print('Table ID: $tableId'); // Aqui o valor real será exibido
+  }
 
   List catArr = [
     {"image": "assets/img/cat_offer.png", "name": "Offers"},
@@ -206,7 +226,7 @@ class _HomeViewState extends State<HomeView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Good morning ${ServiceCall.userPayload[KKey.name] ?? ""}!",
+                      "Hello, your Table is \n$tableId ${ServiceCall.userPayload[KKey.name] ?? ""}!",
                       style: TextStyle(
                           color: TColor.primaryText,
                           fontSize: 20,
