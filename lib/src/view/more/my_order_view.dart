@@ -2,13 +2,16 @@ import 'dart:typed_data';
 
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
+import 'package:dribbble_challenge/src/pdf/web.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-import './../../pdf/mobile.dart' if (dart.library.html) './../../pdf/';
+import './../../pdf/mobile.dart' if (dart.library.html) './../../pdf/web.dart';
+// import './../../pdf/web.dart';
 
 import 'checkout_view.dart';
 
@@ -374,50 +377,6 @@ class _MyOrderViewState extends State<MyOrderView> {
 
 }
 
-  Future<void> _createPDF() async {
-    PdfDocument document = PdfDocument();
-    final page = document.pages.add();
-
-    page.graphics.drawString('Welcome to PDF Succinctly!',
-        PdfStandardFont(PdfFontFamily.helvetica, 30));
-
-    PdfGrid grid = PdfGrid();
-    grid.style = PdfGridStyle(
-        font: PdfStandardFont(PdfFontFamily.helvetica, 30),
-        cellPadding: PdfPaddings(left: 5, right: 2, top: 2, bottom: 2));
-
-    grid.columns.add(count: 3);
-    grid.headers.add(1);
-
-    PdfGridRow header = grid.headers[0];
-    header.cells[0].value = 'Roll No';
-    header.cells[1].value = 'Name';
-    header.cells[2].value = 'Class';
-
-    PdfGridRow row = grid.rows.add();
-    row.cells[0].value = '1';
-    row.cells[1].value = 'Arya';
-    row.cells[2].value = '6';
-
-    row = grid.rows.add();
-    row.cells[0].value = '2';
-    row.cells[1].value = 'John';
-    row.cells[2].value = '9';
-
-    row = grid.rows.add();
-    row.cells[0].value = '3';
-    row.cells[1].value = 'Tony';
-    row.cells[2].value = '8';
-
-    grid.draw(
-        page: document.pages.add(), bounds: const Rect.fromLTWH(0, 0, 0, 0));
-
-    List<int> bytes = await document.save();
-    document.dispose();
-
-    saveAndLaunchFile(bytes, 'Output.pdf');
-  }
-
 Future<void> _createPDFv2() async {
   final PdfDocument document = PdfDocument();
   final page = document.pages.add();
@@ -527,7 +486,10 @@ Future<void> _createPDFv2() async {
   List<int> bytes = await document.save();
   document.dispose();
 
-  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
+//  if(kIsWeb) {
+  saveAndLaunchFileWeb(bytes, 'recibo_pedido.pdf');
+//  }
+//  else  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
 }
 
 

@@ -41,6 +41,7 @@ String? getTableIdFromUrl() {
   if(kIsWeb) {
     print("Is web");
   final url = html.window.location.href;
+  // final url = "https://example.com?table_id=12345";
   final uri = Uri.parse(url);
   print("URL: $url");
   return uri.queryParameters['table_id'];
