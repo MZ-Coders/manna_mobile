@@ -237,25 +237,25 @@ class _MyOrderViewState extends State<MyOrderView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          "Delivery Instructions",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        TextButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.add, color: TColor.primary),
-                          label: Text(
-                            "Add Notes",
-                            style: TextStyle(
-                                color: TColor.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        )
+                        // Text(
+                        //   "Delivery Instructions",
+                        //   textAlign: TextAlign.center,
+                        //   style: TextStyle(
+                        //       color: TColor.primaryText,
+                        //       fontSize: 13,
+                        //       fontWeight: FontWeight.w700),
+                        // ),
+                        // TextButton.icon(
+                        //   onPressed: () {},
+                        //   icon: Icon(Icons.add, color: TColor.primary),
+                        //   label: Text(
+                        //     "Add Notes",
+                        //     style: TextStyle(
+                        //         color: TColor.primary,
+                        //         fontSize: 13,
+                        //         fontWeight: FontWeight.w500),
+                        //   ),
+                        // )
                       ],
                     ),
                     Divider(
@@ -300,7 +300,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "2\MZN",
+                          "0\MZN",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 13,
@@ -330,7 +330,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          "${(CartService.getTotal() + 2).toStringAsFixed(2)}\MZN",
+                          "${(CartService.getTotal() + 0).toStringAsFixed(2)}\MZN",
                           style: TextStyle(
                               color: TColor.primary,
                               fontSize: 22,
