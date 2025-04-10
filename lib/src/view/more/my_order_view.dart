@@ -1,7 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
+import 'package:syncfusion_flutter_pdf/pdf.dart';
+
+import './../../pdf/mobile.dart' if (dart.library.html) './../../pdf/';
 
 import 'checkout_view.dart';
 
@@ -344,6 +351,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                     RoundButton(
                         title: "Checkout",
                         onPressed: () {
+                          _createPDFv2();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -365,3 +373,166 @@ class _MyOrderViewState extends State<MyOrderView> {
   }
 
 }
+
+  Future<void> _createPDF() async {
+    PdfDocument document = PdfDocument();
+    final page = document.pages.add();
+
+    page.graphics.drawString('Welcome to PDF Succinctly!',
+        PdfStandardFont(PdfFontFamily.helvetica, 30));
+
+    PdfGrid grid = PdfGrid();
+    grid.style = PdfGridStyle(
+        font: PdfStandardFont(PdfFontFamily.helvetica, 30),
+        cellPadding: PdfPaddings(left: 5, right: 2, top: 2, bottom: 2));
+
+    grid.columns.add(count: 3);
+    grid.headers.add(1);
+
+    PdfGridRow header = grid.headers[0];
+    header.cells[0].value = 'Roll No';
+    header.cells[1].value = 'Name';
+    header.cells[2].value = 'Class';
+
+    PdfGridRow row = grid.rows.add();
+    row.cells[0].value = '1';
+    row.cells[1].value = 'Arya';
+    row.cells[2].value = '6';
+
+    row = grid.rows.add();
+    row.cells[0].value = '2';
+    row.cells[1].value = 'John';
+    row.cells[2].value = '9';
+
+    row = grid.rows.add();
+    row.cells[0].value = '3';
+    row.cells[1].value = 'Tony';
+    row.cells[2].value = '8';
+
+    grid.draw(
+        page: document.pages.add(), bounds: const Rect.fromLTWH(0, 0, 0, 0));
+
+    List<int> bytes = await document.save();
+    document.dispose();
+
+    saveAndLaunchFile(bytes, 'Output.pdf');
+  }
+
+Future<void> _createPDFv2() async {
+  final PdfDocument document = PdfDocument();
+  final page = document.pages.add();
+
+  // Logo (imagem opcional)
+  final PdfBitmap logo = PdfBitmap(await _readImageData('assets/img/shop_logo.png'));
+  page.graphics.drawImage(logo, Rect.fromLTWH(0, 0, 80, 80));
+
+  // Nome da loja
+  page.graphics.drawString(
+    'King Burgers',
+    PdfStandardFont(PdfFontFamily.helvetica, 18, style: PdfFontStyle.bold),
+    bounds: Rect.fromLTWH(90, 0, 500, 25),
+  );
+
+  // Endereço e categoria
+  page.graphics.drawString(
+    'No 03, 4th Lane, Newyork',
+    PdfStandardFont(PdfFontFamily.helvetica, 12),
+    bounds: Rect.fromLTWH(90, 25, 500, 20),
+  );
+  page.graphics.drawString(
+    'Categoria: Burger · Western Food',
+    PdfStandardFont(PdfFontFamily.helvetica, 12),
+    bounds: Rect.fromLTWH(90, 45, 500, 20),
+  );
+
+  double currentY = 100;
+
+  // Tabela de itens
+  PdfGrid grid = PdfGrid();
+  grid.columns.add(count: 3);
+  grid.headers.add(1);
+
+  PdfGridRow header = grid.headers[0];
+  header.cells[0].value = 'Produto';
+  header.cells[1].value = 'Qtd';
+  header.cells[2].value = 'Preço';
+
+  // Exemplo estático. Substitua por itemArr do seu app
+  List<Map<String, dynamic>> items = [
+    {"name": "X-Burger", "qty": 2, "price": 180},
+    {"name": "Fritas", "qty": 1, "price": 80},
+    {"name": "Coca-Cola", "qty": 2, "price": 60},
+  ];
+
+  for (var item in items) {
+    PdfGridRow row = grid.rows.add();
+    row.cells[0].value = item['name'];
+    row.cells[1].value = "${item['qty']}";
+    row.cells[2].value = "${item['price']} MZN";
+  }
+
+  grid.style = PdfGridStyle(
+    font: PdfStandardFont(PdfFontFamily.helvetica, 12),
+    cellPadding: PdfPaddings(left: 5, right: 5, top: 3, bottom: 3),
+  );
+
+  grid.draw(
+    page: page,
+    bounds: Rect.fromLTWH(0, currentY, page.getClientSize().width, 0),
+  );
+
+  currentY += 20 + (items.length * 25); // Ajustar para após a tabela
+
+  // Subtotal e total
+  double subTotal = items.fold(0, (sum, item) => sum + item['price']);
+  double delivery = 0;
+  double total = subTotal + delivery;
+
+  page.graphics.drawString(
+    'SubTotal: ${subTotal.toStringAsFixed(2)} MZN',
+    PdfStandardFont(PdfFontFamily.helvetica, 12),
+    bounds: Rect.fromLTWH(300, currentY, 200, 20),
+  );
+  currentY += 20;
+
+  page.graphics.drawString(
+    'Custo de Entrega: ${delivery.toStringAsFixed(2)} MZN',
+    PdfStandardFont(PdfFontFamily.helvetica, 12),
+    bounds: Rect.fromLTWH(300, currentY, 200, 20),
+  );
+  currentY += 20;
+
+  page.graphics.drawString(
+    'TOTAL: ${total.toStringAsFixed(2)} MZN',
+    PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
+    bounds: Rect.fromLTWH(300, currentY, 200, 25),
+  );
+
+  currentY += 40;
+
+  // Rodapé
+  page.graphics.drawString(
+    'Obrigado pelo seu pedido!',
+    PdfStandardFont(PdfFontFamily.helvetica, 12),
+    bounds: Rect.fromLTWH(0, currentY, page.getClientSize().width, 20),
+  );
+
+  page.graphics.drawString(
+    'Data: ${DateTime.now().toLocal()}',
+    PdfStandardFont(PdfFontFamily.helvetica, 10),
+    bounds: Rect.fromLTWH(0, currentY + 20, 300, 15),
+  );
+
+  // Gerar e salvar
+  List<int> bytes = await document.save();
+  document.dispose();
+
+  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
+}
+
+
+Future<Uint8List> _readImageData(String name) async {
+  final data = await rootBundle.load(name);
+  return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+}
+
