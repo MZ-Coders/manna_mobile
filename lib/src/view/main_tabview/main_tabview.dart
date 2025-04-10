@@ -1,4 +1,5 @@
 import 'package:dribbble_challenge/src/common_widget/tab_button.dart';
+import 'package:dribbble_challenge/src/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,19 +85,19 @@ class _MainTabViewState extends State<MainTabView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              TabButton(
-                  title: "Menu",
-                  icon: "assets/img/tab_menu.png",
-                  onTap: () {
-                    if (selctTab != 0) {
-                      selctTab = 0;
-                      selectPageView = const MenuView();
-                    }
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                  isSelected: selctTab == 0),
+              // TabButton(
+              //     title: "Menu",
+              //     icon: "assets/img/tab_menu.png",
+              //     onTap: () {
+              //       if (selctTab != 0) {
+              //         selctTab = 0;
+              //         selectPageView = const MenuView();
+              //       }
+              //       if (mounted) {
+              //         setState(() {});
+              //       }
+              //     },
+              //     isSelected: selctTab == 0),
               TabButton(
                   title: "Offer",
                   icon: "assets/img/tab_offer.png",
@@ -114,26 +115,26 @@ class _MainTabViewState extends State<MainTabView> {
         
                 const  SizedBox(width: 40, height: 40, ),
         
+              // TabButton(
+              //     title: "Profile",
+              //     icon: "assets/img/tab_profile.png",
+              //     onTap: () {
+              //       if (selctTab != 3) {
+              //         selctTab = 3;
+              //         selectPageView = const ProfileView();
+              //       }
+              //       if (mounted) {
+              //         setState(() {});
+              //       }
+              //     },
+              //     isSelected: selctTab == 3),
               TabButton(
-                  title: "Profile",
-                  icon: "assets/img/tab_profile.png",
-                  onTap: () {
-                    if (selctTab != 3) {
-                      selctTab = 3;
-                      selectPageView = const ProfileView();
-                    }
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                  isSelected: selctTab == 3),
-              TabButton(
-                  title: "More",
-                  icon: "assets/img/tab_more.png",
+                  title: "My Orders",
+                  icon: "assets/img/shopping_cart.png",
                   onTap: () {
                     if (selctTab != 4) {
                       selctTab = 4;
-                      selectPageView = const  MoreView();
+                      selectPageView = const  MyOrderView();
                     }
                     if (mounted) {
                       setState(() {});
