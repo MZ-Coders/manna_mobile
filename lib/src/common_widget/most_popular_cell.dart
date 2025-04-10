@@ -66,19 +66,19 @@ class MostPopularCell extends StatelessWidget {
                   width: 8,
                 ),
             
-                Image.asset(
-                "assets/img/rate.png",
-                width: 10,
-                height: 10,
-                fit: BoxFit.cover,
-              ) ,
+              //   Image.asset(
+              //   "assets/img/rate.png",
+              //   width: 10,
+              //   height: 10,
+              //   fit: BoxFit.cover,
+              // ) ,
               const SizedBox(
                   width: 4,
                 ),
                 Text(
-                  mObj["rate"],
+                  mObj["price"].toString()+"\MZN",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: TColor.primary, fontSize: 12),
+                  style: TextStyle(color: TColor.primary, fontSize: 16),
                 ),
               ],
             ),

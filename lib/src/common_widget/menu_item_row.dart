@@ -54,20 +54,20 @@ class MenuItemRow extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Image.asset(
-                            "assets/img/rate.png",
-                            width: 10,
-                            height: 10,
-                            fit: BoxFit.cover,
-                          ),
+                          // Image.asset(
+                          //   "assets/img/rate.png",
+                          //   width: 10,
+                          //   height: 10,
+                          //   fit: BoxFit.cover,
+                          // ),
                           const SizedBox(
                             width: 4,
                           ),
                           Text(
-                            mObj["rate"],
+                            mObj["price"].toString()+" \MZN",
                             textAlign: TextAlign.center,
                             style:
-                                TextStyle(color: TColor.primary, fontSize: 11),
+                                TextStyle(color: TColor.primary, fontSize: 24),
                           ),
                           const SizedBox(
                             width: 8,

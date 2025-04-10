@@ -59,7 +59,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/res_2.png",
@@ -67,7 +69,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/res_3.png",
@@ -75,7 +79,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
   ];
 
@@ -86,7 +92,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/m_res_2.png",
@@ -94,7 +102,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
   ];
 
@@ -105,7 +115,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/item_2.png",
@@ -113,7 +125,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
     {
       "image": "assets/img/item_3.png",
@@ -121,7 +135,9 @@ class _HomeViewState extends State<HomeView> {
       "rate": "4.9",
       "rating": "124",
       "type": "Cafa",
-      "food_type": "Western Food"
+      "food_type": "Western Food",
+      "description": "Delicious apple pie with a flaky crust and sweet filling.",
+      "price": 5.99,
     },
   ];
 

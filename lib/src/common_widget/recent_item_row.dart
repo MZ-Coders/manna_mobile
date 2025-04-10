@@ -76,18 +76,18 @@ class RecentItemRow extends StatelessWidget {
                     children: [
                       
                      
-                      Image.asset(
-                        "assets/img/rate.png",
-                        width: 10,
-                        height: 10,
-                        fit: BoxFit.cover,
-                      ),
+                      // Image.asset(
+                      //   "assets/img/rate.png",
+                      //   width: 10,
+                      //   height: 10,
+                      //   fit: BoxFit.cover,
+                      // ),
 
                       const SizedBox(
                         width: 4,
                       ),
                       Text(
-                        rObj["rate"],
+                        rObj["price"].toString()+"\MZN",
                         textAlign: TextAlign.center,
                         style: TextStyle(color: TColor.primary, fontSize: 11),
                       ),
