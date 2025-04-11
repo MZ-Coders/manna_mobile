@@ -417,17 +417,15 @@ Future<void> _createPDFv2() async {
   header.cells[2].value = 'Preço';
 
   // Exemplo estático. Substitua por itemArr do seu app
-  List<Map<String, dynamic>> items = [
-    {"name": "X-Burger", "qty": 2, "price": 180},
-    {"name": "Fritas", "qty": 1, "price": 80},
-    {"name": "Coca-Cola", "qty": 2, "price": 60},
-  ];
+  List<Map<String, dynamic>> items = CartService.getCartItems();
+
+  print("Lista de Items "+items.toString());
 
   for (var item in items) {
     PdfGridRow row = grid.rows.add();
     row.cells[0].value = item['name'];
     row.cells[1].value = "${item['qty']}";
-    row.cells[2].value = "${item['price']} MZN";
+    row.cells[2].value = "${(double.parse(item['price'].toString()) * double.parse(item['qty'].toString())).toStringAsFixed(2)} MZN";
   }
 
   grid.style = PdfGridStyle(
@@ -486,10 +484,10 @@ Future<void> _createPDFv2() async {
   List<int> bytes = await document.save();
   document.dispose();
 
-//  if(kIsWeb) {
+ if(kIsWeb) {
   saveAndLaunchFileWeb(bytes, 'recibo_pedido.pdf');
-//  }
-//  else  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
+ }
+ else  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
 }
 
 
