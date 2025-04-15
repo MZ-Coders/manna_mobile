@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/src/models/order_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
@@ -6,11 +7,14 @@ import 'package:flutter/src/widgets/framework.dart';
 class HomePosPage extends StatefulWidget {
   const HomePosPage({Key? key}) : super(key: key);
 
+ 
+
   @override
   State<HomePosPage> createState() => _HomePosPageState();
 }
 
 class _HomePosPageState extends State<HomePosPage> {
+  List<OrderItem> orderList = [];
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -60,18 +64,51 @@ class _HomePosPageState extends State<HomePosPage> {
     maxCrossAxisExtent: 200, // largura máxima de cada item
     childAspectRatio: 1 / 1.2,
     children: [
-      _item(image: 'items/1.png', title: 'Original Burger', price: '\$5.99', item: '11 item'),
-      _item(image: 'items/2.png', title: 'Double Burger', price: '\$10.99', item: '10 item'),
-      _item(image: 'items/3.png', title: 'Cheese Burger', price: '\$6.99', item: '7 item'),
-      _item(image: 'items/4.png', title: 'Double Cheese Burger', price: '\$12.99', item: '20 item'),
-      _item(image: 'items/5.png', title: 'Spicy Burger', price: '\$7.39', item: '12 item'),
-      _item(image: 'items/6.png', title: 'Special Black Burger', price: '\$7.39', item: '39 item'),
-      _item(image: 'items/7.png', title: 'Special Cheese Burger', price: '\$8.00', item: '2 item'),
-      _item(image: 'items/8.png', title: 'Jumbo Cheese Burger', price: '\$15.99', item: '2 item'),
-      _item(image: 'items/9.png', title: 'Spicy Burger', price: '\$7.39', item: '12 item'),
-      _item(image: 'items/10.png', title: 'Special Black Burger', price: '\$7.39', item: '39 item'),
-      _item(image: 'items/11.png', title: 'Special Cheese Burger', price: '\$8.00', item: '2 item'),
-      _item(image: 'items/12.png', title: 'Jumbo Cheese Burger', price: '\$15.99', item: '2 item'),
+      _item(image: 'items/1.png', title: 'Original Burger', price: '\$5.99', item: '11 item', onAdd: () {
+        addToOrder('items/1.png', 'Original Burger', 5.99);
+      }, onRemove: () {
+        removeFromOrder('Original Burger');
+      }),
+      _item(image: 'items/2.png', title: 'Double Burger', price: '\$10.99', item: '10 item', onAdd: () {
+        addToOrder('items/2.png', 'Double Burger', 10.99);
+      }, onRemove: () {
+        removeFromOrder('Double Burger');
+      }),
+      _item(image: 'items/3.png', title: 'Cheese Burger', price: '\$6.99', item: '7 item', onAdd: () {
+        addToOrder('items/3.png', 'Cheese Burger', 6.99);
+      }, onRemove: () {
+        removeFromOrder('Cheese Burger');
+      }),
+      _item(image: 'items/4.png', title: 'Double Cheese Burger', price: '\$12.99', item: '20 item', onAdd: () {
+        addToOrder('items/4.png', 'Double Cheese Burger', 12.99);
+      }, onRemove: () {
+        removeFromOrder('Double Cheese Burger');
+      }),
+      _item(image: 'items/5.png', title: 'Spicy Burger', price: '\$7.39', item: '12 item', onAdd: () {
+        addToOrder('items/5.png', 'Spicy Burger', 7.39);
+      }, onRemove: () {
+        removeFromOrder('Spicy Burger');
+      }),
+      _item(image: 'items/6.png', title: 'Special Black Burger', price: '\$7.39', item: '39 item', onAdd: () {
+        addToOrder('items/6.png', 'Special Black Burger', 7.39);
+      }, onRemove: () {
+        removeFromOrder('Special Black Burger');
+      }),
+      _item(image: 'items/7.png', title: 'Special Cheese Burger', price: '\$8.00', item: '2 item', onAdd: () {
+        addToOrder('items/7.png', 'Special Cheese Burger', 8.00);
+      }, onRemove: () {
+        removeFromOrder('Special Cheese Burger');
+      }),
+      _item(image: 'items/8.png', title: 'Jumbo Cheese Burger', price: '\$15.99', item: '2 item', onAdd: () {
+        addToOrder('items/8.png', 'Jumbo Cheese Burger', 15.99);
+      }, onRemove: () {
+        removeFromOrder('Jumbo Cheese Burger');
+      }),
+      _item(image: 'items/9.png', title: 'Spicy Burger', price: '\$7.39', item: '12 item', onAdd: () {
+        addToOrder('items/9.png', 'Spicy Burger', 7.39);
+      }, onRemove: () {
+        removeFromOrder('Spicy Burger');
+      }),
     ],
   ),
 ),
@@ -91,32 +128,14 @@ class _HomePosPageState extends State<HomePosPage> {
               const SizedBox(height: 20),
               Expanded(
                 child: ListView(
-                  children: [
-                    _itemOrder(
-                      image: 'items/1.png',
-                      title: 'Orginal Burger',
-                      qty: '2',
-                      price: '\$5.99',
-                    ),
-                    _itemOrder(
-                      image: 'items/2.png',
-                      title: 'Double Burger',
-                      qty: '3',
-                      price: '\$10.99',
-                    ),
-                    _itemOrder(
-                      image: 'items/6.png',
-                      title: 'Special Black Burger',
-                      qty: '2',
-                      price: '\$8.00',
-                    ),
-                    _itemOrder(
-                      image: 'items/4.png',
-                      title: 'Special Cheese Burger',
-                      qty: '2',
-                      price: '\$12.99',
-                    ),
-                  ],
+                  children: orderList.map((item) {
+    return _itemOrder(
+      image: item.image,
+      title: item.title,
+      qty: item.qty.toString(),
+      price: '\$${item.price.toStringAsFixed(2)}',
+    );
+  }).toList(),
                 ),
               ),
               Expanded(
@@ -287,6 +306,8 @@ Widget _item({
   required String title,
   required String price,
   required String item,
+  required Function onAdd,
+  required Function onRemove,
 }) {
   return StatefulBuilder(
     builder: (context, setState) {
@@ -362,6 +383,7 @@ Widget _item({
                       setState(() {
                         if (quantity > 0) quantity--;
                       });
+                      onRemove();
                     },
                   ),
                   Text(
@@ -377,6 +399,13 @@ Widget _item({
                       setState(() {
                         quantity++;
                       });
+                      // onAdd(OrderItem(
+                      //   image: image,
+                      //   title: title,
+                      //   price: double.parse(price.replaceAll('\$', '')),
+                      //   qty: quantity,
+                      // ));
+                      onAdd();
                     },
                   ),
                 ],
@@ -387,6 +416,33 @@ Widget _item({
       );
     },
   );
+}
+
+void addToOrder(String image, String title, double price) {
+  setState(() {
+    final index = orderList.indexWhere((item) => item.title == title);
+    print(index);
+    print(orderList);
+
+    if (index != -1) {
+      orderList[index].qty++;
+    } else {
+      orderList.add(OrderItem(image: image, title: title, price: price));
+    }
+  });
+}
+
+void removeFromOrder(String title) {
+  setState(() {
+    final index = orderList.indexWhere((item) => item.title == title);
+    if (index != -1) {
+      if (orderList[index].qty > 1) {
+        orderList[index].qty -= 1;
+      } else {
+        orderList.removeAt(index);
+      }
+    }
+  });
 }
 
 
