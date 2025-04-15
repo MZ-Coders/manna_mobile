@@ -75,6 +75,8 @@ flutter:
     - assets/images/
     - assets/img/
     - assets/images/rice.png
+    - assets/icons/
+    - assets/items/
 
   fonts:
     - family: Metropolis

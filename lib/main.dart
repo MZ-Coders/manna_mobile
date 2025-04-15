@@ -1,124 +1,183 @@
-import 'dart:io';
-
-// import 'dart:html' as html;
-import 'package:dribbble_challenge/src/common/color_extension.dart';
-import 'package:dribbble_challenge/src/common/globs.dart';
-import 'package:dribbble_challenge/src/common/locator.dart';
-import 'package:dribbble_challenge/src/common/my_http_overrides.dart';
-import 'package:dribbble_challenge/src/common/service_call.dart';
-import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
-import 'package:dribbble_challenge/src/view/login/welcome_view.dart';
-import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
-import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dribbble_challenge/src/home_pos.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-
-SharedPreferences? prefs;
-void main() async {
-  setUpLocator();
-  HttpOverrides.global = MyHttpOverrides();
-  WidgetsFlutterBinding.ensureInitialized();
-  final tableId = getTableIdFromUrl();
-
-  if (tableId != null) {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('table_id', tableId);
-    print("Table ID: $tableId");
-  }
-  prefs = await SharedPreferences.getInstance();
-
-  if(Globs.udValueBool(Globs.userLogin)) {
-    ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
-  }
-
-  runApp( const MyApp(defaultHome:  StartupView(),));
+void main() {
+  runApp(const MyApp());
 }
 
-String? getTableIdFromUrl() {
-  if(kIsWeb) {
-    print("Is web");
-  // final url = html.window.location.href;
-  final url = "https://example.com?table_id=12345";
-  final uri = Uri.parse(url);
-  print("URL: $url");
-  return uri.queryParameters['table_id'];
-  } else {
-    return " ... ";
-  }
-}
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-void configLoading() {
-  EasyLoading.instance
-    ..indicatorType = EasyLoadingIndicatorType.ring
-    ..loadingStyle = EasyLoadingStyle.custom
-    ..indicatorSize = 45.0
-    ..radius = 5.0
-    ..progressColor = TColor.primaryText
-    ..backgroundColor = TColor.primary
-    ..indicatorColor = Colors.yellow
-    ..textColor = TColor.primaryText
-    ..userInteractions = false
-    ..dismissOnTap = false;
-}
-
-class MyApp extends StatefulWidget {
-  final Widget defaultHome;
-  const MyApp({super.key, required this.defaultHome});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Food Delivery',
-      debugShowCheckedModeBanner: false,
+      title: 'POS Food',
       theme: ThemeData(
-        fontFamily: "Metropolis",
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        // useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const OnBoardingScreen(),
-      navigatorKey: locator<NavigationService>().navigatorKey,
-      onGenerateRoute: (routeSettings){
-        switch (routeSettings.name) {
-          // case "welcome":
-          //     return MaterialPageRoute(builder: (context) => const WelcomeView() );
-          case "home":
-              return MaterialPageRoute(builder: (context) => const MainTabView() );
-          default:
-              return MaterialPageRoute(builder: (context) => Scaffold(
-                body: Center(
-                  child: Text("No path for ${routeSettings.name}")
-                ),
-              ) );
-        }
-      },
-      builder: (context, child) {
-        return FlutterEasyLoading(child: child);
-      },
+      home: const MainPage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class MainPage extends StatefulWidget {
+  const MainPage({Key? key}) : super(key: key);
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> {
+  String pageActive = 'Home';
+
+  _pageView() {
+    switch (pageActive) {
+      case 'Home':
+        return const HomePosPage();
+      case 'Menu':
+        return Container();
+      case 'History':
+        return Container();
+      case 'Promos':
+        return Container();
+      case 'Settings':
+        return Container();
+
+      default:
+        return const HomePosPage();
+    }
+  }
+
+  _setPage(String page) {
+    setState(() {
+      pageActive = page;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xff1f2029),
+      body: Row(
+        children: [
+          Container(
+            width: 70,
+            padding: const EdgeInsets.only(top: 24, right: 12, left: 12),
+            height: MediaQuery.of(context).size.height,
+            child: _sideMenu(),
+          ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: 24, right: 12),
+              padding: const EdgeInsets.only(top: 12, right: 12, left: 12),
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12)),
+                color: Color(0xff17181f),
+              ),
+              child: _pageView(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sideMenu() {
+    return Column(children: [
+      _logo(),
+      const SizedBox(height: 20),
+      Expanded(
+        child: ListView(
+          children: [
+            _itemMenu(
+              menu: 'Home',
+              icon: Icons.rocket_sharp,
+            ),
+            _itemMenu(
+              menu: 'Menu',
+              icon: Icons.format_list_bulleted_rounded,
+            ),
+            _itemMenu(
+              menu: 'History',
+              icon: Icons.history_toggle_off_rounded,
+            ),
+            _itemMenu(
+              menu: 'Promos',
+              icon: Icons.discount_outlined,
+            ),
+            _itemMenu(
+              menu: 'Settings',
+              icon: Icons.sports_soccer_outlined,
+            ),
+          ],
+        ),
+      ),
+    ]);
+  }
+
+  Widget _logo() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.deepOrangeAccent,
+          ),
+          child: const Icon(
+            Icons.fastfood,
+            color: Colors.white,
+            size: 14,
+          ),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'POSFood',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _itemMenu({required String menu, required IconData icon}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: GestureDetector(
+        onTap: () => _setPage(menu),
+        child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: AnimatedContainer(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: pageActive == menu
+                    ? Colors.deepOrangeAccent
+                    : Colors.transparent,
+              ),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.slowMiddle,
+              child: Column(
+                children: [
+                  Icon(
+                    icon,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    menu,
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ],
+              ),
+            )),
+      ),
     );
   }
 }
