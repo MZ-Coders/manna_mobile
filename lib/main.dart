@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'dart:html' as html;
+// import 'dart:html' as html;
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/common/locator.dart';
@@ -40,8 +40,8 @@ void main() async {
 String? getTableIdFromUrl() {
   if(kIsWeb) {
     print("Is web");
-  final url = html.window.location.href;
-  // final url = "https://example.com?table_id=12345";
+  // final url = html.window.location.href;
+  final url = "https://example.com?table_id=12345";
   final uri = Uri.parse(url);
   print("URL: $url");
   return uri.queryParameters['table_id'];
