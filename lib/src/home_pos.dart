@@ -144,98 +144,99 @@ class _HomePosPageState extends State<HomePosPage> {
   }).toList(),
                 ),
               ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    color: const Color(0xff1f2029),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text(
-                            'Sub Total',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                          Text(
-                            '\$40.32',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text(
-                            'Tax',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                          Text(
-                            '\$4.32',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 20),
-                        height: 2,
-                        width: double.infinity,
-                        color: Colors.white,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Text(
-                            'Total',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                          Text(
-                            '\$44.64',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 30),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.deepOrange,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () {},
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.print, size: 16),
-                            SizedBox(width: 6),
-                            Text('Print Bills')
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+             // Substitua a parte do resumo do pedido no método build por este código
+Expanded(
+  child: Container(
+    padding: const EdgeInsets.all(20),
+    margin: const EdgeInsets.symmetric(vertical: 10),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(14),
+      color: const Color(0xff1f2029),
+    ),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Sub Total',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+            Text(
+              '\$${calculateSubtotal().toStringAsFixed(2)}',
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tax',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+            Text(
+              '\$${calculateTax(calculateSubtotal()).toStringAsFixed(2)}',
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          ],
+        ),
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 20),
+          height: 2,
+          width: double.infinity,
+          color: Colors.white,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Total',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+            Text(
+              '\$${calculateTotal(calculateSubtotal(), calculateTax(calculateSubtotal())).toStringAsFixed(2)}',
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          ],
+        ),
+        const SizedBox(height: 30),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.deepOrange,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () {},
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.print, size: 16),
+              SizedBox(width: 6),
+              Text('Print Bills')
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+),
             ],
           ),
         ),
@@ -415,8 +416,13 @@ void addToOrder(String image, String title, double price) {
 
     if (index != -1) {
       orderList[index].qty++;
+      
+      // Opcional: Mover o item atualizado para o topo da lista
+      final item = orderList.removeAt(index);
+      orderList.insert(0, item);
     } else {
-      orderList.add(OrderItem(image: image, title: title, price: price));
+      // Adicionar novo item no início da lista (índice 0)
+      orderList.insert(0, OrderItem(image: image, title: title, price: price));
     }
   });
 }
@@ -443,6 +449,26 @@ int _getQuantityFor(String title) {
     return orderList[index].qty;
   }
   return 0;
+}
+
+// Adicione este método na classe _HomePosPageState
+double calculateSubtotal() {
+  double subtotal = 0;
+  for (var item in orderList) {
+    subtotal += item.price * item.qty;
+  }
+  return subtotal;
+}
+
+// Adicione este método para calcular o imposto
+double calculateTax(double subtotal) {
+  // Assumindo uma taxa de imposto de 10%, você pode ajustar conforme necessário
+  return subtotal * 0.10;
+}
+
+// Adicione este método para calcular o total
+double calculateTotal(double subtotal, double tax) {
+  return subtotal + tax;
 }
 
   // }
