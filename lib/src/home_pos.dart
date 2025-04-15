@@ -64,47 +64,53 @@ class _HomePosPageState extends State<HomePosPage> {
     maxCrossAxisExtent: 200, // largura máxima de cada item
     childAspectRatio: 1 / 1.2,
     children: [
-      _item(image: 'items/1.png', title: 'Original Burger', price: '\$5.99', item: '11 item', onAdd: () {
+      _item(
+        image: 'items/1.png', 
+        title: 'Original Burger', 
+        price: '\$5.99', 
+        quantity: _getQuantityFor('Original Burger'),
+        item: '11 item', 
+        onAdd: () {
         addToOrder('items/1.png', 'Original Burger', 5.99);
       }, onRemove: () {
         removeFromOrder('Original Burger');
       }),
-      _item(image: 'items/2.png', title: 'Double Burger', price: '\$10.99', item: '10 item', onAdd: () {
+      _item(image: 'items/2.png', title: 'Double Burger', price: '\$10.99', quantity: _getQuantityFor('Double Burger'), item: '10 item', onAdd: () {
         addToOrder('items/2.png', 'Double Burger', 10.99);
       }, onRemove: () {
         removeFromOrder('Double Burger');
       }),
-      _item(image: 'items/3.png', title: 'Cheese Burger', price: '\$6.99', item: '7 item', onAdd: () {
+      _item(image: 'items/3.png', title: 'Cheese Burger', price: '\$6.99', quantity: _getQuantityFor('Cheese Burger'), item: '7 item', onAdd: () {
         addToOrder('items/3.png', 'Cheese Burger', 6.99);
       }, onRemove: () {
         removeFromOrder('Cheese Burger');
       }),
-      _item(image: 'items/4.png', title: 'Double Cheese Burger', price: '\$12.99', item: '20 item', onAdd: () {
+      _item(image: 'items/4.png', title: 'Double Cheese Burger', price: '\$12.99',quantity: _getQuantityFor('Double Cheese Burger'), item: '20 item', onAdd: () {
         addToOrder('items/4.png', 'Double Cheese Burger', 12.99);
       }, onRemove: () {
         removeFromOrder('Double Cheese Burger');
       }),
-      _item(image: 'items/5.png', title: 'Spicy Burger', price: '\$7.39', item: '12 item', onAdd: () {
+      _item(image: 'items/5.png', title: 'Spicy Burger', price: '\$7.39', quantity: _getQuantityFor('Spicy Burger'), item: '12 item', onAdd: () {
         addToOrder('items/5.png', 'Spicy Burger', 7.39);
       }, onRemove: () {
         removeFromOrder('Spicy Burger');
       }),
-      _item(image: 'items/6.png', title: 'Special Black Burger', price: '\$7.39', item: '39 item', onAdd: () {
+      _item(image: 'items/6.png', title: 'Special Black Burger', price: '\$7.39',quantity: _getQuantityFor('Special Black Burger'), item: '39 item', onAdd: () {
         addToOrder('items/6.png', 'Special Black Burger', 7.39);
       }, onRemove: () {
         removeFromOrder('Special Black Burger');
       }),
-      _item(image: 'items/7.png', title: 'Special Cheese Burger', price: '\$8.00', item: '2 item', onAdd: () {
+      _item(image: 'items/7.png', title: 'Special Cheese Burger', price: '\$8.00', quantity: _getQuantityFor('Special Cheese Burger'), item: '2 item', onAdd: () {
         addToOrder('items/7.png', 'Special Cheese Burger', 8.00);
       }, onRemove: () {
         removeFromOrder('Special Cheese Burger');
       }),
-      _item(image: 'items/8.png', title: 'Jumbo Cheese Burger', price: '\$15.99', item: '2 item', onAdd: () {
+      _item(image: 'items/8.png', title: 'Jumbo Cheese Burger', price: '\$15.99',quantity: _getQuantityFor('Jumbo Cheese Burger'), item: '2 item', onAdd: () {
         addToOrder('items/8.png', 'Jumbo Cheese Burger', 15.99);
       }, onRemove: () {
         removeFromOrder('Jumbo Cheese Burger');
       }),
-      _item(image: 'items/9.png', title: 'Spicy Burger', price: '\$7.39', item: '12 item', onAdd: () {
+      _item(image: 'items/9.png', title: 'Spicy Burger', price: '\$7.39',quantity: _getQuantityFor('Spicy Burger') ,item: '12 item', onAdd: () {
         addToOrder('items/9.png', 'Spicy Burger', 7.39);
       }, onRemove: () {
         removeFromOrder('Spicy Burger');
@@ -305,116 +311,99 @@ Widget _item({
   required String image,
   required String title,
   required String price,
+  required int quantity,
   required String item,
   required Function onAdd,
   required Function onRemove,
 }) {
-  return StatefulBuilder(
-    builder: (context, setState) {
-      int quantity = 0;
-
-      return Container(
-        margin: const EdgeInsets.only(right: 20, bottom: 20),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: const Color(0xff1f2029),
+  return Container(
+    margin: const EdgeInsets.only(right: 20, bottom: 20),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(18),
+      color: const Color(0xff1f2029),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Container(
+            height: 130,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              image: DecorationImage(
+                image: AssetImage(image),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: Container(
-                height: 130,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  image: DecorationImage(
-                    image: AssetImage(image),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
             Text(
-              title,
+              price,
               style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+                color: Colors.deepOrange,
+                fontSize: 20,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  price,
-                  style: const TextStyle(
-                    color: Colors.deepOrange,
-                    fontSize: 20,
-                  ),
-                ),
-                Text(
-                  item,
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.remove, color: Colors.white),
-                    onPressed: () {
-                      setState(() {
-                        if (quantity > 0) quantity--;
-                      });
-                      onRemove();
-                    },
-                  ),
-                  Text(
-                    quantity.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    onPressed: () {
-                      setState(() {
-                        quantity++;
-                      });
-                      // onAdd(OrderItem(
-                      //   image: image,
-                      //   title: title,
-                      //   price: double.parse(price.replaceAll('\$', '')),
-                      //   qty: quantity,
-                      // ));
-                      onAdd();
-                    },
-                  ),
-                ],
+            Text(
+              item,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 12,
               ),
             ),
           ],
         ),
-      );
-    },
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.black26,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove, color: Colors.white),
+                onPressed: () {
+                  onRemove();
+                },
+              ),
+              Text(
+                quantity.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add, color: Colors.white),
+                onPressed: () {
+                  onAdd();
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -444,6 +433,21 @@ void removeFromOrder(String title) {
     }
   });
 }
+
+int _getQuantityFor(String title) {
+  print("Titulo "+ title);
+  final index = orderList.indexWhere((item) => item.title == title); 
+  print("Index "+ index.toString());
+  print(orderList);
+  if (index != -1) {
+    return orderList[index].qty;
+  }
+  return 0;
+}
+
+  // }
+  // Widget _itemTab({required String icon, required String title}) {
+
 
 
   Widget _itemTab(
