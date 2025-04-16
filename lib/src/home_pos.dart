@@ -48,31 +48,31 @@ Container(
     scrollDirection: Axis.horizontal,
     children: [
       _itemTab(
-        icon: 'icons/icon-burger.png',
+        icon: 'assets/icons/icon-burger.png',
         title: 'Burger',
         isActive: currentTab == 'Burger',
         onTap: () => changeTab('Burger'),
       ),
       _itemTab(
-        icon: 'icons/icon-noodles.png',
+        icon: 'assets/icons/icon-noodles.png',
         title: 'Noodles',
         isActive: currentTab == 'Noodles',
         onTap: () => changeTab('Noodles'),
       ),
       _itemTab(
-        icon: 'icons/icon-drinks.png',
+        icon: 'assets/icons/icon-drinks.png',
         title: 'Drinks',
         isActive: currentTab == 'Drinks',
         onTap: () => changeTab('Drinks'),
       ),
       _itemTab(
-        icon: 'icons/icon-desserts.png',
+        icon: 'assets/icons/icon-desserts.png',
         title: 'Desserts',
         isActive: currentTab == 'Desserts',
         onTap: () => changeTab('Desserts'),
       ),
       _itemTab(
-        icon: 'items/SORVETE-LUIGI-1.6L-MORANGO-COM-CHANTILLY.png',  // Você precisará adicionar este ícone
+        icon: 'assets/items/SORVETE-LUIGI-1.6L-MORANGO-COM-CHANTILLY.png',  // Você precisará adicionar este ícone
         title: 'Sorvetes',
         isActive: currentTab == 'Sorvetes',
         onTap: () => changeTab('Sorvetes'),
@@ -487,91 +487,91 @@ Widget _drinksGrid() {
     childAspectRatio: 1 / 1.2,
     children: [
       _item(
-        image: 'items/coca_2l.png', 
+        image: 'assets/items/coca_2l.png', 
         title: 'Coca-Cola 2L', 
         price: '\$3.99', 
         quantity: _getQuantityFor('Coca-Cola 2L'),
         item: '15 item', 
         onAdd: () {
-          addToOrder('items/coca_2l.png', 'Coca-Cola 2L', 3.99);
+          addToOrder('assets/items/coca_2l.png', 'Coca-Cola 2L', 3.99);
         }, 
         onRemove: () {
           removeFromOrder('Coca-Cola 2L');
         }
       ),
       _item(
-        image: 'items/coca_cola_lata.png', 
+        image: 'assets/items/coca_cola_lata.png', 
         title: 'Coca-Cola Lata', 
         price: '\$1.99', 
         quantity: _getQuantityFor('Coca-Cola Lata'),
         item: '20 item', 
         onAdd: () {
-          addToOrder('items/coca_cola_lata.png', 'Coca-Cola Lata', 1.99);
+          addToOrder('assets/items/coca_cola_lata.png', 'Coca-Cola Lata', 1.99);
         }, 
         onRemove: () {
           removeFromOrder('Coca-Cola Lata');
         }
       ),
       _item(
-        image: 'items/pepsi_lata.png', 
+        image: 'assets/items/pepsi_lata.png', 
         title: 'Pepsi Lata', 
         price: '\$1.89', 
         quantity: _getQuantityFor('Pepsi Lata'),
         item: '18 item', 
         onAdd: () {
-          addToOrder('items/pepsi_lata.png', 'Pepsi Lata', 1.89);
+          addToOrder('assets/items/pepsi_lata.png', 'Pepsi Lata', 1.89);
         }, 
         onRemove: () {
           removeFromOrder('Pepsi Lata');
         }
       ),
       _item(
-        image: 'items/REFRESCO_200ML_LIMAO.png.png', 
+        image: 'assets/items/REFRESCO_200ML_LIMAO.png.png', 
         title: 'Del Valle Limão 200ml', 
         price: '\$2.29', 
         quantity: _getQuantityFor('Del Valle Limão 200ml'),
         item: '12 item', 
         onAdd: () {
-          addToOrder('items/REFRESCO_200ML_LIMAO.png.png', 'Del Valle Limão 200ml', 2.29);
+          addToOrder('assets/items/REFRESCO_200ML_LIMAO.png.png', 'Del Valle Limão 200ml', 2.29);
         }, 
         onRemove: () {
           removeFromOrder('Del Valle Limão 200ml');
         }
       ),
       _item(
-        image: 'items/REFRESCO_200ML_UVA.png.png', 
+        image: 'assets/items/REFRESCO_200ML_UVA.png.png', 
         title: 'Del Valle Uva 200ml', 
         price: '\$2.29', 
         quantity: _getQuantityFor('Del Valle Uva 200ml'),
         item: '10 item', 
         onAdd: () {
-          addToOrder('items/REFRESCO_200ML_UVA.png.png', 'Del Valle Uva 200ml', 2.29);
+          addToOrder('assets/items/REFRESCO_200ML_UVA.png.png', 'Del Valle Uva 200ml', 2.29);
         }, 
         onRemove: () {
           removeFromOrder('Del Valle Uva 200ml');
         }
       ),
       _item(
-        image: 'items/REFRESCO_200L_LARANJA.png.png', 
+        image: 'assets/items/REFRESCO_200L_LARANJA.png.png', 
         title: 'Del Valle Laranja 200ml', 
         price: '\$2.29', 
         quantity: _getQuantityFor('Del Valle Laranja 200ml'),
         item: '14 item', 
         onAdd: () {
-          addToOrder('items/REFRESCO_200L_LARANJA.png.png', 'Del Valle Laranja 200ml', 2.29);
+          addToOrder('assets/items/REFRESCO_200L_LARANJA.png.png', 'Del Valle Laranja 200ml', 2.29);
         }, 
         onRemove: () {
           removeFromOrder('Del Valle Laranja 200ml');
         }
       ),
       _item(
-        image: 'items/BEBIDA-LACTEA-PULSI-GARRAFA-11KG-MORANGO.png', 
+        image: 'assets/items/BEBIDA-LACTEA-PULSI-GARRAFA-11KG-MORANGO.png', 
         title: 'Pulsi Morango 1L', 
         price: '\$4.49', 
         quantity: _getQuantityFor('Pulsi Morango 1L'),
         item: '8 item', 
         onAdd: () {
-          addToOrder('items/BEBIDA-LACTEA-PULSI-GARRAFA-11KG-MORANGO.png', 'Pulsi Morango 1L', 4.49);
+          addToOrder('assets/items/BEBIDA-LACTEA-PULSI-GARRAFA-11KG-MORANGO.png', 'Pulsi Morango 1L', 4.49);
         }, 
         onRemove: () {
           removeFromOrder('Pulsi Morango 1L');
@@ -588,39 +588,39 @@ Widget _sorvetesGrid() {
     childAspectRatio: 1 / 1.2,
     children: [
       _item(
-        image: 'items/SORVETE-LUIGI-1.6L-MORANGO-COM-CHANTILLY.png', 
+        image: 'assets/items/SORVETE-LUIGI-1.6L-MORANGO-COM-CHANTILLY.png', 
         title: 'Sorvete Morango c/ Chantilly', 
         price: '\$12.99', 
         quantity: _getQuantityFor('Sorvete Morango c/ Chantilly'),
         item: '5 item', 
         onAdd: () {
-          addToOrder('items/SORVETE-LUIGI-1.6L-MORANGO-COM-CHANTILLY.png', 'Sorvete Morango c/ Chantilly', 12.99);
+          addToOrder('assets/items/SORVETE-LUIGI-1.6L-MORANGO-COM-CHANTILLY.png', 'Sorvete Morango c/ Chantilly', 12.99);
         }, 
         onRemove: () {
           removeFromOrder('Sorvete Morango c/ Chantilly');
         }
       ),
       _item(
-        image: 'items/SORVETE-PALETITAS-POTE-500ML-COOKIES-TRU.png', 
+        image: 'assets/items/SORVETE-PALETITAS-POTE-500ML-COOKIES-TRU.png', 
         title: 'Sorvete Cookies 500ml', 
         price: '\$9.99', 
         quantity: _getQuantityFor('Sorvete Cookies 500ml'),
         item: '7 item', 
         onAdd: () {
-          addToOrder('items/SORVETE-PALETITAS-POTE-500ML-COOKIES-TRU.png', 'Sorvete Cookies 500ml', 9.99);
+          addToOrder('assets/items/SORVETE-PALETITAS-POTE-500ML-COOKIES-TRU.png', 'Sorvete Cookies 500ml', 9.99);
         }, 
         onRemove: () {
           removeFromOrder('Sorvete Cookies 500ml');
         }
       ),
       _item(
-        image: 'items/IOGURTE-NESTLE-GREGO-400G-FRUTAS-VERMELHAS.png', 
+        image: 'assets/items/IOGURTE-NESTLE-GREGO-400G-FRUTAS-VERMELHAS.png', 
         title: 'Iogurte Grego 400g', 
         price: '\$5.99', 
         quantity: _getQuantityFor('Iogurte Grego 400g'),
         item: '6 item', 
         onAdd: () {
-          addToOrder('items/IOGURTE-NESTLE-GREGO-400G-FRUTAS-VERMELHAS.png', 'Iogurte Grego 400g', 5.99);
+          addToOrder('assets/items/IOGURTE-NESTLE-GREGO-400G-FRUTAS-VERMELHAS.png', 'Iogurte Grego 400g', 5.99);
         }, 
         onRemove: () {
           removeFromOrder('Iogurte Grego 400g');
@@ -716,67 +716,67 @@ Widget _burgerGrid() {
     childAspectRatio: 1 / 1.2,
     children: [
       _item(
-        image: 'items/1.png', 
+        image: 'assets/items/1.png', 
         title: 'Original Burger', 
         price: '\$5.99', 
         quantity: _getQuantityFor('Original Burger'),
         item: '11 item', 
         onAdd: () {
-          addToOrder('items/1.png', 'Original Burger', 5.99);
+          addToOrder('assets/items/1.png', 'Original Burger', 5.99);
         }, 
         onRemove: () {
           removeFromOrder('Original Burger');
         }
       ),
-      _item(image: 'items/2.png', title: 'Double Burger', price: '\$10.99', quantity: _getQuantityFor('Double Burger'), item: '10 item', onAdd: () {
-        addToOrder('items/2.png', 'Double Burger', 10.99);
+      _item(image: 'assets/items/2.png', title: 'Double Burger', price: '\$10.99', quantity: _getQuantityFor('Double Burger'), item: '10 item', onAdd: () {
+        addToOrder('assets/items/2.png', 'Double Burger', 10.99);
       }, onRemove: () {
         removeFromOrder('Double Burger');
       }),
-      _item(image: 'items/3.png', title: 'Cheese Burger', price: '\$6.99', quantity: _getQuantityFor('Cheese Burger'), item: '7 item', onAdd: () {
-        addToOrder('items/3.png', 'Cheese Burger', 6.99);
+      _item(image: 'assets/items/3.png', title: 'Cheese Burger', price: '\$6.99', quantity: _getQuantityFor('Cheese Burger'), item: '7 item', onAdd: () {
+        addToOrder('assets/items/3.png', 'Cheese Burger', 6.99);
       }, onRemove: () {
         removeFromOrder('Cheese Burger');
       }),
-      _item(image: 'items/4.png', title: 'Double Cheese Burger', price: '\$12.99',quantity: _getQuantityFor('Double Cheese Burger'), item: '20 item', onAdd: () {
-        addToOrder('items/4.png', 'Double Cheese Burger', 12.99);
+      _item(image: 'assets/items/4.png', title: 'Double Cheese Burger', price: '\$12.99',quantity: _getQuantityFor('Double Cheese Burger'), item: '20 item', onAdd: () {
+        addToOrder('assets/items/4.png', 'Double Cheese Burger', 12.99);
       }, onRemove: () {
         removeFromOrder('Double Cheese Burger');
       }),
-      _item(image: 'items/5.png', title: 'Spicy Burger', price: '\$7.39', quantity: _getQuantityFor('Spicy Burger'), item: '12 item', onAdd: () {
-        addToOrder('items/5.png', 'Spicy Burger', 7.39);
+      _item(image: 'assets/items/5.png', title: 'Spicy Burger', price: '\$7.39', quantity: _getQuantityFor('Spicy Burger'), item: '12 item', onAdd: () {
+        addToOrder('assets/items/5.png', 'Spicy Burger', 7.39);
       }, onRemove: () {
         removeFromOrder('Spicy Burger');
       }),
-      _item(image: 'items/6.png', title: 'Special Black Burger', price: '\$7.39',quantity: _getQuantityFor('Special Black Burger'), item: '39 item', onAdd: () {
-        addToOrder('items/6.png', 'Special Black Burger', 7.39);
+      _item(image: 'assets/items/6.png', title: 'Special Black Burger', price: '\$7.39',quantity: _getQuantityFor('Special Black Burger'), item: '39 item', onAdd: () {
+        addToOrder('assets/items/6.png', 'Special Black Burger', 7.39);
       }, onRemove: () {
         removeFromOrder('Special Black Burger');
       }),
-      _item(image: 'items/7.png', title: 'Special Cheese Burger', price: '\$8.00', quantity: _getQuantityFor('Special Cheese Burger'), item: '2 item', onAdd: () {
-        addToOrder('items/7.png', 'Special Cheese Burger', 8.00);
+      _item(image: 'assets/items/7.png', title: 'Special Cheese Burger', price: '\$8.00', quantity: _getQuantityFor('Special Cheese Burger'), item: '2 item', onAdd: () {
+        addToOrder('assets/items/7.png', 'Special Cheese Burger', 8.00);
       }, onRemove: () {
         removeFromOrder('Special Cheese Burger');
       }),
-      _item(image: 'items/8.png', title: 'Jumbo Cheese Burger', price: '\$15.99',quantity: _getQuantityFor('Jumbo Cheese Burger'), item: '2 item', onAdd: () {
-        addToOrder('items/8.png', 'Jumbo Cheese Burger', 15.99);
+      _item(image: 'assets/items/8.png', title: 'Jumbo Cheese Burger', price: '\$15.99',quantity: _getQuantityFor('Jumbo Cheese Burger'), item: '2 item', onAdd: () {
+        addToOrder('assets/items/8.png', 'Jumbo Cheese Burger', 15.99);
       }, onRemove: () {
         removeFromOrder('Jumbo Cheese Burger');
       }),
-      _item(image: 'items/9.png', title: 'Spicy Burger', price: '\$7.39',quantity: _getQuantityFor('Spicy Burger') ,item: '12 item', onAdd: () {
-        addToOrder('items/9.png', 'Spicy Burger', 7.39);
+      _item(image: 'assets/items/9.png', title: 'Spicy Burger', price: '\$7.39',quantity: _getQuantityFor('Spicy Burger') ,item: '12 item', onAdd: () {
+        addToOrder('assets/items/9.png', 'Spicy Burger', 7.39);
       }, onRemove: () {
         removeFromOrder('Spicy Burger');
       }),
       // ... resto dos burgers que você já tinha
       _item(
-        image: 'items/3.png', 
+        image: 'assets/items/3.png', 
         title: 'Cheese Burger', 
         price: '\$6.99', 
         quantity: _getQuantityFor('Cheese Burger'), 
         item: '7 item', 
         onAdd: () {
-          addToOrder('items/3.png', 'Cheese Burger', 6.99);
+          addToOrder('assets/items/3.png', 'Cheese Burger', 6.99);
         }, 
         onRemove: () {
           removeFromOrder('Cheese Burger');
