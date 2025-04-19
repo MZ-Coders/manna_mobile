@@ -1,5 +1,6 @@
 import 'package:dribbble_challenge/src/home_pos.dart';
 import 'package:flutter/material.dart';
+import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +14,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'POS Food',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
       ),
       home: const MainPage(),
       debugShowCheckedModeBanner: false,
@@ -58,13 +64,24 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff1f2029),
+      backgroundColor: Colors.white,
       body: Row(
         children: [
           Container(
             width: 70,
             padding: const EdgeInsets.only(top: 24, right: 12, left: 12),
             height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(1, 0),
+                ),
+              ],
+            ),
             child: _sideMenu(),
           ),
           Expanded(
@@ -75,7 +92,7 @@ class _MainPageState extends State<MainPage> {
                 borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12)),
-                color: Color(0xff17181f),
+                color: Colors.white,
               ),
               child: _pageView(),
             ),
@@ -125,7 +142,7 @@ class _MainPageState extends State<MainPage> {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: Colors.deepOrangeAccent,
+            color: AppColors.primary,
           ),
           child: const Icon(
             Icons.fastfood,
@@ -134,10 +151,10 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
-          'POSFood',
+        Text(
+          'Manna POS',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.primaryText,
             fontSize: 8,
             fontWeight: FontWeight.bold,
           ),
@@ -158,7 +175,7 @@ class _MainPageState extends State<MainPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: pageActive == menu
-                    ? Colors.deepOrangeAccent
+                    ? AppColors.primary
                     : Colors.transparent,
               ),
               duration: const Duration(milliseconds: 300),
@@ -167,12 +184,19 @@ class _MainPageState extends State<MainPage> {
                 children: [
                   Icon(
                     icon,
-                    color: Colors.white,
+                    color: pageActive == menu 
+                        ? Colors.white 
+                        : AppColors.secondaryText,
                   ),
                   const SizedBox(height: 5),
                   Text(
                     menu,
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                    style: TextStyle(
+                      color: pageActive == menu 
+                          ? Colors.white 
+                          : AppColors.secondaryText,
+                      fontSize: 10,
+                    ),
                   ),
                 ],
               ),

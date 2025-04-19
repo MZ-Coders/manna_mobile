@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
 import 'package:dribbble_challenge/src/models/order_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ class _HomePosPageState extends State<HomePosPage> {
           child: Column(
             children: [
               _topMenu(
-                title: 'Lorem Restourant',
+                title: 'Casa Das Pizzas',
                 subTitle: '20 October 2022',
                 action: _search(),
               ),
@@ -110,30 +111,41 @@ Container(
                 ),
               ),
              // Substitua a parte do resumo do pedido no método build por este código
+// Substitua a parte do resumo do pedido por este código
 Expanded(
   child: Container(
     padding: const EdgeInsets.all(20),
     margin: const EdgeInsets.symmetric(vertical: 10),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(14),
-      color: const Color(0xff1f2029),
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 5,
+          offset: const Offset(0, 1),
+        ),
+      ],
     ),
     child: Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Sub Total',
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
             ),
             Text(
               '\$${calculateSubtotal().toStringAsFixed(2)}',
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
             ),
           ],
         ),
@@ -141,17 +153,19 @@ Expanded(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Tax',
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
             ),
             Text(
               '\$${calculateTax(calculateSubtotal()).toStringAsFixed(2)}',
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
             ),
           ],
         ),
@@ -159,22 +173,24 @@ Expanded(
           margin: const EdgeInsets.symmetric(vertical: 20),
           height: 2,
           width: double.infinity,
-          color: Colors.white,
+          color: AppColors.textfield, // Cor mais clara para o separador
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Total',
               style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
             ),
             Text(
               '\$${calculateTotal(calculateSubtotal(), calculateTax(calculateSubtotal())).toStringAsFixed(2)}',
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+              ),
             ),
           ],
         ),
@@ -182,7 +198,7 @@ Expanded(
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white,
-            backgroundColor: Colors.deepOrange,
+            backgroundColor: AppColors.primary, // Usando a cor primária definida
             padding: const EdgeInsets.symmetric(vertical: 8),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -201,77 +217,91 @@ Expanded(
       ],
     ),
   ),
-),
-            ],
+)            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _itemOrder({
-    required String image,
-    required String title,
-    required String qty,
-    required String price,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        color: const Color(0xff1f2029),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 60,
-            width: 60,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: AssetImage(image),
-                fit: BoxFit.cover,
+Widget _itemOrder({
+  required String image,
+  required String title,
+  required String qty,
+  required String price,
+}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(10),
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 2,
+          offset: const Offset(0, 1),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        Container(
+          height: 50,
+          width: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            image: DecorationImage(
+              image: AssetImage(image),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                price,
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          height: 30,
+          width: 30,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: AppColors.textfield,
+          ),
+          child: Center(
+            child: Text(
+              qty,
+              style: TextStyle(
+                color: AppColors.primaryText,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  price,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                )
-              ],
-            ),
-          ),
-          Text(
-            '$qty x',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
 Widget _item({
   required String image,
@@ -287,7 +317,15 @@ Widget _item({
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(18),
-      color: const Color(0xff1f2029),
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 5,
+          offset: const Offset(0, 2),
+        ),
+      ],
     ),
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -308,8 +346,8 @@ Widget _item({
         const SizedBox(height: 10),
         Text(
           title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: AppColors.primaryText,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -322,45 +360,53 @@ Widget _item({
           children: [
             Text(
               price,
-              style: const TextStyle(
-                color: Colors.deepOrange,
+              style: TextStyle(
+                color: AppColors.primary,
                 fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              item,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 12,
-              ),
-            ),
+            // Text(
+            //   item,
+            //   style: TextStyle(
+            //     color: AppColors.secondaryText,
+            //     fontSize: 12,
+            //   ),
+            // ),
           ],
         ),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.black26,
+            color: AppColors.textfield,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: const Icon(Icons.remove, color: Colors.white),
+                icon: Icon(
+                  Icons.remove, 
+                  color: AppColors.secondaryText,
+                ),
                 onPressed: () {
                   onRemove();
                 },
               ),
               Text(
                 quantity.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppColors.primaryText,
                   fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.add, color: Colors.white),
+                icon: Icon(
+                  Icons.add, 
+                  color: AppColors.primary,
+                ),
                 onPressed: () {
                   onAdd();
                 },
@@ -441,45 +487,49 @@ double calculateTotal(double subtotal, double tax) {
 
 
 Widget _itemTab({
-  required String icon, 
-  required String title, 
+  required String icon,
+  required String title,
   required bool isActive,
-  required Function onTap,
+  required VoidCallback onTap,
 }) {
   return GestureDetector(
-    onTap: () => onTap(),
+    onTap: onTap,
     child: Container(
-      width: 180,
-      margin: const EdgeInsets.only(right: 26),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
+      margin: const EdgeInsets.only(right: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: const Color(0xff1f2029),
-        border: isActive
-            ? Border.all(color: Colors.deepOrangeAccent, width: 3)
-            : Border.all(color: const Color(0xff1f2029), width: 3),
+        color: isActive ? AppColors.primary : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Image.asset(
             icon,
-            width: 38,
+            width: 24,
+            height: 24,
+            color: isActive ? Colors.white : AppColors.secondaryText,
           ),
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+            style: TextStyle(
+              color: isActive ? Colors.white : AppColors.primaryText,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
-          )
+          ),
         ],
       ),
     ),
   );
 }
-
 // Widget para exibir os produtos da categoria Drinks
 Widget _drinksGrid() {
   return GridView.extent(
@@ -646,7 +696,7 @@ Widget _sorvetesGrid() {
             Text(
               title,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.primarySpecial,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -655,7 +705,7 @@ Widget _sorvetesGrid() {
             Text(
               subTitle,
               style: const TextStyle(
-                color: Colors.white54,
+                color: AppColors.secondaryTextSpecial,
                 fontSize: 10,
               ),
             ),
@@ -674,18 +724,18 @@ Widget _sorvetesGrid() {
         height: 40,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
-          color: const Color(0xff1f2029),
+          color: AppColors.textfieldSpecial,
         ),
         child: Row(
           children: const [
             Icon(
               Icons.search,
-              color: Colors.white54,
+              color: AppColors.secondaryTextSpecial,
             ),
             SizedBox(width: 10),
             Text(
               'Search menu here...',
-              style: TextStyle(color: Colors.white54, fontSize: 11),
+              style: TextStyle(color: AppColors.placeholderSpecial, fontSize: 11),
             )
           ],
         ));
