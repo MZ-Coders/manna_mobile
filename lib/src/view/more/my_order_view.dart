@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
-import 'package:dribbble_challenge/src/pdf/web.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -10,9 +9,10 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-import './../../pdf/mobile.dart' if (dart.library.html) './../../pdf/web.dart';
+// import './../../pdf/web.dart' if (dart.library.html) './../../pdf/mobile.dart' as platform;
+// import 'web.dart' if (dart.library.io) 'mobile.dart' as platform;
 // import './../../pdf/web.dart';
-
+import './../../pdf/mobile.dart' if (dart.library.html) './../../pdf/web.dart' as platform;
 import 'checkout_view.dart';
 
 class MyOrderView extends StatefulWidget {
@@ -484,10 +484,14 @@ Future<void> _createPDFv2() async {
   List<int> bytes = await document.save();
   document.dispose();
 
+  platform.saveAndLaunchFile(bytes, 'recibo_manna.pdf');
+
 //  if(kIsWeb) {
-  saveAndLaunchFileWeb(bytes, 'recibo_pedido.pdf');
+//   await saveAndLaunchFileWeb(bytes, 'recibo_pedido.pdf');
 //  }
-//  else  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
+//  else {
+//   await saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
+//  }  
 }
 
 
