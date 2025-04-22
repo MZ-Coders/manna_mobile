@@ -484,10 +484,10 @@ Future<void> _createPDFv2() async {
   List<int> bytes = await document.save();
   document.dispose();
 
- if(kIsWeb) {
+//  if(kIsWeb) {
   saveAndLaunchFileWeb(bytes, 'recibo_pedido.pdf');
- }
- else  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
+//  }
+//  else  saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
 }
 
 

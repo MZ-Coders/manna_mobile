@@ -1,139 +1,32 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-
-// Imports do primeiro app (POS)
 import 'package:dribbble_challenge/src/home_pos.dart';
+import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
 
-// Imports do segundo app (Food Delivery)
-import 'package:dribbble_challenge/src/common/color_extension.dart';
-import 'package:dribbble_challenge/src/common/globs.dart';
-import 'package:dribbble_challenge/src/common/locator.dart';
-import 'package:dribbble_challenge/src/common/my_http_overrides.dart';
-import 'package:dribbble_challenge/src/common/service_call.dart';
-import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
-import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
-import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
-
-// Definindo enum para os tipos de aplicativo
-enum AppType { posApp, foodDeliveryApp }
-
-// Variável global para preferências
-SharedPreferences? prefs;
-
-void main() async {
-  // Inicialização comum aos dois apps
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Inicializações específicas do Food Delivery app
-  setUpLocator();
-  HttpOverrides.global = MyHttpOverrides();
-  
-  // Obter TableID para o Food Delivery app
-  final tableId = getTableIdFromUrl();
-  prefs = await SharedPreferences.getInstance();
-  
-  if (tableId != null) {
-    prefs!.setString('table_id', tableId);
-  }
-
-  if (Globs.udValueBool(Globs.userLogin)) {
-    ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
-  }
-  
-  // Configuração do EasyLoading
-  configLoading();
-  
-  // Sempre iniciar com a tela de onboarding para seleção de app
-  runApp(const AppSelector());
+void main() {
+  runApp(const MyApp());
 }
 
-String? getTableIdFromUrl() {
-  if (kIsWeb) {
-    // Para testes, usando uma URL fixa
-    final url = "https://example.com?table_id=12345";
-    final uri = Uri.parse(url);
-    return uri.queryParameters['table_id'];
-  } else {
-    return null;
-  }
-}
-
-void configLoading() {
-  EasyLoading.instance
-    ..indicatorType = EasyLoadingIndicatorType.ring
-    ..loadingStyle = EasyLoadingStyle.custom
-    ..indicatorSize = 45.0
-    ..radius = 5.0
-    ..progressColor = TColor.primaryText
-    ..backgroundColor = TColor.primary
-    ..indicatorColor = Colors.yellow
-    ..textColor = TColor.primaryText
-    ..userInteractions = false
-    ..dismissOnTap = false;
-}
-
-// App Selector que sempre inicia com a tela de Onboarding
-class AppSelector extends StatelessWidget {
-  const AppSelector({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'App Selector',
-      debugShowCheckedModeBanner: false,
+      title: 'POS Food',
       theme: ThemeData(
-        fontFamily: "Metropolis",
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.orange,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
       ),
-      home: const OnBoardingScreen(), // Inicia sempre com a tela de onboarding
-      navigatorKey: locator<NavigationService>().navigatorKey,
-      onGenerateRoute: (routeSettings) {
-        // Verificar qual app foi selecionado quando a navegação ocorrer
-        switch (routeSettings.name) {
-          case "home":
-            // Verifica o tipo de app selecionado
-            final appType = prefs?.getString('app_type') ?? 'food_delivery';
-            
-            if (appType == 'pos') {
-              return MaterialPageRoute(builder: (context) => const POSAppRouter());
-            } else {
-              return MaterialPageRoute(builder: (context) => const MainTabView());
-            }
-          default:
-            return MaterialPageRoute(
-              builder: (context) => Scaffold(
-                body: Center(
-                  child: Text("No path for ${routeSettings.name}"),
-                ),
-              ),
-            );
-        }
-      },
-      builder: (context, child) {
-        return FlutterEasyLoading(child: child);
-      },
+      home: const MainPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-// Router para o app POS
-class POSAppRouter extends StatelessWidget {
-  const POSAppRouter({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // Aqui podemos definir qualquer configuração específica do POS antes de navegar
-    // para a página principal do POS
-    return const MainPage();
-  }
-}
-
-// App POS do primeiro arquivo main.dart
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
 
@@ -156,6 +49,7 @@ class _MainPageState extends State<MainPage> {
         return Container();
       case 'Settings':
         return Container();
+
       default:
         return const HomePosPage();
     }
@@ -309,19 +203,5 @@ class _MainPageState extends State<MainPage> {
             )),
       ),
     );
-  }
-}
-
-// Classe auxiliar para facilitar a troca entre aplicativos
-class AppSwitcherHelper {
-  static Future<void> switchToApp(AppType appType) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    
-    // Salvar a preferência
-    if (appType == AppType.posApp) {
-      await prefs.setString('app_type', 'pos');
-    } else {
-      await prefs.setString('app_type', 'food_delivery');
-    }
   }
 }
