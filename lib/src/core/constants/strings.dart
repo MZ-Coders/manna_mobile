@@ -1,6 +1,6 @@
 class Strings {
-  static const onBoardingTitle = "Find the perfect recipe";
+  static const onBoardingTitle = "Find your fovorite food here";
   static const onBoardingSlogan =
-      "More than 20 thousand recipes of healthy and delicious food";
+      "Choose your food from the menu and enjoy your meal";
   static const onBoardingButton = "Get Started";
 }

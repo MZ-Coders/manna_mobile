@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -17,6 +18,7 @@ class RecipeCardWidget extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 200),
       child: Card(
+        color: AppColors.primarySpecial,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -59,7 +61,7 @@ class _AnimatedNutritionText extends StatelessWidget {
       padding: const EdgeInsets.only(top: 20),
       child: Text(
               "${nutrition["calories"]}cal \t\t\t\t${nutrition["protein"]}protein",
-              style: Theme.of(context).textTheme.labelMedium //label medium
+              style: TextStyle(color: AppColors.whiteSpecial) //label medium
               )
           .animate()
           .scaleXY(
@@ -114,7 +116,7 @@ class _AnimatedNameWidget extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               maxLines: 3,
               softWrap: true,
-              style: Theme.of(context).textTheme.titleLarge //title large
+              style: TextStyle(color: AppColors.whiteSpecial, fontSize: 20.0)//title large
               )
           .animate()
           .fadeIn(
@@ -142,7 +144,7 @@ class _AnimatedDescriptionWidget extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               maxLines: 4,
               softWrap: true,
-              style: Theme.of(context).textTheme.labelLarge //label large
+              style: TextStyle(color: AppColors.whiteSpecial, fontSize: 10.0) //label large
               )
           .animate()
           .scaleXY(

@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class FoodCategoryWidget extends StatelessWidget {
@@ -16,7 +17,7 @@ class FoodCategoryWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       margin: const EdgeInsets.only(right: 15),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.white30, width: 2),
+        border: Border.all(color: AppColors.primarySpecial, width: 2),
         borderRadius: BorderRadius.circular(25),
       ),
       alignment: Alignment.center,
@@ -32,7 +33,7 @@ class FoodCategoryWidget extends StatelessWidget {
           ),
           Text(
             name,
-            style: const TextStyle(fontSize: 20),
+            style: const TextStyle(fontSize: 20, color: AppColors.primaryTextSpecial),
           )
         ],
       ),
