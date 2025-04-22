@@ -952,7 +952,7 @@ class _HomeViewState extends State<HomeView> {
   // Lista de itens para categoria Entradas/Starters (ID: 1)
   List entradasItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/sopa_2.jpg",
     "name": "Sopa do dia/soup of the day",
     "rate": "4.9",
     "rating": "124",
@@ -962,7 +962,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 300.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/sopa_2.jpg",
     "name": "Sopa de cabeça de peixe/fish head soup",
     "rate": "4.9",
     "rating": "124",
@@ -972,7 +972,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 300.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/chamussas.jpg",
     "name": "Chamuças, rissóis e spring rolls",
     "rate": "4.9",
     "rating": "124",
@@ -982,7 +982,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 75.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/azeitonas.jpeg",
     "name": "Azeitonas/Olives",
     "rate": "4.9",
     "rating": "124",
@@ -992,7 +992,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 130.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/petiscos.jpg",
     "name": "Moelas/gizzards",
     "rate": "4.9",
     "rating": "124",
@@ -1002,7 +1002,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 250.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/muelas.png",
     "name": "Espeto de moelas/Gizzard skewer",
     "rate": "4.9",
     "rating": "124",
@@ -1012,7 +1012,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 250.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/salada_.jpg",
     "name": "Salada grega/Greek salad",
     "rate": "4.9",
     "rating": "124",
@@ -1022,7 +1022,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 400.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/salada_.jpg",
     "name": "Salada de atum/Tuna salad",
     "rate": "4.9",
     "rating": "124",
@@ -1032,7 +1032,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 400.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/salada_.jpg",
     "name": "Salada simples/Plain salad",
     "rate": "4.9",
     "rating": "124",
@@ -1042,7 +1042,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 250.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/salada_.jpg",
     "name": "Salada de camarão/Prawn salad",
     "rate": "4.9",
     "rating": "124",
