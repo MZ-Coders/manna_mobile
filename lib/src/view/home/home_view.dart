@@ -240,7 +240,7 @@ class _HomeViewState extends State<HomeView> {
 
   List bebidasItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Café expresso/Express coffee",
     "rate": "4.9",
     "rating": "124",
@@ -250,7 +250,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 100.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Café com leite/Coffee with milk",
     "rate": "4.9",
     "rating": "124",
@@ -260,7 +260,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Copo de leite/Cup of milk",
     "rate": "4.9",
     "rating": "124",
@@ -270,7 +270,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 120.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Chocolate quente/Hot chocolate",
     "rate": "4.9",
     "rating": "124",
@@ -280,7 +280,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Chá simples/Tea",
     "rate": "4.9",
     "rating": "124",
@@ -290,7 +290,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 70.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Agua das pedras/Sparkling water",
     "rate": "4.9",
     "rating": "124",
@@ -300,7 +300,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 100.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Agua 500ml/Spring water 500ml",
     "rate": "4.9",
     "rating": "124",
@@ -310,7 +310,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 60.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Agua 1.5l/Spring water 1.5l",
     "rate": "4.9",
     "rating": "124",
@@ -320,7 +320,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 120.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Refresco em lata",
     "rate": "4.9",
     "rating": "124",
@@ -330,7 +330,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 70.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Refresco em garrafa",
     "rate": "4.9",
     "rating": "124",
@@ -340,7 +340,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 40.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Sumo 1l/Juice 1l",
     "rate": "4.9",
     "rating": "124",
@@ -350,7 +350,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 185.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Red bull",
     "rate": "4.9",
     "rating": "124",
@@ -360,7 +360,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Sumo minut maid",
     "rate": "4.9",
     "rating": "124",
@@ -370,7 +370,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 90.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "Cocktail de frutas/Fruit cocktail",
     "rate": "4.9",
     "rating": "124",
@@ -380,7 +380,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 250.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/wine.png",
     "name": "ENTRADA DE BEBIDAS PAGA-SE ROLHA",
     "rate": "4.9",
     "rating": "124",
@@ -394,7 +394,7 @@ class _HomeViewState extends State<HomeView> {
   // Lista de itens para categoria Verdura/Greenery (ID: 15)
   List verduraItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/verdura.png",
     "name": "Couve com arroz ou xima/Cabbage with rice or xima",
     "rate": "4.9",
     "rating": "124",
@@ -404,7 +404,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 380.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/verdura.png",
     "name": "Matapa com arroz ou xima/matapa with rice or xima",
     "rate": "4.9",
     "rating": "124",
@@ -418,7 +418,7 @@ class _HomeViewState extends State<HomeView> {
 // Lista de itens para categoria Doses (ID: 16)
   List dosesItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/doses.png",
     "name": "Dose de cove/Cabbage",
     "rate": "4.9",
     "rating": "124",
@@ -428,7 +428,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 100.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/doses.png",
     "name": "Dose de repolho/Cabbage",
     "rate": "4.9",
     "rating": "124",
@@ -438,7 +438,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 100.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/doses.png",
     "name": "Dose de batata/Portion of chips",
     "rate": "4.9",
     "rating": "124",
@@ -448,7 +448,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/doses.png",
     "name": "Dose de xima/Portion of xima",
     "rate": "4.9",
     "rating": "124",
@@ -458,7 +458,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 100.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/doses.png",
     "name": "Dose de arroz/Portion of rice",
     "rate": "4.9",
     "rating": "124",
@@ -472,7 +472,7 @@ class _HomeViewState extends State<HomeView> {
 // Lista de itens para categoria Sobremesas/Desserts (ID: 17)
   List sobremesasItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/desserts.png",
     "name": "Pudim/Pudding",
     "rate": "4.9",
     "rating": "124",
@@ -482,7 +482,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 200.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/desserts.png",
     "name": "Salada de frutas/Fruit salad",
     "rate": "4.9",
     "rating": "124",
@@ -492,7 +492,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 200.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/desserts.png",
     "name": "Sorvete/Ice cream",
     "rate": "4.9",
     "rating": "124",
@@ -506,7 +506,7 @@ class _HomeViewState extends State<HomeView> {
 // Lista de itens para categoria Aves/Birds (ID: 13)
   List avesItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Frango grelhado com batatas fritas/Grilled chicken with chips",
     "rate": "4.9",
     "rating": "124",
@@ -516,7 +516,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 950.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "½ frango grelhado com batatas fritas/½ grilled chicken with chips",
     "rate": "4.9",
     "rating": "124",
@@ -526,7 +526,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Galinha cafreal grelhado com batatas fritas/Grilled cafreal chicken with Chips",
     "rate": "4.9",
     "rating": "124",
@@ -536,7 +536,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 1100.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "½ Galinha cafreal grelhado com batatas fritas/½ Grilled cafreal chicken with Chips",
     "rate": "4.9",
     "rating": "124",
@@ -546,7 +546,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 600.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Frango grealhado a zambeziana",
     "rate": "4.9",
     "rating": "124",
@@ -556,7 +556,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 1200.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Galinha cafreal a zambeziana",
     "rate": "4.9",
     "rating": "124",
@@ -566,7 +566,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 1200.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Tocossado de galinha cafreal/cafreal chicken stew",
     "rate": "4.9",
     "rating": "124",
@@ -576,7 +576,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Caril de galinha cafreal/Cafreal chicken curry",
     "rate": "4.9",
     "rating": "124",
@@ -586,7 +586,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Frango à Rio Sol c/batata,arroz e salada/Chicken by Garden with potatoes, rice and salad",
     "rate": "4.9",
     "rating": "124",
@@ -596,7 +596,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 1000.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Cafreal à Rio Sol c/batata,arroz e salada/Chicken by Garden with potatoes, rice and salad",
     "rate": "4.9",
     "rating": "124",
@@ -606,7 +606,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 1150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Asinhas de frango/chicken wings",
     "rate": "4.9",
     "rating": "124",
@@ -616,7 +616,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 350.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Codorniz c/Batatas",
     "rate": "4.9",
     "rating": "124",
@@ -626,7 +626,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/aves.png",
     "name": "Combo de frango e camarão",
     "rate": "4.9",
     "rating": "124",
@@ -640,7 +640,7 @@ class _HomeViewState extends State<HomeView> {
   // Lista de itens para categoria Carne/Beef (ID: 14)
   List carnesItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Bife de vaca/Beef steak",
     "rate": "4.9",
     "rating": "124",
@@ -650,7 +650,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Bisteca com xima ou arroz ou batata frita/T-bone with xima or rice or chips",
     "rate": "4.9",
     "rating": "124",
@@ -660,7 +660,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Espetada de carne de vaca/Beef skewered",
     "rate": "4.9",
     "rating": "124",
@@ -670,7 +670,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 750.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Caril de carne de vaca c/ xima ou arroz/beef curry with rice or xima",
     "rate": "4.9",
     "rating": "124",
@@ -680,7 +680,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Vorse com molho de tomate e xima/Vorse with tomate sauce na xima",
     "rate": "4.9",
     "rating": "124",
@@ -690,7 +690,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Feijoada",
     "rate": "4.9",
     "rating": "124",
@@ -700,7 +700,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Prego no pao/steak roll",
     "rate": "4.9",
     "rating": "124",
@@ -710,7 +710,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 200.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Prego no prato/steak on plate",
     "rate": "4.9",
     "rating": "124",
@@ -720,7 +720,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 350.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Hambúrguer completo/complete hamburger",
     "rate": "4.9",
     "rating": "124",
@@ -730,7 +730,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 300.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/beef_2.png",
     "name": "Travessa de carnes",
     "rate": "4.9",
     "rating": "124",
@@ -744,7 +744,7 @@ class _HomeViewState extends State<HomeView> {
   // Lista de itens para categoria Pequeno-Almoço/Breakfast (ID: 12)
   List pequenoAlmocoItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Omelete simples/Plain omelett",
     "rate": "4.9",
     "rating": "124",
@@ -754,7 +754,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 200.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Omelete de queijo/Cheese omelett",
     "rate": "4.9",
     "rating": "124",
@@ -764,7 +764,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 250.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Omelete de camarão/Prawn omelett",
     "rate": "4.9",
     "rating": "124",
@@ -774,7 +774,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 300.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Omelete mista",
     "rate": "4.9",
     "rating": "124",
@@ -784,7 +784,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 350.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Tosta de queijo/Toasted cheese",
     "rate": "4.9",
     "rating": "124",
@@ -794,7 +794,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Tosta de atum e maionese/Toasted tuna and mayo",
     "rate": "4.9",
     "rating": "124",
@@ -804,7 +804,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 200.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Sandes de ovo",
     "rate": "4.9",
     "rating": "124",
@@ -814,7 +814,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Sandes de queijo",
     "rate": "4.9",
     "rating": "124",
@@ -824,7 +824,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 150.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/pequeno.png",
     "name": "Pão de alho/garlic bread",
     "rate": "4.9",
     "rating": "124",
@@ -838,7 +838,7 @@ class _HomeViewState extends State<HomeView> {
   // Lista de itens para categoria Marisco/Seafood (ID: 11)
   List mariscoItems = [
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Lulas grelhadas com batata cozida e vegetais/grilled calamary whith boild potatos and vegetables",
     "rate": "4.9",
     "rating": "124",
@@ -848,7 +848,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Camarão grelhado/grilled prawns",
     "rate": "4.9",
     "rating": "124",
@@ -858,7 +858,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 1000.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Camarão frito/fried prawns",
     "rate": "4.9",
     "rating": "124",
@@ -868,7 +868,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Travessa de camarão/platter of prawns",
     "rate": "4.9",
     "rating": "124",
@@ -878,7 +878,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 2050.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Posta de peixe grelhado(Serra, garoupa, vermelhão, pedra)/slice of grilled (Serra fish, redfish, grouper fish, and stone fish)",
     "rate": "4.9",
     "rating": "124",
@@ -888,7 +888,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Peixe do dia tocossado/fish stew of the day",
     "rate": "4.9",
     "rating": "124",
@@ -898,7 +898,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Peixe do dia grelhado/grilled fish of the day",
     "rate": "4.9",
     "rating": "124",
@@ -908,7 +908,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Travessa de marisco/seafood plater for one",
     "rate": "4.9",
     "rating": "124",
@@ -918,7 +918,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 1550.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Travessa de marisco a dois/seafood plater for two",
     "rate": "4.9",
     "rating": "124",
@@ -928,7 +928,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 2900.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Chicoa c/arroz",
     "rate": "4.9",
     "rating": "124",
@@ -938,7 +938,7 @@ class _HomeViewState extends State<HomeView> {
     "price": 500.00,
   },
   {
-    "image": "assets/img/dess_1.png",
+    "image": "assets/img/fish_2.png",
     "name": "Filé de peixe/fish fillet",
     "rate": "4.9",
     "rating": "124",
