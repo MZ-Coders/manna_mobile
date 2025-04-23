@@ -1227,7 +1227,16 @@ class _HomeViewState extends State<HomeView> {
                     var mObj = mostPopArr[index] as Map? ?? {};
                     return MostPopularCell(
                       mObj: mObj,
-                      onTap: () {},
+                      onTap: () {
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FoodItemDetailsView(
+                              foodDetails: mObj.cast<String, dynamic>()
+                            )
+                          ),
+                        );
+                      },
                     );
                   }),
                 ),
