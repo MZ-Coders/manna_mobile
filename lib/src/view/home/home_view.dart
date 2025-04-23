@@ -1244,26 +1244,8 @@ class _HomeViewState extends State<HomeView> {
                   onView: () {},
                 ),
               ),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                itemCount: filteredMenuItems.length,
-                itemBuilder: ((context, index) {
-                  var mObj = filteredMenuItems[index] as Map? ?? {};
-                  return MenuItemRow(
-                    mObj: mObj,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => FoodItemDetailsView(
-                                foodDetails: mObj.cast<String, dynamic>())),
-                      );
-                    },
-                  );
-                }),
-              ),
+              // 
+              buildMenuItems(context, filteredMenuItems),
 
               // Seção de itens recentes
               // Padding(
@@ -1293,6 +1275,71 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Widget buildMenuItems(BuildContext context, List filteredMenuItems) {
+  // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
+  bool isMediumScreen = MediaQuery.of(context).size.width > 600 &&
+                      MediaQuery.of(context).size.width < 1000;
+
+bool isWideScreen = MediaQuery.of(context).size.width >= 1000;
+
+bool isDesktopScreen = MediaQuery.of(context).size.width >= 1200;
+  
+  if (isWideScreen || isMediumScreen) {
+    // Layout de grade para telas largas
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isWideScreen ? 3 : 2, // 3 itens por linha
+        childAspectRatio: isDesktopScreen ? 2.5 : isWideScreen ? 1.5 : 2 , // Proporção largura/altura dos itens
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: filteredMenuItems.length,
+      itemBuilder: ((context, index) {
+        var mObj = filteredMenuItems[index] as Map? ?? {};
+        return MenuItemRow(
+          mObj: mObj,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FoodItemDetailsView(
+                  foodDetails: mObj.cast<String, dynamic>()
+                )
+              ),
+            );
+          },
+        );
+      }),
+    );
+  } else {
+    // Layout de lista para mobile (seu código original)
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      itemCount: filteredMenuItems.length,
+      itemBuilder: ((context, index) {
+        var mObj = filteredMenuItems[index] as Map? ?? {};
+        return MenuItemRow(
+          mObj: mObj,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FoodItemDetailsView(
+                  foodDetails: mObj.cast<String, dynamic>()
+                )
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+}
   // Método para atualizar os itens do menu com base na categoria selecionada
   void updateMenuItems() {
     setState(() {

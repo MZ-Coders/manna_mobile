@@ -9,94 +9,93 @@ class MenuItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
+    bool isWideScreen = MediaQuery.of(context).size.width > 600;
+    
+    // Altura do item dependendo do tipo de tela
+    double itemHeight = isWideScreen ? 180 : 200;
+    
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
         child: Stack(
           alignment: Alignment.bottomLeft,
           children: [
-            Image.asset(
-              mObj["image"].toString(),
-              width: double.maxFinite,
-              height: 200,
-              fit: BoxFit.cover,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                mObj["image"].toString(),
+                width: double.maxFinite,
+                height: itemHeight,
+                fit: BoxFit.cover,
+              ),
             ),
             Container(
               width: double.maxFinite,
-              height: 200,
-              decoration: const BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                Colors.transparent,
-                Colors.transparent,
-                Colors.black
-              ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+              height: itemHeight,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black
+                  ], 
+                  begin: Alignment.topCenter, 
+                  end: Alignment.bottomCenter
+                )
+              ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    mObj["name"],
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      color: TColor.white,
+                      fontSize: isWideScreen ? 16 : 18,
+                      fontWeight: FontWeight.w700
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        mObj["name"],
+                        "${mObj["price"]} MZN",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            color: TColor.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700),
+                          color: TColor.primary, 
+                          fontSize: isWideScreen ? 18 : 24,
+                          fontWeight: FontWeight.bold
+                        ),
                       ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          // Image.asset(
-                          //   "assets/img/rate.png",
-                          //   width: 10,
-                          //   height: 10,
-                          //   fit: BoxFit.cover,
-                          // ),
-                          const SizedBox(
-                            width: 4,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          mObj["type"],
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            color: TColor.white, 
+                            fontSize: 11
                           ),
-                          Text(
-                            mObj["price"].toString()+" \MZN",
-                            textAlign: TextAlign.center,
-                            style:
-                                TextStyle(color: TColor.primary, fontSize: 24),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Text(
-                            mObj["type"],
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: TColor.white, fontSize: 11),
-                          ),
-                          Text(
-                            " . ",
-                            textAlign: TextAlign.center,
-                            style:
-                                TextStyle(color: TColor.primary, fontSize: 11),
-                          ),
-                          // Text(
-                          //   mObj["food_type"],
-                          //   textAlign: TextAlign.center,
-                          //   style: TextStyle(color: TColor.white, fontSize: 12),
-                          // ),
-                        ],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(
-                  height: 22,
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
