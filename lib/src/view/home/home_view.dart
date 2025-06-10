@@ -36,6 +36,7 @@ class _HomeViewState extends State<HomeView> {
     loadTableId();
     // Iniciar com itens da categoria Entradas/Starters
     updateMenuItems();
+    getDataFromApi();
   }
 
   Future<void> loadTableId() async {
@@ -87,6 +88,7 @@ class _HomeViewState extends State<HomeView> {
 
   // Lista de itens filtrados pela categoria
   List filteredMenuItems = [];
+  List allMenuItems = [];
 
   List popArr = [
     {
@@ -1385,4 +1387,21 @@ bool isDesktopScreen = MediaQuery.of(context).size.width >= 1200;
       }
     });
   }
+
+ // Give function to receive data from API
+Future<void> getDataFromApi() async {
+  try {
+    ServiceCall.getMenuItems("2",
+        withSuccess: (Map<String, dynamic> data) {
+          // print("Dados recebidos com sucesso:");
+          print(data['menu'][0]);
+          // Processar os dados aqui
+        },
+        failure: (String error) {
+          print("Erro ao buscar dados: $error");
+        });
+  } catch (e) {
+    print("Error fetching data: $e");
+  }
+}
 }
