@@ -69,7 +69,7 @@ static void get(String path,
         try {
           var jsonObj =
               json.decode(value.body) as Map<String, dynamic>? ?? {};
-
+          print(jsonObj);
           if (withSuccess != null) withSuccess(jsonObj);
         } catch (err) {
           if (failure != null) failure(err.toString());
@@ -114,13 +114,15 @@ static void getMenuItems(
   get(SVKey.baseUrl + "menu/" + menu_id,
       isToken: false,
       withSuccess: (Map<String, dynamic> jsonObj) {
-        if (jsonObj['status'] == 200) {
+        if (jsonObj['success'] == true) {
           if (withSuccess != null) withSuccess(jsonObj);
         } else {
+          print("*******************");
           if (failure != null) failure(jsonObj['message']);
         }
       },
       failure: (err) {
+        print("@@@@@@@@@@@@@@@@@@@@@");
         if (failure != null) failure(err);
       });
 }

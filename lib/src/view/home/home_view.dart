@@ -1393,9 +1393,26 @@ Future<void> getDataFromApi() async {
   try {
     ServiceCall.getMenuItems("2",
         withSuccess: (Map<String, dynamic> data) {
-          // print("Dados recebidos com sucesso:");
-          print(data['menu'][0]);
-          // Processar os dados aqui
+          print("Resposta completa:");
+          // return
+          // Verificar se 'menu' existe antes de acessar
+          if (data.containsKey('menu') && data['menu'] != null) {
+            print("Menu encontrado:");
+            // print(data['menu']);
+            
+            // Verificar se é uma lista e não está vazia
+            if (data['menu'] is List && (data['menu'] as List).isNotEmpty) {
+              print("Primeiro item do menu:");
+              print(data['menu'][0]);
+              allMenuItems = data['menu'] ?? [];
+              
+              // filteredMenuItems = data['menu'][0]['products'] ?? [];
+            } else {
+              print("Menu está vazio ou não é uma lista");
+            }
+          } else {
+            print("Chave 'menu' não encontrada na resposta");
+          }
         },
         failure: (String error) {
           print("Erro ao buscar dados: $error");
