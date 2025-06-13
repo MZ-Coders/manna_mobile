@@ -45,7 +45,7 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
           Container(
             width: media.width,
             height: imageHeight,
-            child: Image.asset(
+            child: Image.network(
               widget.foodDetails["image"],
               width: media.width,
               height: imageHeight,

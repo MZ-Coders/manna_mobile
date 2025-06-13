@@ -19,7 +19,7 @@ class RecentItemRow extends StatelessWidget {
 
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
+              child: Image.network(
                 rObj["image"].toString(),
                 width: 70,
                 height: 70,
