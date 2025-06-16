@@ -111,7 +111,7 @@ static void get(String path,
 static void getMenuItems(
     String menu_id,
     {ResSuccess? withSuccess, ResFailure? failure}) {
-  get(SVKey.baseUrl + "menu/" + menu_id,
+  get(SVKey.baseUrl + "menu/restaurant/" + menu_id,
       isToken: false,
       withSuccess: (Map<String, dynamic> jsonObj) {
         if (jsonObj['success'] == true) {

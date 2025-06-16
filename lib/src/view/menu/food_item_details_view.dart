@@ -30,11 +30,14 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
     this.price = widget.foodDetails["price"];
     
     // Verificar se é tela larga (web/desktop) ou estreita (mobile)
-    bool isWideScreen = media.width > 600;
+    bool isWideScreen = media.width > 450;
+    bool isMediumScreen = media.width > 400 && media.width <= 450;
     
     // Definir tamanhos baseados no tipo de tela
     double contentMaxWidth = isWideScreen ? 600 : media.width;
-    double imageHeight = isWideScreen ? 400 : media.width;
+    double imageHeight = isWideScreen ? 400 : 
+                    isMediumScreen ? media.width * 0.8 : 
+                    media.width;
     
     return Scaffold(
       backgroundColor: TColor.primaryText,
@@ -514,12 +517,12 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
   // Layout do preço total para telas móveis
   Widget _buildMobileScreenTotalPriceWidget(Size media) {
     return SizedBox(
-      height: 220,
+      height: media.width < 400 ? 180 : 220,
       child: Stack(
         alignment: Alignment.centerLeft,
         children: [
           Container(
-            width: media.width * 0.25,
+            width: media.width < 400 ? media.width * 0.2 : media.width * 0.25,
             height: 160,
             decoration: BoxDecoration(
               color: TColor.primary,

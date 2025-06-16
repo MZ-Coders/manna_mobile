@@ -80,8 +80,8 @@ class Globs {
 }
 
 class SVKey {
-  static const mainUrl = "https://mannauniverse-aybw3.kinsta.app";
-  static const baseUrl = '$mainUrl/api/';
+  static const mainUrl = "http://localhost:3000";
+  static const baseUrl = '$mainUrl/api/v1/';
   static const nodeUrl = mainUrl;
 
   static const svLogin = '${baseUrl}login';

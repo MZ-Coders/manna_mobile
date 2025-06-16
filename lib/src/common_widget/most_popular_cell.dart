@@ -29,7 +29,9 @@ class MostPopularCell extends StatelessWidget {
               height: 8,
             ),
             Text(
-              mObj["name"],
+              mObj["name"].length > 20
+              ? mObj["name"].substring(0, 20) + '...'
+              : mObj["name"],
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: TColor.primaryText,

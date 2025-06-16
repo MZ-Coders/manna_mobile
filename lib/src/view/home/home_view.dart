@@ -1446,7 +1446,7 @@ void createMostPopularFromAPI() {
     
     newCatArr.add({
       "id": menuCategory['category_id'], // Usar o ID real da API
-      "image": getDefaultCategoryImage(i), // Imagem padrão baseada no índice
+      "image": menuCategory['image_url'], // Imagem da API
       "name": menuCategory['category_name']
     });
   }
@@ -1458,7 +1458,7 @@ void createMostPopularFromAPI() {
 Future<void> getDataFromApi() async {
   print("=== getDataFromApi iniciada ===");
   try {
-    ServiceCall.getMenuItems("2",
+    ServiceCall.getMenuItems("1807d125-56b5-4671-9614-184a3751ac5d",
         withSuccess: (Map<String, dynamic> data) {
           if (data.containsKey('menu') && data['menu'] != null) {
             if (data['menu'] is List && (data['menu'] as List).isNotEmpty) {

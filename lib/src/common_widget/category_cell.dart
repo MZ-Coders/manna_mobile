@@ -17,7 +17,7 @@ class CategoryCell extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
+              child: Image.network(
                 cObj["image"].toString(),
                 width: 85,
                 height: 85,
@@ -28,7 +28,9 @@ class CategoryCell extends StatelessWidget {
               height: 8,
             ),
             Text(
-              cObj["name"],
+              cObj["name"].length > 15
+              ? cObj["name"].substring(0, 15) + '...'
+              : cObj["name"],
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: TColor.primaryText,
