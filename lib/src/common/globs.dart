@@ -80,7 +80,7 @@ class Globs {
 }
 
 class SVKey {
-  static const mainUrl = "http://localhost:3000";
+  static const mainUrl = "https://foodway-api.vercel.app";
   static const baseUrl = '$mainUrl/api/v1/';
   static const nodeUrl = mainUrl;
 
