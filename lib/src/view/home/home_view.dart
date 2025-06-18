@@ -32,6 +32,7 @@ class _HomeViewState extends State<HomeView> {
   TextEditingController txtSearch = TextEditingController();
   String? tableId;
   String? restaurantUUID;
+  String restaurantName = '';
 
   @override
   void initState() {
@@ -43,9 +44,11 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> loadTableId() async {
+    final prefs = await SharedPreferences.getInstance();
     final id = await getTableId();
     setState(() {
       tableId = id;
+      restaurantName = prefs.getString('restaurant_name') ?? '';
     });
     print('Table ID: $tableId'); // Aqui o valor real será exibido
   }
@@ -123,7 +126,7 @@ class _HomeViewState extends State<HomeView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Hello, your Table is \n${this.tableId} ${ServiceCall.userPayload[KKey.name] ?? ""}!",
+                      _buildWelcomeMessage(),
                       style: TextStyle(
                           color: TColor.primaryText,
                           fontSize: 20,
@@ -412,6 +415,30 @@ void createMostPopularFromAPI() {
   
   // Usar módulo para rotacionar as imagens
   return defaultImages[index % defaultImages.length];
+}
+
+String _buildWelcomeMessage() {
+  String message = "Hello";
+  
+  // Adicionar nome do usuário se existir
+  String userName = ServiceCall.userPayload[KKey.name] ?? "";
+  if (userName.isNotEmpty) {
+    message += " $userName";
+  }
+  
+  message += "!";
+  
+  // Adicionar informação da mesa apenas se existir
+  if (tableId != null && tableId!.isNotEmpty) {
+    message += "\nYour Table is $tableId";
+  }
+  
+  // Adicionar nome do restaurante
+  if (restaurantName.isNotEmpty) {
+    message += "\nWelcome to $restaurantName";
+  }
+  
+  return message;
 }
 
   void createCategoriesFromAPI() {

@@ -55,6 +55,8 @@ void main() async {
   if (tableId != null) {
     prefs!.setString('table_id', tableId);
     print("Table ID: $tableId");
+  } else {
+    prefs!.setString('table_id', '');
   }
   if (Globs.udValueBool(Globs.userLogin)) {
     ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
