@@ -92,6 +92,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
               child: AnimatedDishWidget(
                 dishPlayDuration: mainPlayDuration,
                 leavesDelayDuration: leavesDelayDuration,
+                restaurantLogo: _restaurantLogo,
               ),
             ),
             const SizedBox(
@@ -99,10 +100,27 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
             ),
             Flexible(
               flex: 2,
-              child: AnimatedTitleWidget(
-                  titleDelayDuration: titleDelayDuration,
-                  mainPlayDuration: mainPlayDuration,
-                  restaurantName: _restaurantName),
+              child: Column(
+                children: [
+                  if (!_restaurantLogo.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: const Icon(Icons.restaurant, size: 40),
+                )
+                  ),
+                  AnimatedTitleWidget(
+                      titleDelayDuration: titleDelayDuration,
+                      mainPlayDuration: mainPlayDuration,
+                      restaurantName: _restaurantName),
+                ],
+              ),
             ),
             const SizedBox(
               height: 20,

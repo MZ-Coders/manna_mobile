@@ -7,18 +7,21 @@ import 'package:dribbble_challenge/src/core/constants/assets.dart';
 class AnimatedDishWidget extends StatelessWidget {
   final Duration dishPlayDuration;
   final Duration leavesDelayDuration;
+  final String restaurantLogo; // ADICIONAR ESTE PARÂMETRO
+  
   const AnimatedDishWidget({
     Key? key,
     required this.dishPlayDuration,
     required this.leavesDelayDuration,
+    required this.restaurantLogo, // ADICIONAR ESTE PARÂMETRO
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // ... todas as folhas e elementos decorativos permanecem iguais ...
         Positioned(
-          // top: 300,
           left: 30,
           child: Transform.rotate(
             angle: 2 * pi * 0.85,
@@ -53,7 +56,6 @@ class AnimatedDishWidget extends StatelessWidget {
                 curve: Curves.decelerate)
             .slide(begin: const Offset(0.7, -0.4), end: Offset.zero),
         Positioned(
-          // top: 300,
           left: -30,
           bottom: -20,
           child: Transform.rotate(
@@ -73,7 +75,6 @@ class AnimatedDishWidget extends StatelessWidget {
                 curve: Curves.decelerate)
             .slide(begin: const Offset(0.7, -0.4), end: Offset.zero),
         Positioned(
-          // top: 10,
           right: 0,
           child: Transform.rotate(
             angle: 2 * pi * 0.45,
@@ -91,13 +92,31 @@ class AnimatedDishWidget extends StatelessWidget {
                 duration: dishPlayDuration,
                 curve: Curves.decelerate)
             .slide(begin: const Offset(-0.7, 1), end: Offset.zero),
+        
+        // MODIFICAR ESTA PARTE - Imagem central:
         Container(
-            //margin: const EdgeInsets.only(top: 45),
             alignment: Alignment.topCenter,
-            child: Image.asset(
-              Assets.dish,
-              fit: BoxFit.contain,
-              height: 340,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(170), // Para fazer circular
+              child: restaurantLogo.isNotEmpty 
+                ? Image.network(
+                    restaurantLogo,
+                    fit: BoxFit.cover,
+                    height: 340,
+                    width: 340,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        Assets.dish,
+                        fit: BoxFit.contain,
+                        height: 340,
+                      );
+                    },
+                  )
+                : Image.asset(
+                    Assets.dish,
+                    fit: BoxFit.contain,
+                    height: 340,
+                  ),
             ).animate().scaleXY(
                 begin: 0,
                 end: 1,
