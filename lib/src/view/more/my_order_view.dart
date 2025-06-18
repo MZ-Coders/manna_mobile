@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
+import 'package:dribbble_challenge/src/view/home/home_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -80,7 +81,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                     ClipRRect(
                         borderRadius: BorderRadius.circular(15),
                         child: Image.asset(
-                          "assets/img/shop_logo.png",
+                          "assets/img/manna_icon.png",
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
@@ -93,7 +94,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "King Burgers",
+                            "Manna Restaurant",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: TColor.primaryText,
@@ -139,7 +140,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                "Burger",
+                                "Manna Restaurant",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: TColor.secondaryText, fontSize: 12),
@@ -151,7 +152,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                                     color: TColor.primary, fontSize: 12),
                               ),
                               Text(
-                                "Western Food",
+                                "",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: TColor.secondaryText, fontSize: 12),
@@ -175,7 +176,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               ),
                               Expanded(
                                 child: Text(
-                                  "No 03, 4th Lane, Newyork",
+                                  "Beira, Sofala, Mozambique",
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                       color: TColor.secondaryText,
@@ -358,7 +359,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const CheckoutView(),
+                              builder: (context) => const HomeView(),
                             ),
                           );
                         }),
@@ -382,24 +383,24 @@ Future<void> _createPDFv2() async {
   final page = document.pages.add();
 
   // Logo (imagem opcional)
-  final PdfBitmap logo = PdfBitmap(await _readImageData('assets/img/shop_logo.png'));
+  final PdfBitmap logo = PdfBitmap(await _readImageData('assets/img/manna_icon.png'));
   page.graphics.drawImage(logo, Rect.fromLTWH(0, 0, 80, 80));
 
   // Nome da loja
   page.graphics.drawString(
-    'King Burgers',
+    'Manna Restaurant',
     PdfStandardFont(PdfFontFamily.helvetica, 18, style: PdfFontStyle.bold),
     bounds: Rect.fromLTWH(90, 0, 500, 25),
   );
 
   // Endereço e categoria
   page.graphics.drawString(
-    'No 03, 4th Lane, Newyork',
+    'Beira, Sofala, Mozambique',
     PdfStandardFont(PdfFontFamily.helvetica, 12),
     bounds: Rect.fromLTWH(90, 25, 500, 20),
   );
   page.graphics.drawString(
-    'Categoria: Burger · Western Food',
+    'Categoria: Restaurante',
     PdfStandardFont(PdfFontFamily.helvetica, 12),
     bounds: Rect.fromLTWH(90, 45, 500, 20),
   );

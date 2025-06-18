@@ -35,7 +35,8 @@ class _HomeViewState extends State<HomeView> {
     super.initState();
     loadTableId();
     // Iniciar com itens da categoria Entradas/Starters
-    updateMenuItems();
+    // updateMenuItems();
+    getDataFromApi();
   }
 
   Future<void> loadTableId() async {
@@ -87,6 +88,7 @@ class _HomeViewState extends State<HomeView> {
 
   // Lista de itens filtrados pela categoria
   List filteredMenuItems = [];
+  List allMenuItems = [];
 
   List popArr = [
     {
@@ -1227,7 +1229,16 @@ class _HomeViewState extends State<HomeView> {
                     var mObj = mostPopArr[index] as Map? ?? {};
                     return MostPopularCell(
                       mObj: mObj,
-                      onTap: () {},
+                      onTap: () {
+                         Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FoodItemDetailsView(
+                              foodDetails: mObj.cast<String, dynamic>()
+                            )
+                          ),
+                        );
+                      },
                     );
                   }),
                 ),
@@ -1237,33 +1248,12 @@ class _HomeViewState extends State<HomeView> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ViewAllTitleRow(
-                  title:
-                      "Menu: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {
-                            "name": ""
-                          })["name"]}",
-                  onView: () {},
+                 title: "Menu: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {"name": "Carregando..."})["name"]}",
+    onView: () {},
                 ),
               ),
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                itemCount: filteredMenuItems.length,
-                itemBuilder: ((context, index) {
-                  var mObj = filteredMenuItems[index] as Map? ?? {};
-                  return MenuItemRow(
-                    mObj: mObj,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => FoodItemDetailsView(
-                                foodDetails: mObj.cast<String, dynamic>())),
-                      );
-                    },
-                  );
-                }),
-              ),
+              // 
+              buildMenuItems(context, filteredMenuItems),
 
               // Seção de itens recentes
               // Padding(
@@ -1293,40 +1283,211 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Widget buildMenuItems(BuildContext context, List filteredMenuItems) {
+  // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
+  bool isMediumScreen = MediaQuery.of(context).size.width > 600 &&
+                      MediaQuery.of(context).size.width < 1000;
+
+bool isWideScreen = MediaQuery.of(context).size.width >= 1000;
+
+bool isDesktopScreen = MediaQuery.of(context).size.width >= 1200;
+  
+  if (isWideScreen || isMediumScreen) {
+    // Layout de grade para telas largas
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isWideScreen ? 3 : 2, // 3 itens por linha
+        childAspectRatio: isDesktopScreen ? 2.5 : isWideScreen ? 1.5 : 2 , // Proporção largura/altura dos itens
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: filteredMenuItems.length,
+      itemBuilder: ((context, index) {
+        var mObj = filteredMenuItems[index] as Map? ?? {};
+        return MenuItemRow(
+          mObj: mObj,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FoodItemDetailsView(
+                  foodDetails: mObj.cast<String, dynamic>()
+                )
+              ),
+            );
+          },
+        );
+      }),
+    );
+  } else {
+    // Layout de lista para mobile (seu código original)
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      itemCount: filteredMenuItems.length,
+      itemBuilder: ((context, index) {
+        var mObj = filteredMenuItems[index] as Map? ?? {};
+        return MenuItemRow(
+          mObj: mObj,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FoodItemDetailsView(
+                  foodDetails: mObj.cast<String, dynamic>()
+                )
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+}
+
+
+void createMostPopularFromAPI() {
+  List popularItems = [];
+  
+  // Pegar alguns produtos de diferentes categorias para mostrar como populares
+  for (var category in allMenuItems.take(3)) { // Primeiras 3 categorias
+    if (category['products'] != null && (category['products'] as List).isNotEmpty) {
+      var products = category['products'] as List;
+      
+      // Pegar o primeiro produto de cada categoria
+      var firstProduct = products.first;
+      popularItems.add({
+        "id": firstProduct['id'],
+        "image": firstProduct['image_url'] ?? "assets/img/sopa_2.jpg",
+        "name": firstProduct['name'],
+        "rate": "4.9",
+        "rating": "124",
+        "type": category['category_name'],
+        "food_type": category['category_name'],
+        "description": firstProduct['description'] ?? '',
+        "price": double.tryParse(firstProduct['current_price'].toString()) ?? 0.0,
+      });
+    }
+  }
+  
+  mostPopArr = popularItems;
+}
   // Método para atualizar os itens do menu com base na categoria selecionada
-  void updateMenuItems() {
-    setState(() {
-      switch (selectedCategoryId) {
-        case 1:
-          filteredMenuItems = entradasItems;
-          break;
-        case 11:
-          filteredMenuItems = mariscoItems;
-          break;
-        case 12:
-          filteredMenuItems = pequenoAlmocoItems;
-          break;
-        case 13:
-          filteredMenuItems = avesItems;
-          break;
-        case 14:
-          filteredMenuItems = carnesItems;
-          break;
-        case 15:
-          filteredMenuItems = verduraItems;
-          break;
-        case 16:
-          filteredMenuItems = dosesItems;
-          break;
-        case 17:
-          filteredMenuItems = sobremesasItems;
-          break;
-        case 18:
-          filteredMenuItems = bebidasItems;
-          break;
-        default:
-          filteredMenuItems = entradasItems;
-      }
+ void updateMenuItems() {
+  print("=== updateMenuItems chamada ===");
+  print("selectedCategoryId: $selectedCategoryId");
+  setState(() {
+    // Encontrar a categoria selecionada pelos dados reais da API
+    var selectedCategory = allMenuItems.firstWhere(
+      (category) => category['category_id'] == selectedCategoryId,
+      orElse: () => null,
+    );
+
+  print("=== Categories ===");
+  print("selectedCategory: $selectedCategory");
+  
+  if (selectedCategory != null && selectedCategory['products'] != null) {
+      // Converter produtos da API para o formato esperado
+      filteredMenuItems = (selectedCategory['products'] as List).map((product) {
+        return {
+          "id": product['id'],
+          "image": product['image_url'] ?? "assets/img/dess_1.png", 
+          "name": product['name'],
+          "rate": "4.9", // Você pode adicionar rating na API ou manter padrão
+          "rating": "124",
+          "type": selectedCategory['category_name'],
+          "food_type": selectedCategory['category_name'],
+          "description": product['description'] ?? '',
+          "price": double.tryParse(product['current_price'].toString()) ?? 0.0,
+          "regular_price": double.tryParse(product['regular_price'].toString()) ?? 0.0,
+          "is_on_promotion": product['is_on_promotion'] ?? false,
+        };
+      }).toList();
+      print(selectedCategory['products'].length);
+      print("Número de itens filtrados: ${filteredMenuItems.length}");
+    } else {
+      filteredMenuItems = [];
+    }
+  });
+}
+
+
+
+  String getDefaultCategoryImage(int index) {
+  // Lista de imagens padrão que você pode rotacionar
+  List<String> defaultImages = [
+    "assets/img/manna_entradas.png",
+    "assets/img/manna_marisco.png",
+    "assets/img/manna_pequeno_almoco.png",
+    "assets/img/manna_aves.png",
+    "assets/img/manna_carne.png",
+    "assets/img/manna_verdura.png",
+    "assets/img/manna_doses.png",
+    "assets/img/manna_desserts.png",
+    "assets/img/manna_drink.png",
+  ];
+  
+  // Usar módulo para rotacionar as imagens
+  return defaultImages[index % defaultImages.length];
+}
+
+  void createCategoriesFromAPI() {
+  print("=== createCategoriesFromAPI chamada ===");
+  print("Número de categorias na API: ${allMenuItems.length}");
+
+  List newCatArr = [];
+  
+  for (int i = 0; i < allMenuItems.length; i++) {
+    var menuCategory = allMenuItems[i];
+    
+    newCatArr.add({
+      "id": menuCategory['category_id'], // Usar o ID real da API
+      "image": menuCategory['image_url'], // Imagem da API
+      "name": menuCategory['category_name']
     });
   }
+  
+  catArr = newCatArr;
+}
+
+ // Give function to receive data from API
+Future<void> getDataFromApi() async {
+  print("=== getDataFromApi iniciada ===");
+  try {
+    ServiceCall.getMenuItems("1807d125-56b5-4671-9614-184a3751ac5d",
+        withSuccess: (Map<String, dynamic> data) {
+          if (data.containsKey('menu') && data['menu'] != null) {
+            if (data['menu'] is List && (data['menu'] as List).isNotEmpty) {
+              setState(() {
+                // Armazenar todos os dados do menu
+                allMenuItems = data['menu'];
+                
+                // Criar categorias dinamicamente baseadas na API
+                createCategoriesFromAPI();
+                
+                // Selecionar a primeira categoria automaticamente
+                if (catArr.isNotEmpty) {
+                  selectedCategoryId = catArr[0]['id'];
+                  updateMenuItems();
+                }
+                
+                // Criar itens populares dinamicamente
+                createMostPopularFromAPI();
+              });
+              
+              print("Menu carregado com ${allMenuItems.length} categorias");
+            }
+          }
+        },
+        failure: (String error) {
+          print("Erro ao buscar dados: $error");
+        });
+  } catch (e) {
+    print("Error fetching data: $e");
+  }
+}
 }
