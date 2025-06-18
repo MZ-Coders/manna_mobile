@@ -48,6 +48,8 @@ void main() async {
   if (restaurantId != null) {
     prefs!.setString('restaurant_id', restaurantId);
     print("Restaurant ID: $restaurantId");
+
+    await loadBasicRestaurantData(restaurantId);
   }
 
   if (tableId != null) {
@@ -96,6 +98,28 @@ void configLoading() {
     ..textColor = TColor.primaryText
     ..userInteractions = false
     ..dismissOnTap = false;
+}
+
+Future<void> loadBasicRestaurantData(String restaurantUUID) async {
+  try {
+    ServiceCall.getMenuItems(restaurantUUID,
+        withSuccess: (Map<String, dynamic> data) {
+          if (data.containsKey('restaurant') && data['restaurant'] != null) {
+            var restaurant = data['restaurant'];
+            // Salvar dados básicos do restaurante
+            prefs!.setString('restaurant_name', restaurant['name'] ?? '');
+            prefs!.setString('restaurant_logo', restaurant['logo'] ?? '');
+            prefs!.setString('restaurant_address', restaurant['address'] ?? '');
+            prefs!.setString('restaurant_city', restaurant['city'] ?? '');
+            print("Dados do restaurante carregados: ${restaurant['name']}");
+          }
+        },
+        failure: (String error) {
+          print("Erro ao buscar dados do restaurante: $error");
+        });
+  } catch (e) {
+    print("Error loading restaurant data: $e");
+  }
 }
 
 // App Selector que sempre inicia com a tela de Onboarding

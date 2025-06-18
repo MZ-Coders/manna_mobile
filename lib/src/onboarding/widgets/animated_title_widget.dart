@@ -7,11 +7,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 class AnimatedTitleWidget extends StatelessWidget {
   final Duration titleDelayDuration;
   final Duration mainPlayDuration;
+  final String restaurantName;
 
   const AnimatedTitleWidget({
     Key? key,
     required this.titleDelayDuration,
     required this.mainPlayDuration,
+    required this.restaurantName,
   }) : super(key: key);
 
   @override
@@ -23,13 +25,13 @@ class AnimatedTitleWidget extends StatelessWidget {
         child: Text.rich(
           TextSpan(
               style: Theme.of(context).textTheme.displaySmall,
-              children: const [
+              children: [
                 TextSpan(
-                  text: Strings.onBoardingTitle,
+                  text: restaurantName.isNotEmpty ? restaurantName : Strings.onBoardingTitle,
                   style: TextStyle(color: AppColors.primarySpecial)
                 ),
                 TextSpan(
-                    text: ' everyday',
+                    text: ' Menu Digital' ,
                     style: TextStyle(color: AppColors.timeLineColor)),
               ]),
           textAlign: TextAlign.center,

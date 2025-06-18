@@ -16,6 +16,11 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
   bool _showAppSelector = false;
   String _selectedApp = 'food_delivery'; // Valor padrão
 
+  String _restaurantName = '';
+  String _restaurantAddress = '';
+  String _restaurantCity = '';
+  String _restaurantLogo = '';
+
   @override
   void initState() {
     _controller = AnimationController(vsync: this);
@@ -28,6 +33,11 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _selectedApp = prefs.getString('app_type') ?? 'food_delivery';
+
+      _restaurantName = prefs.getString('restaurant_name') ?? '';
+      _restaurantAddress = prefs.getString('restaurant_address') ?? '';
+      _restaurantCity = prefs.getString('restaurant_city') ?? '';
+      _restaurantLogo = prefs.getString('restaurant_logo') ?? '';
     });
   }
 
@@ -91,7 +101,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
               flex: 2,
               child: AnimatedTitleWidget(
                   titleDelayDuration: titleDelayDuration,
-                  mainPlayDuration: mainPlayDuration),
+                  mainPlayDuration: mainPlayDuration,
+                  restaurantName: _restaurantName),
             ),
             const SizedBox(
               height: 20,
@@ -101,6 +112,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
               child: AnimatedDescriptionWidget(
                 descriptionPlayDuration: mainPlayDuration,
                 descriptionDelayDuration: descriptionDelayDuration,
+                restaurantAddress: _restaurantAddress, // ADICIONAR ESTA LINHA
+                restaurantCity: _restaurantCity,
               ),
             ),
             Expanded(
