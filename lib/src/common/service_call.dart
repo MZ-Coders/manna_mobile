@@ -117,12 +117,12 @@ static void getMenuItems(
         if (jsonObj['success'] == true) {
           if (withSuccess != null) withSuccess(jsonObj);
         } else {
-          print("*******************");
+          // print("*******************");
           if (failure != null) failure(jsonObj['message']);
         }
       },
       failure: (err) {
-        print("@@@@@@@@@@@@@@@@@@@@@");
+        // print("@@@@@@@@@@@@@@@@@@@@@");
         if (failure != null) failure(err);
       });
 }

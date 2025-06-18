@@ -14,6 +14,7 @@ import '../../common_widget/recent_item_row.dart';
 import '../../common_widget/view_all_title_row.dart';
 import '../more/my_order_view.dart';
 
+
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
@@ -26,9 +27,11 @@ Future<String?> getTableId() async {
   return prefs.getString('table_id');
 }
 
+
 class _HomeViewState extends State<HomeView> {
   TextEditingController txtSearch = TextEditingController();
   String? tableId;
+  String? restaurantUUID;
 
   @override
   void initState() {
@@ -1456,9 +1459,12 @@ void createMostPopularFromAPI() {
 
  // Give function to receive data from API
 Future<void> getDataFromApi() async {
-  print("=== getDataFromApi iniciada ===");
+
+  final prefs = await SharedPreferences.getInstance();
+  String? restaurantUUID = prefs.getString('restaurant_id');
+  
   try {
-    ServiceCall.getMenuItems("1807d125-56b5-4671-9614-184a3751ac5d",
+    ServiceCall.getMenuItems(restaurantUUID ?? '',
         withSuccess: (Map<String, dynamic> data) {
           if (data.containsKey('menu') && data['menu'] != null) {
             if (data['menu'] is List && (data['menu'] as List).isNotEmpty) {
