@@ -34,13 +34,26 @@ void main() async {
   HttpOverrides.global = MyHttpOverrides();
   
   // Obter TableID para o Food Delivery app
-  final tableId = getTableIdFromUrl();
+  // final tableId = getTableIdFromUrl();
+  final restaurantId = getUrlParameter("restaurant");
+  final tableId = getUrlParameter("table");
   prefs = await SharedPreferences.getInstance();
   
-  if (tableId != null) {
-    prefs!.setString('table_id', tableId);
+  // if (tableId != null) {
+  //   prefs!.setString('table_id', tableId);
+  // }
+
+  
+
+  if (restaurantId != null) {
+    prefs!.setString('restaurant_id', restaurantId);
+    print("Restaurant ID: $restaurantId");
   }
 
+  if (tableId != null) {
+    prefs!.setString('table_id', tableId);
+    print("Table ID: $tableId");
+  }
   if (Globs.udValueBool(Globs.userLogin)) {
     ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
   }
@@ -61,6 +74,14 @@ String? getTableIdFromUrl() {
   } else {
     return null;
   }
+}
+
+String? getUrlParameter(String key) {
+  if (kIsWeb) {
+    final uri = Uri.base; // Pega a URL real em execução
+    return uri.queryParameters[key];
+  }
+  return null;
 }
 
 void configLoading() {
