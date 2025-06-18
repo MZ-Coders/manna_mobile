@@ -33,6 +33,7 @@ class _HomeViewState extends State<HomeView> {
   String? tableId;
   String? restaurantUUID;
   String restaurantName = '';
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -114,7 +115,37 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
+      body: isLoading 
+    ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 20),
+            Text(
+              "Loading menu...",
+              style: TextStyle(
+                color: TColor.secondaryText,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (restaurantName.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  restaurantName,
+                  style: TextStyle(
+                    color: TColor.primaryText,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      )
+    : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
@@ -486,6 +517,8 @@ Future<void> getDataFromApi() async {
                 
                 // Criar itens populares dinamicamente
                 createMostPopularFromAPI();
+
+                isLoading = false;
               });
               
               print("Menu carregado com ${allMenuItems.length} categorias");
@@ -493,10 +526,16 @@ Future<void> getDataFromApi() async {
           }
         },
         failure: (String error) {
+          setState(() {
+            isLoading = false; // ADICIONAR ESTA LINHA
+          });
           print("Erro ao buscar dados: $error");
         });
   } catch (e) {
     print("Error fetching data: $e");
+    setState(() {
+    isLoading = false; // ADICIONAR ESTA LINHA
+  });
   }
 }
 }
