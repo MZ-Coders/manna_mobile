@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:dribbble_challenge/src/view/home/home_view.dart';
+import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -155,7 +156,10 @@ Widget _buildEmptyCartView() {
             child: RoundButton(
               title: "Browse Menu",
               onPressed: () {
-                Navigator.pop(context); // Volta para a tela anterior
+                Navigator.of(context).pushNamedAndRemoveUntil(
+        'home',
+        (route) => false,
+      );
               },
             ),
           ),
@@ -309,16 +313,18 @@ void _showCheckoutDialog() {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              _createPDFv2();
-              CartService.clearCart(); // Limpar carrinho após o pedido
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const HomeView(),
-                ),
-              );
-            },
+  Navigator.of(context).pop();
+  _createPDFv2().then((_) {
+    // Só limpar carrinho DEPOIS de gerar o PDF
+    CartService.clearCart();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomeView(),
+      ),
+    );
+  });
+},
             style: ElevatedButton.styleFrom(
               backgroundColor: TColor.primary,
               foregroundColor: Colors.white,
@@ -657,133 +663,121 @@ void _showCheckoutDialog() {
           
           return Container(
             padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Nome do item
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cObj["name"].toString(),
-                        style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${itemPrice.toStringAsFixed(2)} MZN cada",
-                        style: TextStyle(
-                            color: TColor.secondaryText,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Controles de quantidade
-                Expanded(
-                  flex: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Botão diminuir
-                      InkWell(
-                        onTap: () => _updateQuantity(index, quantity - 1),
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: TColor.primary,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(
-                            Icons.remove,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                      
-                      // Quantidade atual
-                      Container(
-                        width: 40,
-                        alignment: Alignment.center,
-                        child: Text(
-                          quantity.toString(),
-                          style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      
-                      // Botão aumentar
-                      InkWell(
-                        onTap: () => _updateQuantity(index, quantity + 1),
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: TColor.primary,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Preço total do item e botão remover
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            "${totalItemPrice.toStringAsFixed(2)} MZN",
-                            style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(width: 8),
-                          InkWell(
-                            onTap: () => _removeItem(index),
-                            child: Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade100,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.close,
-                                color: Colors.red,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            child: Column(
+  children: [
+    // Primeira linha: Nome e preço
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                cObj["name"].toString(),
+                style: TextStyle(
+                    color: TColor.primaryText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "${itemPrice.toStringAsFixed(2)} MZN cada",
+                style: TextStyle(
+                    color: TColor.secondaryText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400),
+              ),
+            ],
+          ),
+        ),
+        InkWell(
+          onTap: () => _removeItem(index),
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.red.shade100,
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Icon(
+              Icons.close,
+              color: Colors.red,
+              size: 16,
+            ),
+          ),
+        ),
+      ],
+    ),
+    
+    const SizedBox(height: 12),
+    
+    // Segunda linha: Controles de quantidade e total
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Controles de quantidade
+        Row(
+          children: [
+            InkWell(
+              onTap: () => _updateQuantity(index, quantity - 1),
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: TColor.primary,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  Icons.remove,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
+            Container(
+              width: 40,
+              alignment: Alignment.center,
+              child: Text(
+                quantity.toString(),
+                style: TextStyle(
+                  color: TColor.primaryText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: () => _updateQuantity(index, quantity + 1),
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: TColor.primary,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        // Total do item
+        Text(
+          "${totalItemPrice.toStringAsFixed(2)} MZN",
+          style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 16,
+              fontWeight: FontWeight.w700),
+        ),
+      ],
+    ),
+  ],
+),
           );
         }),
       ),
@@ -867,7 +861,10 @@ void _showCheckoutDialog() {
               ),
               child: TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+        'home',
+        (route) => false,
+      );
                 },
                 child: Text(
                   "Continue Shopping",
@@ -910,26 +907,24 @@ void _showCheckoutDialog() {
     );
   }
 
-}
-
 Future<void> _createPDFv2() async {
   final PdfDocument document = PdfDocument();
   final page = document.pages.add();
 
-  // Logo (imagem opcional)
+  // Logo (imagem do restaurante ou padrão)
   final PdfBitmap logo = PdfBitmap(await _readImageData('assets/img/manna_icon.png'));
   page.graphics.drawImage(logo, Rect.fromLTWH(0, 0, 80, 80));
 
-  // Nome da loja
+  // Nome da loja DINÂMICO
   page.graphics.drawString(
-    'Manna Restaurant',
+    restaurantName.isNotEmpty ? restaurantName : 'Manna Restaurant',
     PdfStandardFont(PdfFontFamily.helvetica, 18, style: PdfFontStyle.bold),
     bounds: Rect.fromLTWH(90, 0, 500, 25),
   );
 
-  // Endereço e categoria
+  // Endereço DINÂMICO
   page.graphics.drawString(
-    'Beira, Sofala, Mozambique',
+    _buildAddressText(),
     PdfStandardFont(PdfFontFamily.helvetica, 12),
     bounds: Rect.fromLTWH(90, 25, 500, 20),
   );
@@ -949,18 +944,38 @@ Future<void> _createPDFv2() async {
   PdfGridRow header = grid.headers[0];
   header.cells[0].value = 'Produto';
   header.cells[1].value = 'Qtd';
-  header.cells[2].value = 'Preço';
+  header.cells[2].value = 'Preço Total';
 
-  // Exemplo estático. Substitua por itemArr do seu app
+  // Usar items do carrinho ATUAL
   List<Map<String, dynamic>> items = CartService.getCartItems();
 
-  print("Lista de Items "+items.toString());
+  print("=== Gerando PDF ===");
+  print("Número de itens no carrinho: ${items.length}");
+  print("Lista de Items: $items");
+
+  // Verificar se carrinho não está vazio
+  if (items.isEmpty) {
+    page.graphics.drawString(
+      'Nenhum item no carrinho!',
+      PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
+      bounds: Rect.fromLTWH(0, currentY, 500, 25),
+    );
+    
+    List<int> bytes = await document.save();
+    document.dispose();
+    platform.saveAndLaunchFile(bytes, 'recibo_vazio.pdf');
+    return;
+  }
 
   for (var item in items) {
     PdfGridRow row = grid.rows.add();
+    double itemPrice = double.parse(item['price'].toString());
+    int quantity = int.parse(item['qty'].toString());
+    double totalItemPrice = itemPrice * quantity;
+    
     row.cells[0].value = item['name'];
     row.cells[1].value = "${item['qty']}";
-    row.cells[2].value = "${(double.parse(item['price'].toString()) * double.parse(item['qty'].toString())).toStringAsFixed(2)} MZN";
+    row.cells[2].value = "${totalItemPrice.toStringAsFixed(2)} MZN";
   }
 
   grid.style = PdfGridStyle(
@@ -975,10 +990,13 @@ Future<void> _createPDFv2() async {
 
   currentY += 20 + (items.length * 25); // Ajustar para após a tabela
 
-  // Subtotal e total
-  double subTotal = items.fold(0, (sum, item) => sum + item['price']);
+  // CORRIGIR cálculo do subtotal
+  double subTotal = CartService.getTotal(); // Usar função que já calcula corretamente
   double delivery = 0;
   double total = subTotal + delivery;
+
+  print("SubTotal calculado: $subTotal");
+  print("Total final: $total");
 
   page.graphics.drawString(
     'SubTotal: ${subTotal.toStringAsFixed(2)} MZN',
@@ -1010,7 +1028,7 @@ Future<void> _createPDFv2() async {
   );
 
   page.graphics.drawString(
-    'Data: ${DateTime.now().toLocal()}',
+    'Data: ${DateTime.now().toLocal().toString().split('.')[0]}', // Formato melhor
     PdfStandardFont(PdfFontFamily.helvetica, 10),
     bounds: Rect.fromLTWH(0, currentY + 20, 300, 15),
   );
@@ -1019,19 +1037,15 @@ Future<void> _createPDFv2() async {
   List<int> bytes = await document.save();
   document.dispose();
 
-  platform.saveAndLaunchFile(bytes, 'recibo_manna.pdf');
-
-//  if(kIsWeb) {
-//   await saveAndLaunchFileWeb(bytes, 'recibo_pedido.pdf');
-//  }
-//  else {
-//   await saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
-//  }  
+  String fileName = 'recibo_${restaurantName.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+  platform.saveAndLaunchFile(bytes, fileName);
 }
-
 
 Future<Uint8List> _readImageData(String name) async {
   final data = await rootBundle.load(name);
   return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 }
+}
+
+
 
