@@ -105,15 +105,15 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                   if (!_restaurantLogo.isNotEmpty)
                   Container(
                     margin: const EdgeInsets.only(bottom: 20),
-                    child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: const Icon(Icons.restaurant, size: 40),
-                )
+                //     child: Container(
+                //   width: 80,
+                //   height: 80,
+                //   decoration: BoxDecoration(
+                //     color: Colors.grey.shade300,
+                //     borderRadius: BorderRadius.circular(50),
+                //   ),
+                //   child: const Icon(Icons.restaurant, size: 40),
+                // )
                   ),
                   AnimatedTitleWidget(
                       titleDelayDuration: titleDelayDuration,
@@ -148,35 +148,35 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                   ),
                   
                   // Botão para mostrar o seletor de apps
-                  const SizedBox(height: 20),
-                  InkWell(
-                    onTap: _toggleAppSelector,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Escolher aplicativo",
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Icon(
-                            _showAppSelector ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                            size: 16,
-                            color: Colors.grey.shade700,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // const SizedBox(height: 20),
+                  // InkWell(
+                  //   onTap: _toggleAppSelector,
+                  //   child: Container(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  //     decoration: BoxDecoration(
+                  //       borderRadius: BorderRadius.circular(20),
+                  //       border: Border.all(color: Colors.grey.shade300),
+                  //     ),
+                  //     child: Row(
+                  //       mainAxisSize: MainAxisSize.min,
+                  //       children: [
+                  //         Text(
+                  //           "Escolher aplicativo",
+                  //           style: TextStyle(
+                  //             color: Colors.grey.shade700,
+                  //             fontSize: 12,
+                  //           ),
+                  //         ),
+                  //         const SizedBox(width: 5),
+                  //         Icon(
+                  //           _showAppSelector ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                  //           size: 16,
+                  //           color: Colors.grey.shade700,
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             )

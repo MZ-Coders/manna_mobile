@@ -50,6 +50,8 @@ void main() async {
     print("Restaurant ID: $restaurantId");
 
     await loadBasicRestaurantData(restaurantId);
+  } else {
+    prefs!.setString('restaurant_id', '');
   }
 
   if (tableId != null) {
