@@ -77,28 +77,289 @@ String _buildAddressText() {
   return addressParts.join(", ");
 }
 
+void _updateCart() {
+  setState(() {
+    itemArr = CartService.getCartItems();
+  });
+}
+
+void _removeItem(int index) {
+  setState(() {
+    CartService.removeFromCart(index);
+    itemArr = CartService.getCartItems();
+  });
+}
+
+void _updateQuantity(int index, int newQty) {
+  if (newQty <= 0) {
+    _removeItem(index);
+  } else {
+    setState(() {
+      CartService.updateQuantity(index, newQty);
+      itemArr = CartService.getCartItems();
+    });
+  }
+}
+
+Widget _buildEmptyCartView() {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Ícone do carrinho vazio
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: TColor.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(60),
+            ),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 60,
+              color: TColor.primary,
+            ),
+          ),
+          
+          const SizedBox(height: 30),
+          
+          // Título
+          Text(
+            "Your cart is empty",
+            style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Descrição
+          Text(
+            "Add some delicious items from our menu\nto get started!",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: TColor.secondaryText,
+              fontSize: 16,
+            ),
+          ),
+          
+          const SizedBox(height: 40),
+          
+          // Botão para voltar ao menu
+          SizedBox(
+            width: 200,
+            child: RoundButton(
+              title: "Browse Menu",
+              onPressed: () {
+                Navigator.pop(context); // Volta para a tela anterior
+              },
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Informações do restaurante mesmo com carrinho vazio
+          if (restaurantName.isNotEmpty) ...[
+            Divider(
+              color: TColor.secondaryText.withOpacity(0.3),
+              thickness: 1,
+            ),
+            const SizedBox(height: 20),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (restaurantLogo.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: Image.network(
+                      restaurantLogo,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: TColor.primary,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Icon(
+                            Icons.restaurant,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      restaurantName,
+                      style: TextStyle(
+                        color: TColor.primaryText,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (restaurantAddress.isNotEmpty || restaurantCity.isNotEmpty)
+                      Text(
+                        _buildAddressText(),
+                        style: TextStyle(
+                          color: TColor.secondaryText,
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildSummaryRow(String label, String value, bool isTotal) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          color: TColor.primaryText,
+          fontSize: isTotal ? 16 : 14,
+          fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
+      Text(
+        value,
+        style: TextStyle(
+          color: isTotal ? TColor.primary : TColor.primaryText,
+          fontSize: isTotal ? 20 : 14,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ],
+  );
+}
+
+void _showCheckoutDialog() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.shopping_cart_checkout, color: TColor.primary),
+            const SizedBox(width: 12),
+            Text("Confirm Order"),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Are you sure you want to place this order?"),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: TColor.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total Amount:",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN",
+                    style: TextStyle(
+                      color: TColor.primary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _createPDFv2();
+              CartService.clearCart(); // Limpar carrinho após o pedido
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HomeView(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColor.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text("Confirm & Generate Receipt"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TColor.white,
       body: isLoading 
-      ? Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: TColor.primary),
-              const SizedBox(height: 20),
-              Text(
-                "Loading restaurant info...",
-                style: TextStyle(
-                  color: TColor.secondaryText,
-                  fontSize: 16,
-                ),
+    ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: TColor.primary),
+            const SizedBox(height: 20),
+            Text(
+              "Loading restaurant info...",
+              style: TextStyle(
+                color: TColor.secondaryText,
+                fontSize: 16,
               ),
-            ],
-          ),
-        )
-      :  SingleChildScrollView(
+            ),
+          ],
+        ),
+      )
+    : itemArr.isEmpty 
+        ? _buildEmptyCartView()
+        : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
@@ -107,343 +368,541 @@ String _buildAddressText() {
               const SizedBox(
                 height: 46,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Image.asset("assets/img/btn_back.png",
-                          width: 20, height: 20),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: Text(
-                        "My Order",
-                        style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                  ],
+              Container(
+  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.05),
+        blurRadius: 10,
+        offset: const Offset(0, 2),
+      ),
+    ],
+  ),
+  child: Row(
+    children: [
+      Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: TColor.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: TColor.primary,
+            size: 18,
+          ),
+        ),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "My Order",
+              style: TextStyle(
+                  color: TColor.primaryText,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800),
+            ),
+            Text(
+              "${itemArr.length} ${itemArr.length == 1 ? 'item' : 'items'}",
+              style: TextStyle(
+                  color: TColor.secondaryText,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+      // Badge com total de itens
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: TColor.primary,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          "${CartService.getTotalItems()}",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+              Container(
+  margin: const EdgeInsets.all(15),
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Row(
+    children: [
+      ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: restaurantLogo.isNotEmpty 
+              ? Image.network(
+                  restaurantLogo,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      "assets/img/manna_icon.png",
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+              : Image.asset(
+                  "assets/img/manna_icon.png",
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                )),
+      const SizedBox(
+        width: 12,
+      ),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
+              style: TextStyle(
+                  color: TColor.primaryText,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700),
+            ),
+            // MANTER TODO O RESTO DO COLUMN ORIGINAL AQUI
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  "assets/img/rate.png",
+                  width: 10,
+                  height: 10,
+                  fit: BoxFit.cover,
                 ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
-                child: Row(
-                  children: [
-                    ClipRRect(
-    borderRadius: BorderRadius.circular(15),
-    child: restaurantLogo.isNotEmpty 
-        ? Image.network(
-            restaurantLogo,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Image.asset(
-                "assets/img/manna_icon.png",
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-              );
-            },
-          )
-        : Image.asset(
-            "assets/img/manna_icon.png",
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-          )),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Image.asset(
-                                "assets/img/rate.png",
-                                width: 10,
-                                height: 10,
-                                fit: BoxFit.cover,
-                              ),
-                              const SizedBox(
-                                width: 4,
-                              ),
-                              Text(
-                                "4.9",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.primary, fontSize: 12),
-                              ),
-                              const SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                "(124 Ratings)",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.secondaryText, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.secondaryText, fontSize: 12),
-                              ),
-                              Text(
-                                " . ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.primary, fontSize: 12),
-                              ),
-                              Text(
-                                "",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.secondaryText, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Image.asset(
-                                "assets/img/location-pin.png",
-                                width: 13,
-                                height: 13,
-                                fit: BoxFit.contain,
-                              ),
-                              const SizedBox(
-                                width: 4,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  _buildAddressText(),
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                      color: TColor.secondaryText,
-                                      fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 4),
+                Text(
+                  "4.9",
+                  style: TextStyle(
+                      color: TColor.primary, fontSize: 12),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Text(
+                  "(124 Ratings)",
+                  style: TextStyle(
+                      color: TColor.secondaryText, fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
+                  style: TextStyle(
+                      color: TColor.secondaryText, fontSize: 12),
+                ),
+                Text(
+                  " . ",
+                  style: TextStyle(
+                      color: TColor.primary, fontSize: 12),
+                ),
+                Text(
+                  "",
+                  style: TextStyle(
+                      color: TColor.secondaryText, fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  "assets/img/location-pin.png",
+                  width: 13,
+                  height: 13,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    _buildAddressText(),
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                        color: TColor.secondaryText,
+                        fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
               const SizedBox(
                 height: 20,
               ),
               Container(
                 decoration: BoxDecoration(color: TColor.textfield),
-                child: ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  padding: EdgeInsets.zero,
-                  itemCount: itemArr.length,
-                  separatorBuilder: ((context, index) => Divider(
-                        indent: 25,
-                        endIndent: 25,
-                        color: TColor.secondaryText.withOpacity(0.5),
-                        height: 1,
-                      )),
-                  itemBuilder: ((context, index) {
-                    var cObj = itemArr[index] as Map? ?? {};
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 25),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                child: 
+                Container(
+  margin: const EdgeInsets.symmetric(horizontal: 15),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Header da lista
+      Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Icon(
+              Icons.shopping_bag_outlined,
+              color: TColor.primary,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              "Order Items",
+              style: TextStyle(
+                color: TColor.primaryText,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: TColor.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                "${itemArr.length} items",
+                style: TextStyle(
+                  color: TColor.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      
+      // Divider
+      Divider(
+        height: 1,
+        color: TColor.secondaryText.withOpacity(0.1),
+        indent: 20,
+        endIndent: 20,
+      ),
+      
+      // Lista de itens
+      ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        itemCount: itemArr.length,
+        separatorBuilder: ((context, index) => Divider(
+              indent: 25,
+              endIndent: 25,
+              color: TColor.secondaryText.withOpacity(0.1),
+              height: 1,
+            )),
+        itemBuilder: ((context, index) {
+          var cObj = itemArr[index] as Map? ?? {};
+          double itemPrice = double.parse(cObj["price"].toString());
+          int quantity = int.parse(cObj["qty"].toString());
+          double totalItemPrice = itemPrice * quantity;
+          
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Nome do item
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cObj["name"].toString(),
+                        style: TextStyle(
+                            color: TColor.primaryText,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "${itemPrice.toStringAsFixed(2)} MZN cada",
+                        style: TextStyle(
+                            color: TColor.secondaryText,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Controles de quantidade
+                Expanded(
+                  flex: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Botão diminuir
+                      InkWell(
+                        onTap: () => _updateQuantity(index, quantity - 1),
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: TColor.primary,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            Icons.remove,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                      
+                      // Quantidade atual
+                      Container(
+                        width: 40,
+                        alignment: Alignment.center,
+                        child: Text(
+                          quantity.toString(),
+                          style: TextStyle(
+                            color: TColor.primaryText,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      
+                      // Botão aumentar
+                      InkWell(
+                        onTap: () => _updateQuantity(index, quantity + 1),
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: TColor.primary,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Preço total do item e botão remover
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Expanded(
-                            child: Text(
-                              "${cObj["name"].toString()} x${cObj["qty"].toString()}",
-                              style: TextStyle(
-                                  color: TColor.primaryText,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 15,
-                          ),
                           Text(
-                            "${cObj["price"].toString()}\MZN",
+                            "${totalItemPrice.toStringAsFixed(2)} MZN",
                             style: TextStyle(
                                 color: TColor.primaryText,
-                                fontSize: 13,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700),
-                          )
+                          ),
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap: () => _removeItem(index),
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.red,
+                                size: 16,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    );
-                  }),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    ],
+  ),
+),
+              ),
+              
+              Container(
+  margin: const EdgeInsets.all(15),
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Header da seção
+      Row(
+        children: [
+          Icon(
+            Icons.receipt_outlined,
+            color: TColor.primary,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            "Order Summary",
+            style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+      
+      const SizedBox(height: 20),
+      
+      // Subtotal
+      _buildSummaryRow("Sub Total", "${CartService.getTotal().toStringAsFixed(2)} MZN", false),
+      
+      const SizedBox(height: 12),
+      
+      // Delivery cost
+      _buildSummaryRow("Delivery Cost", "0 MZN", false),
+      
+      const SizedBox(height: 16),
+      
+      // Divider
+      Container(
+        height: 1,
+        color: TColor.secondaryText.withOpacity(0.2),
+      ),
+      
+      const SizedBox(height: 16),
+      
+      // Total
+      _buildSummaryRow("Total", "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN", true),
+      
+      const SizedBox(height: 30),
+      
+      // Botões de ação
+      Row(
+        children: [
+          // Botão Continue Shopping
+          Expanded(
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                border: Border.all(color: TColor.primary),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  "Continue Shopping",
+                  style: TextStyle(
+                    color: TColor.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Text(
-                        //   "Delivery Instructions",
-                        //   textAlign: TextAlign.center,
-                        //   style: TextStyle(
-                        //       color: TColor.primaryText,
-                        //       fontSize: 13,
-                        //       fontWeight: FontWeight.w700),
-                        // ),
-                        // TextButton.icon(
-                        //   onPressed: () {},
-                        //   icon: Icon(Icons.add, color: TColor.primary),
-                        //   label: Text(
-                        //     "Add Notes",
-                        //     style: TextStyle(
-                        //         color: TColor.primary,
-                        //         fontSize: 13,
-                        //         fontWeight: FontWeight.w500),
-                        //   ),
-                        // )
-                      ],
-                    ),
-                    Divider(
-                      color: TColor.secondaryText.withOpacity(0.5),
-                      height: 1,
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Sub Total",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                           "${CartService.getTotal().toStringAsFixed(2)}\MZN",
-                          style: TextStyle(
-                              color: TColor.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Delivery Cost",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          "0\MZN",
-                          style: TextStyle(
-                              color: TColor.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Divider(
-                      color: TColor.secondaryText.withOpacity(0.5),
-                      height: 1,
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Total",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          "${(CartService.getTotal() + 0).toStringAsFixed(2)}\MZN",
-                          style: TextStyle(
-                              color: TColor.primary,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    RoundButton(
-                        title: "Checkout",
-                        onPressed: () {
-                          _createPDFv2();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const HomeView(),
-                            ),
-                          );
-                        }),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                  ],
-                ),
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Botão Checkout
+          Expanded(
+            flex: 2,
+            child: Container(
+              height: 50,
+              child: RoundButton(
+                title: "Checkout",
+                onPressed: () {
+                  if (!itemArr.isEmpty) {
+                    _showCheckoutDialog();
+                  }
+                },
               ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
             ],
           ),
         ),
