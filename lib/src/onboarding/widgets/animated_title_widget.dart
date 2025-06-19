@@ -18,8 +18,7 @@ class AnimatedTitleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
+    return Flexible( // Mudança principal: SizedBox por Flexible
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Text.rich(
@@ -31,10 +30,11 @@ class AnimatedTitleWidget extends StatelessWidget {
                   style: TextStyle(color: AppColors.primarySpecial)
                 ),
                 TextSpan(
-                    text: ' Menu Digital' ,
+                    text: ' Menu Digital',
                     style: TextStyle(color: AppColors.timeLineColor)),
               ]),
           textAlign: TextAlign.center,
+          overflow: TextOverflow.visible, // Permite overflow visível
         ),
       ),
     )

@@ -123,7 +123,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
               ),
             ),
             const SizedBox(
-              height: 20,
+              height: 40,
             ),
             Flexible(
               flex: 1,

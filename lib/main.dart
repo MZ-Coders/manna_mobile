@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -127,8 +128,42 @@ Future<void> loadBasicRestaurantData(String restaurantUUID) async {
 }
 
 // App Selector que sempre inicia com a tela de Onboarding
-class AppSelector extends StatelessWidget {
+class AppSelector extends StatefulWidget {
   const AppSelector({Key? key}) : super(key: key);
+
+  @override
+  State<AppSelector> createState() => _AppSelectorState();
+}
+
+class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached || 
+        state == AppLifecycleState.paused) {
+      // Limpar todos os dados quando app é fechado/minimizado
+      clearAllData();
+    }
+  }
+
+  Future<void> clearAllData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    CartService.clearCart();
+    print("Todos os dados foram limpos!");
+  }
 
   @override
   Widget build(BuildContext context) {

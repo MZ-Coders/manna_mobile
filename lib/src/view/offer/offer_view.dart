@@ -37,89 +37,88 @@ class _OfferViewState extends State<OfferView> {
     },
   ];
 
-// Lista de itens para categoria Entradas/Starters (ID: 1)
-  List filteredMenuItems = [
-  ];
+  // Lista de itens para categoria Entradas/Starters (ID: 1)
+  List filteredMenuItems = [];
 
   @override
-void initState() {
-  super.initState();
-  loadRestaurantData();
-  getDataFromApi();
-}
+  void initState() {
+    super.initState();
+    loadRestaurantData();
+    getDataFromApi();
+  }
 
-Future<void> loadRestaurantData() async {
-  final prefs = await SharedPreferences.getInstance();
-  setState(() {
-    restaurantName = prefs.getString('restaurant_name') ?? '';
-  });
-}
-
-Future<void> getDataFromApi() async {
-  final prefs = await SharedPreferences.getInstance();
-  String? restaurantUUID = prefs.getString('restaurant_id');
-  
-  try {
-    ServiceCall.getMenuItems(restaurantUUID ?? '',
-        withSuccess: (Map<String, dynamic> data) {
-          if (data.containsKey('menu') && data['menu'] != null) {
-            if (data['menu'] is List && (data['menu'] as List).isNotEmpty) {
-              setState(() {
-                allMenuItems = data['menu'];
-                filterPromotionItems();
-                isLoading = false;
-              });
-              
-              print("Menu carregado com ${allMenuItems.length} categorias");
-              print("Itens em promoção encontrados: ${promotionItems.length}");
-            }
-          }
-        },
-        failure: (String error) {
-          print("Erro ao buscar dados: $error");
-          setState(() {
-            isLoading = false;
-          });
-        });
-  } catch (e) {
-    print("Error fetching data: $e");
+  Future<void> loadRestaurantData() async {
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      isLoading = false;
+      restaurantName = prefs.getString('restaurant_name') ?? '';
     });
   }
-}
 
-void filterPromotionItems() {
-  List promoItems = [];
-  
-  // Percorrer todas as categorias e produtos
-  for (var category in allMenuItems) {
-    if (category['products'] != null) {
-      List products = category['products'];
-      
-      for (var product in products) {
-        // Verificar se o produto está em promoção
-        if (product['is_on_promotion'] == true) {
-          promoItems.add({
-            "id": product['id'],
-            "image": product['image_url'] ?? "assets/img/dess_1.png",
-            "name": product['name'],
-            "rate": "4.9",
-            "rating": "124",
-            "type": category['category_name'],
-            "food_type": category['category_name'],
-            "description": product['description'] ?? '',
-            "price": double.tryParse(product['current_price'].toString()) ?? 0.0,
-            "regular_price": double.tryParse(product['regular_price'].toString()) ?? 0.0,
-            "is_on_promotion": true,
+  Future<void> getDataFromApi() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? restaurantUUID = prefs.getString('restaurant_id');
+    
+    try {
+      ServiceCall.getMenuItems(restaurantUUID ?? '',
+          withSuccess: (Map<String, dynamic> data) {
+            if (data.containsKey('menu') && data['menu'] != null) {
+              if (data['menu'] is List && (data['menu'] as List).isNotEmpty) {
+                setState(() {
+                  allMenuItems = data['menu'];
+                  filterPromotionItems();
+                  isLoading = false;
+                });
+                
+                print("Menu carregado com ${allMenuItems.length} categorias");
+                print("Itens em promoção encontrados: ${promotionItems.length}");
+              }
+            }
+          },
+          failure: (String error) {
+            print("Erro ao buscar dados: $error");
+            setState(() {
+              isLoading = false;
+            });
           });
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void filterPromotionItems() {
+    List promoItems = [];
+    
+    // Percorrer todas as categorias e produtos
+    for (var category in allMenuItems) {
+      if (category['products'] != null) {
+        List products = category['products'];
+        
+        for (var product in products) {
+          // Verificar se o produto está em promoção
+          if (product['is_on_promotion'] == true) {
+            promoItems.add({
+              "id": product['id'],
+              "image": product['image_url'] ?? "assets/img/dess_1.png",
+              "name": product['name'],
+              "rate": "4.9",
+              "rating": "124",
+              "type": category['category_name'],
+              "food_type": category['category_name'],
+              "description": product['description'] ?? '',
+              "price": double.tryParse(product['current_price'].toString()) ?? 0.0,
+              "regular_price": double.tryParse(product['regular_price'].toString()) ?? 0.0,
+              "is_on_promotion": true,
+            });
+          }
         }
       }
     }
+    
+    promotionItems = promoItems;
   }
-  
-  promotionItems = promoItems;
-}
 
   @override
   Widget build(BuildContext context) {
@@ -136,15 +135,22 @@ void filterPromotionItems() {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Latest Offers - $restaurantName",
-                      style: TextStyle(
-                          color: TColor.primaryText,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800),
+                    // Texto com Expanded para evitar overflow
+                    Flexible(
+                      child: Expanded(
+                        child: Text(
+                          "Latest Offers - $restaurantName",
+                          style: TextStyle(
+                              color: TColor.primaryText,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800),
+                          // overflow: TextOverflow.ellipsis, // Adiciona "..." se muito longo
+                          // maxLines: 1, // Limita a uma linha
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 8), // Espaçamento entre texto e ícone
                     IconButton(
                       onPressed: () {
                         Navigator.push(
@@ -190,58 +196,45 @@ void filterPromotionItems() {
               const SizedBox(
                 height: 15,
               ),
-              // ListView.builder(
-              //   physics: const NeverScrollableScrollPhysics(),
-              //   shrinkWrap: true,
-              //   padding: EdgeInsets.zero,
-              //   itemCount: offerArr.length,
-              //   itemBuilder: ((context, index) {
-              //     var pObj = offerArr[index] as Map? ?? {};
-              //     return PopularRestaurantRow(
-              //       pObj: pObj,
-              //       onTap: () {},
-              //     );
-              //   }),
-              // ),
               isLoading 
-  ? const Center(
-      child: Padding(
-        padding: EdgeInsets.all(50.0),
-        child: CircularProgressIndicator(),
-      ),
-    )
-  : promotionItems.isEmpty
-      ? Center(
-          child: Padding(
-            padding: const EdgeInsets.all(50.0),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.local_offer_outlined,
-                  size: 60,
-                  color: TColor.secondaryText,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "No promotions available",
-                  style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  "Check back later for special offers!",
-                  style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )
-      : buildMenuItems(context, promotionItems),
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(50.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : promotionItems.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(50.0),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.local_offer_outlined,
+                                size: 60,
+                                color: TColor.secondaryText,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "No promotions available",
+                                style: TextStyle(
+                                  color: TColor.secondaryText,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                "Check back later for special offers!",
+                                style: TextStyle(
+                                  color: TColor.secondaryText,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : buildMenuItems(context, promotionItems),
             ],
           ),
         ),
@@ -250,69 +243,68 @@ void filterPromotionItems() {
   }
 
   Widget buildMenuItems(BuildContext context, List filteredMenuItems) {
-  // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
-  bool isMediumScreen = MediaQuery.of(context).size.width > 600 &&
-                      MediaQuery.of(context).size.width < 1000;
+    // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
+    bool isMediumScreen = MediaQuery.of(context).size.width > 600 &&
+                        MediaQuery.of(context).size.width < 1000;
 
-bool isWideScreen = MediaQuery.of(context).size.width >= 1000;
+    bool isWideScreen = MediaQuery.of(context).size.width >= 1000;
 
-bool isDesktopScreen = MediaQuery.of(context).size.width >= 1200;
-  
-  if (isWideScreen || isMediumScreen) {
-    // Layout de grade para telas largas
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isWideScreen ? 3 : 2, // 3 itens por linha
-        childAspectRatio: isDesktopScreen ? 2.5 : isWideScreen ? 1.5 : 2 , // Proporção largura/altura dos itens
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: filteredMenuItems.length,
-      itemBuilder: ((context, index) {
-        var mObj = filteredMenuItems[index] as Map? ?? {};
-        return MenuItemRow(
-          mObj: mObj,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FoodItemDetailsView(
-                  foodDetails: mObj.cast<String, dynamic>()
-                )
-              ),
-            );
-          },
-        );
-      }),
-    );
-  } else {
-    // Layout de lista para mobile (seu código original)
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: EdgeInsets.zero,
-      itemCount: filteredMenuItems.length,
-      itemBuilder: ((context, index) {
-        var mObj = filteredMenuItems[index] as Map? ?? {};
-        return MenuItemRow(
-          mObj: mObj,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FoodItemDetailsView(
-                  foodDetails: mObj.cast<String, dynamic>()
-                )
-              ),
-            );
-          },
-        );
-      }),
-    );
+    bool isDesktopScreen = MediaQuery.of(context).size.width >= 1200;
+    
+    if (isWideScreen || isMediumScreen) {
+      // Layout de grade para telas largas
+      return GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isWideScreen ? 3 : 2, // 3 itens por linha
+          childAspectRatio: isDesktopScreen ? 2.5 : isWideScreen ? 1.5 : 2 , // Proporção largura/altura dos itens
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: filteredMenuItems.length,
+        itemBuilder: ((context, index) {
+          var mObj = filteredMenuItems[index] as Map? ?? {};
+          return MenuItemRow(
+            mObj: mObj,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FoodItemDetailsView(
+                    foodDetails: mObj.cast<String, dynamic>()
+                  )
+                ),
+              );
+            },
+          );
+        }),
+      );
+    } else {
+      // Layout de lista para mobile (seu código original)
+      return ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        itemCount: filteredMenuItems.length,
+        itemBuilder: ((context, index) {
+          var mObj = filteredMenuItems[index] as Map? ?? {};
+          return MenuItemRow(
+            mObj: mObj,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FoodItemDetailsView(
+                    foodDetails: mObj.cast<String, dynamic>()
+                  )
+                ),
+              );
+            },
+          );
+        }),
+      );
+    }
   }
-}
-  
 }
