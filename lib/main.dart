@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,11 +49,17 @@ void main() async {
   if (restaurantId != null) {
     prefs!.setString('restaurant_id', restaurantId);
     print("Restaurant ID: $restaurantId");
+
+    await loadBasicRestaurantData(restaurantId);
+  } else {
+    prefs!.setString('restaurant_id', '');
   }
 
   if (tableId != null) {
     prefs!.setString('table_id', tableId);
     print("Table ID: $tableId");
+  } else {
+    prefs!.setString('table_id', '');
   }
   if (Globs.udValueBool(Globs.userLogin)) {
     ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
@@ -98,9 +105,65 @@ void configLoading() {
     ..dismissOnTap = false;
 }
 
+Future<void> loadBasicRestaurantData(String restaurantUUID) async {
+  try {
+    ServiceCall.getMenuItems(restaurantUUID,
+        withSuccess: (Map<String, dynamic> data) {
+          if (data.containsKey('restaurant') && data['restaurant'] != null) {
+            var restaurant = data['restaurant'];
+            // Salvar dados básicos do restaurante
+            prefs!.setString('restaurant_name', restaurant['name'] ?? '');
+            prefs!.setString('restaurant_logo', restaurant['logo'] ?? '');
+            prefs!.setString('restaurant_address', restaurant['address'] ?? '');
+            prefs!.setString('restaurant_city', restaurant['city'] ?? '');
+            print("Dados do restaurante carregados: ${restaurant['name']}");
+          }
+        },
+        failure: (String error) {
+          print("Erro ao buscar dados do restaurante: $error");
+        });
+  } catch (e) {
+    print("Error loading restaurant data: $e");
+  }
+}
+
 // App Selector que sempre inicia com a tela de Onboarding
-class AppSelector extends StatelessWidget {
+class AppSelector extends StatefulWidget {
   const AppSelector({Key? key}) : super(key: key);
+
+  @override
+  State<AppSelector> createState() => _AppSelectorState();
+}
+
+class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached || 
+        state == AppLifecycleState.paused) {
+      // Limpar todos os dados quando app é fechado/minimizado
+      clearAllData();
+    }
+  }
+
+  Future<void> clearAllData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    CartService.clearCart();
+    print("Todos os dados foram limpos!");
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -3,12 +3,15 @@ import 'dart:typed_data';
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:dribbble_challenge/src/view/home/home_view.dart';
+import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 // import './../../pdf/web.dart' if (dart.library.html) './../../pdf/mobile.dart' as platform;
 // import 'web.dart' if (dart.library.io) 'mobile.dart' as platform;
@@ -33,12 +36,337 @@ class _MyOrderViewState extends State<MyOrderView> {
   // ];
 
   List itemArr = CartService.getCartItems();
+  String restaurantName = '';
+  String restaurantLogo = '';
+  String restaurantAddress = '';
+  String restaurantCity = '';
+  bool isLoading = true;
+
+  @override
+void initState() {
+  super.initState();
+  loadRestaurantData();
+}
+
+Future<void> loadRestaurantData() async {
+  final prefs = await SharedPreferences.getInstance();
+  setState(() {
+    restaurantName = prefs.getString('restaurant_name') ?? 'Manna Restaurant';
+    restaurantLogo = prefs.getString('restaurant_logo') ?? '';
+    restaurantAddress = prefs.getString('restaurant_address') ?? '';
+    restaurantCity = prefs.getString('restaurant_city') ?? '';
+    isLoading = false;
+  });
+  
+  print("Dados do restaurante carregados: $restaurantName");
+}
+
+String _buildAddressText() {
+  List<String> addressParts = [];
+  
+  if (restaurantAddress.isNotEmpty) {
+    addressParts.add(restaurantAddress);
+  }
+  
+  if (restaurantCity.isNotEmpty) {
+    addressParts.add(restaurantCity);
+  }
+  
+  if (addressParts.isEmpty) {
+    return " ... "; // Fallback
+  }
+  
+  return addressParts.join(", ");
+}
+
+void _updateCart() {
+  setState(() {
+    itemArr = CartService.getCartItems();
+  });
+}
+
+void _removeItem(int index) {
+  setState(() {
+    CartService.removeFromCart(index);
+    itemArr = CartService.getCartItems();
+  });
+}
+
+void _updateQuantity(int index, int newQty) {
+  if (newQty <= 0) {
+    _removeItem(index);
+  } else {
+    setState(() {
+      CartService.updateQuantity(index, newQty);
+      itemArr = CartService.getCartItems();
+    });
+  }
+}
+
+Widget _buildEmptyCartView() {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Ícone do carrinho vazio
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: TColor.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(60),
+            ),
+            child: Icon(
+              Icons.shopping_cart_outlined,
+              size: 60,
+              color: TColor.primary,
+            ),
+          ),
+          
+          const SizedBox(height: 30),
+          
+          // Título
+          Text(
+            "Your cart is empty",
+            style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Descrição
+          Text(
+            "Add some delicious items from our menu\nto get started!",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: TColor.secondaryText,
+              fontSize: 16,
+            ),
+          ),
+          
+          const SizedBox(height: 40),
+          
+          // Botão para voltar ao menu
+          SizedBox(
+            width: 200,
+            child: RoundButton(
+              title: "Browse Menu",
+              onPressed: () {
+                Navigator.of(context).pushNamedAndRemoveUntil(
+        'home',
+        (route) => false,
+      );
+              },
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Informações do restaurante mesmo com carrinho vazio
+          if (restaurantName.isNotEmpty) ...[
+            Divider(
+              color: TColor.secondaryText.withOpacity(0.3),
+              thickness: 1,
+            ),
+            const SizedBox(height: 20),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (restaurantLogo.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: Image.network(
+                      restaurantLogo,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: TColor.primary,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Icon(
+                            Icons.restaurant,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      restaurantName,
+                      style: TextStyle(
+                        color: TColor.primaryText,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (restaurantAddress.isNotEmpty || restaurantCity.isNotEmpty)
+                      Text(
+                        _buildAddressText(),
+                        style: TextStyle(
+                          color: TColor.secondaryText,
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildSummaryRow(String label, String value, bool isTotal) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          color: TColor.primaryText,
+          fontSize: isTotal ? 16 : 14,
+          fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
+      Text(
+        value,
+        style: TextStyle(
+          color: isTotal ? TColor.primary : TColor.primaryText,
+          fontSize: isTotal ? 20 : 14,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ],
+  );
+}
+
+void _showCheckoutDialog() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.shopping_cart_checkout, color: TColor.primary),
+            const SizedBox(width: 12),
+            Text("Confirm Order"),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Are you sure you want to place this order?"),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: TColor.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total Amount:",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN",
+                    style: TextStyle(
+                      color: TColor.primary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+  Navigator.of(context).pop();
+  _createPDFv2().then((_) {
+    // Só limpar carrinho DEPOIS de gerar o PDF
+    CartService.clearCart();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomeView(),
+      ),
+    );
+  });
+},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColor.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text("Confirm & Generate Receipt"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TColor.white,
-      body: SingleChildScrollView(
+      body: isLoading 
+    ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: TColor.primary),
+            const SizedBox(height: 20),
+            Text(
+              "Loading restaurant info...",
+              style: TextStyle(
+                color: TColor.secondaryText,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      )
+    : itemArr.isEmpty 
+        ? _buildEmptyCartView()
+        : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
@@ -47,328 +375,532 @@ class _MyOrderViewState extends State<MyOrderView> {
               const SizedBox(
                 height: 46,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Image.asset("assets/img/btn_back.png",
-                          width: 20, height: 20),
-                    ),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: Text(
-                        "My Order",
-                        style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                  ],
+              Container(
+  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.05),
+        blurRadius: 10,
+        offset: const Offset(0, 2),
+      ),
+    ],
+  ),
+  child: Row(
+    children: [
+      Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: TColor.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: TColor.primary,
+            size: 18,
+          ),
+        ),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "My Order",
+              style: TextStyle(
+                  color: TColor.primaryText,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800),
+            ),
+            Text(
+              "${itemArr.length} ${itemArr.length == 1 ? 'item' : 'items'}",
+              style: TextStyle(
+                  color: TColor.secondaryText,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+      // Badge com total de itens
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: TColor.primary,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          "${CartService.getTotalItems()}",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+              Container(
+  margin: const EdgeInsets.all(15),
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Row(
+    children: [
+      ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: restaurantLogo.isNotEmpty 
+              ? Image.network(
+                  restaurantLogo,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      "assets/img/manna_icon.png",
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+              : Image.asset(
+                  "assets/img/manna_icon.png",
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                )),
+      const SizedBox(
+        width: 12,
+      ),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
+              style: TextStyle(
+                  color: TColor.primaryText,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700),
+            ),
+            // MANTER TODO O RESTO DO COLUMN ORIGINAL AQUI
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  "assets/img/rate.png",
+                  width: 10,
+                  height: 10,
+                  fit: BoxFit.cover,
                 ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.asset(
-                          "assets/img/manna_icon.png",
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                        )),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Manna Restaurant",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Image.asset(
-                                "assets/img/rate.png",
-                                width: 10,
-                                height: 10,
-                                fit: BoxFit.cover,
-                              ),
-                              const SizedBox(
-                                width: 4,
-                              ),
-                              Text(
-                                "4.9",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.primary, fontSize: 12),
-                              ),
-                              const SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                "(124 Ratings)",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.secondaryText, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Manna Restaurant",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.secondaryText, fontSize: 12),
-                              ),
-                              Text(
-                                " . ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.primary, fontSize: 12),
-                              ),
-                              Text(
-                                "",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: TColor.secondaryText, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Image.asset(
-                                "assets/img/location-pin.png",
-                                width: 13,
-                                height: 13,
-                                fit: BoxFit.contain,
-                              ),
-                              const SizedBox(
-                                width: 4,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  "Beira, Sofala, Mozambique",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                      color: TColor.secondaryText,
-                                      fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 4),
+                Text(
+                  "4.9",
+                  style: TextStyle(
+                      color: TColor.primary, fontSize: 12),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Text(
+                  "(124 Ratings)",
+                  style: TextStyle(
+                      color: TColor.secondaryText, fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
+                  style: TextStyle(
+                      color: TColor.secondaryText, fontSize: 12),
+                ),
+                Text(
+                  " . ",
+                  style: TextStyle(
+                      color: TColor.primary, fontSize: 12),
+                ),
+                Text(
+                  "",
+                  style: TextStyle(
+                      color: TColor.secondaryText, fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Image.asset(
+                  "assets/img/location-pin.png",
+                  width: 13,
+                  height: 13,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    _buildAddressText(),
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                        color: TColor.secondaryText,
+                        fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
               const SizedBox(
                 height: 20,
               ),
               Container(
                 decoration: BoxDecoration(color: TColor.textfield),
-                child: ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  padding: EdgeInsets.zero,
-                  itemCount: itemArr.length,
-                  separatorBuilder: ((context, index) => Divider(
-                        indent: 25,
-                        endIndent: 25,
-                        color: TColor.secondaryText.withOpacity(0.5),
-                        height: 1,
-                      )),
-                  itemBuilder: ((context, index) {
-                    var cObj = itemArr[index] as Map? ?? {};
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 25),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              "${cObj["name"].toString()} x${cObj["qty"].toString()}",
-                              style: TextStyle(
-                                  color: TColor.primaryText,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 15,
-                          ),
-                          Text(
-                            "${cObj["price"].toString()}\MZN",
-                            style: TextStyle(
-                                color: TColor.primaryText,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700),
-                          )
-                        ],
-                      ),
-                    );
-                  }),
+                child: 
+                Container(
+  margin: const EdgeInsets.symmetric(horizontal: 15),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Header da lista
+      Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Icon(
+              Icons.shopping_bag_outlined,
+              color: TColor.primary,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              "Order Items",
+              style: TextStyle(
+                color: TColor.primaryText,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: TColor.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                "${itemArr.length} items",
+                style: TextStyle(
+                  color: TColor.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Text(
-                        //   "Delivery Instructions",
-                        //   textAlign: TextAlign.center,
-                        //   style: TextStyle(
-                        //       color: TColor.primaryText,
-                        //       fontSize: 13,
-                        //       fontWeight: FontWeight.w700),
-                        // ),
-                        // TextButton.icon(
-                        //   onPressed: () {},
-                        //   icon: Icon(Icons.add, color: TColor.primary),
-                        //   label: Text(
-                        //     "Add Notes",
-                        //     style: TextStyle(
-                        //         color: TColor.primary,
-                        //         fontSize: 13,
-                        //         fontWeight: FontWeight.w500),
-                        //   ),
-                        // )
-                      ],
-                    ),
-                    Divider(
-                      color: TColor.secondaryText.withOpacity(0.5),
-                      height: 1,
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Sub Total",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                           "${CartService.getTotal().toStringAsFixed(2)}\MZN",
-                          style: TextStyle(
-                              color: TColor.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Delivery Cost",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          "0\MZN",
-                          style: TextStyle(
-                              color: TColor.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Divider(
-                      color: TColor.secondaryText.withOpacity(0.5),
-                      height: 1,
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Total",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          "${(CartService.getTotal() + 0).toStringAsFixed(2)}\MZN",
-                          style: TextStyle(
-                              color: TColor.primary,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    RoundButton(
-                        title: "Checkout",
-                        onPressed: () {
-                          _createPDFv2();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const HomeView(),
-                            ),
-                          );
-                        }),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                  ],
+            ),
+          ],
+        ),
+      ),
+      
+      // Divider
+      Divider(
+        height: 1,
+        color: TColor.secondaryText.withOpacity(0.1),
+        indent: 20,
+        endIndent: 20,
+      ),
+      
+      // Lista de itens
+      ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        itemCount: itemArr.length,
+        separatorBuilder: ((context, index) => Divider(
+              indent: 25,
+              endIndent: 25,
+              color: TColor.secondaryText.withOpacity(0.1),
+              height: 1,
+            )),
+        itemBuilder: ((context, index) {
+          var cObj = itemArr[index] as Map? ?? {};
+          double itemPrice = double.parse(cObj["price"].toString());
+          int quantity = int.parse(cObj["qty"].toString());
+          double totalItemPrice = itemPrice * quantity;
+          
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 25),
+            child: Column(
+  children: [
+    // Primeira linha: Nome e preço
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                cObj["name"].toString(),
+                style: TextStyle(
+                    color: TColor.primaryText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "${itemPrice.toStringAsFixed(2)} MZN cada",
+                style: TextStyle(
+                    color: TColor.secondaryText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400),
+              ),
+            ],
+          ),
+        ),
+        InkWell(
+          onTap: () => _removeItem(index),
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.red.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.close,
+              color: Colors.red,
+              size: 16,
+            ),
+          ),
+        ),
+      ],
+    ),
+    
+    const SizedBox(height: 12),
+    
+    // Segunda linha: Controles de quantidade e total
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Controles de quantidade
+        Row(
+          children: [
+            InkWell(
+              onTap: () => _updateQuantity(index, quantity - 1),
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: TColor.primary,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  Icons.remove,
+                  color: Colors.white,
+                  size: 16,
                 ),
               ),
+            ),
+            Container(
+              width: 40,
+              alignment: Alignment.center,
+              child: Text(
+                quantity.toString(),
+                style: TextStyle(
+                  color: TColor.primaryText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: () => _updateQuantity(index, quantity + 1),
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: TColor.primary,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        // Total do item
+        Text(
+          "${totalItemPrice.toStringAsFixed(2)} MZN",
+          style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 16,
+              fontWeight: FontWeight.w700),
+        ),
+      ],
+    ),
+  ],
+),
+          );
+        }),
+      ),
+    ],
+  ),
+),
+              ),
+              
+              Container(
+  margin: const EdgeInsets.all(15),
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Header da seção
+      Row(
+        children: [
+          Icon(
+            Icons.receipt_outlined,
+            color: TColor.primary,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            "Order Summary",
+            style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+      
+      const SizedBox(height: 20),
+      
+      // Subtotal
+      _buildSummaryRow("Sub Total", "${CartService.getTotal().toStringAsFixed(2)} MZN", false),
+      
+      const SizedBox(height: 12),
+      
+      // Delivery cost
+      _buildSummaryRow("Delivery Cost", "0 MZN", false),
+      
+      const SizedBox(height: 16),
+      
+      // Divider
+      Container(
+        height: 1,
+        color: TColor.secondaryText.withOpacity(0.2),
+      ),
+      
+      const SizedBox(height: 16),
+      
+      // Total
+      _buildSummaryRow("Total", "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN", true),
+      
+      const SizedBox(height: 30),
+      
+      // Botões de ação
+      Row(
+        children: [
+          // Botão Continue Shopping
+          Expanded(
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                border: Border.all(color: TColor.primary),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+        'home',
+        (route) => false,
+      );
+                },
+                child: Text(
+                  "Continue Shopping",
+                  style: TextStyle(
+                    color: TColor.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Botão Checkout
+          Expanded(
+            flex: 2,
+            child: Container(
+              height: 50,
+              child: RoundButton(
+                title: "Checkout",
+                onPressed: () {
+                  if (!itemArr.isEmpty) {
+                    _showCheckoutDialog();
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
             ],
           ),
         ),
@@ -376,128 +908,315 @@ class _MyOrderViewState extends State<MyOrderView> {
     );
   }
 
-}
-
 Future<void> _createPDFv2() async {
   final PdfDocument document = PdfDocument();
   final page = document.pages.add();
-
-  // Logo (imagem opcional)
-  final PdfBitmap logo = PdfBitmap(await _readImageData('assets/img/manna_icon.png'));
-  page.graphics.drawImage(logo, Rect.fromLTWH(0, 0, 80, 80));
-
-  // Nome da loja
-  page.graphics.drawString(
-    'Manna Restaurant',
-    PdfStandardFont(PdfFontFamily.helvetica, 18, style: PdfFontStyle.bold),
-    bounds: Rect.fromLTWH(90, 0, 500, 25),
+  
+  // Cores modernas
+  final PdfColor primaryColor = PdfColor(255, 107, 53); // Laranja moderno
+  final PdfColor accentColor = PdfColor(45, 55, 72); // Azul escuro
+  final PdfColor lightGray = PdfColor(247, 250, 252);
+  final PdfColor darkGray = PdfColor(113, 128, 150);
+  
+  double currentY = 0;
+  double pageWidth = page.getClientSize().width;
+  
+  // Header colorido de fundo
+  page.graphics.drawRectangle(
+    brush: PdfSolidBrush(primaryColor),
+    bounds: Rect.fromLTWH(0, 0, pageWidth, 100),
   );
-
-  // Endereço e categoria
+  
+  // Logo com fundo branco arredondado
+ page.graphics.drawEllipse(
+  Rect.fromLTWH(20, 15, 70, 70),
+  brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+);
+  
+  // Logo do restaurante
+  String logoSource = restaurantLogo.isNotEmpty 
+      ? restaurantLogo 
+      : 'assets/img/manna_icon.png';
+  
+  try {
+  final PdfBitmap logo = PdfBitmap(await _readImageData(logoSource));
+  page.graphics.drawImage(logo, Rect.fromLTWH(25, 20, 60, 60));
+} catch (e) {
+  print("Erro ao carregar logo: $e");
+  // Desenhar círculo como placeholder
+  page.graphics.drawEllipse(
+    Rect.fromLTWH(25, 20, 60, 60),
+    brush: PdfSolidBrush(PdfColor(200, 200, 200)),
+  );
+}
+  
+  // Informações do restaurante no header
   page.graphics.drawString(
-    'Beira, Sofala, Mozambique',
+    restaurantName.isNotEmpty ? restaurantName : 'Manna Restaurant',
+    PdfStandardFont(PdfFontFamily.helvetica, 22, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 20, 400, 30),
+  );
+  
+  page.graphics.drawString(
+    _buildAddressText(),
     PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(90, 25, 500, 20),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 45, 400, 20),
   );
+  
+  // Número do pedido e data
+  String orderNumber = "PD${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
   page.graphics.drawString(
-    'Categoria: Restaurante',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(90, 45, 500, 20),
+    'Pedido #$orderNumber',
+    PdfStandardFont(PdfFontFamily.helvetica, 10, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 65, 200, 15),
   );
-
-  double currentY = 100;
-
-  // Tabela de itens
-  PdfGrid grid = PdfGrid();
-  grid.columns.add(count: 3);
-  grid.headers.add(1);
-
-  PdfGridRow header = grid.headers[0];
-  header.cells[0].value = 'Produto';
-  header.cells[1].value = 'Qtd';
-  header.cells[2].value = 'Preço';
-
-  // Exemplo estático. Substitua por itemArr do seu app
+  
+  page.graphics.drawString(
+    DateTime.now().toLocal().toString().split('.')[0],
+    PdfStandardFont(PdfFontFamily.helvetica, 10),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 80, 200, 15),
+  );
+  
+  currentY = 120;
+  
+  // Título da seção de itens
+  page.graphics.drawString(
+  'ITENS DO PEDIDO',
+  PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
+  brush: PdfSolidBrush(accentColor),
+  bounds: Rect.fromLTWH(0, currentY, 300, 20),
+);
+  
+  currentY += 35;
+  
+  // Tabela moderna de itens
   List<Map<String, dynamic>> items = CartService.getCartItems();
-
-  print("Lista de Items "+items.toString());
-
-  for (var item in items) {
-    PdfGridRow row = grid.rows.add();
-    row.cells[0].value = item['name'];
-    row.cells[1].value = "${item['qty']}";
-    row.cells[2].value = "${(double.parse(item['price'].toString()) * double.parse(item['qty'].toString())).toStringAsFixed(2)} MZN";
+  
+  if (items.isEmpty) {
+    page.graphics.drawString(
+      'Nenhum item no carrinho!',
+      PdfStandardFont(PdfFontFamily.helvetica, 14),
+     brush: PdfSolidBrush(PdfColor(255, 0, 0)), 
+      bounds: Rect.fromLTWH(20, currentY, 500, 25),
+    );
+    
+    List<int> bytes = await document.save();
+    document.dispose();
+    platform.saveAndLaunchFile(bytes, 'recibo_vazio.pdf');
+    return;
   }
-
-  grid.style = PdfGridStyle(
-    font: PdfStandardFont(PdfFontFamily.helvetica, 12),
-    cellPadding: PdfPaddings(left: 5, right: 5, top: 3, bottom: 3),
+  
+  // Header da tabela com fundo colorido
+  page.graphics.drawRectangle(
+    brush: PdfSolidBrush(lightGray),
+    bounds: Rect.fromLTWH(0, currentY, pageWidth, 25),
   );
-
-  grid.draw(
-    page: page,
-    bounds: Rect.fromLTWH(0, currentY, page.getClientSize().width, 0),
+  
+  page.graphics.drawString(
+    'PRODUTO',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(10, currentY + 8, 200, 15),
   );
-
-  currentY += 20 + (items.length * 25); // Ajustar para após a tabela
-
-  // Subtotal e total
-  double subTotal = items.fold(0, (sum, item) => sum + item['price']);
+  
+  page.graphics.drawString(
+    'QTD',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(300, currentY + 8, 50, 15),
+  );
+  
+  page.graphics.drawString(
+    'PREÇO UNIT.',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(370, currentY + 8, 80, 15),
+  );
+  
+  page.graphics.drawString(
+    'TOTAL',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(460, currentY + 8, 80, 15),
+  );
+  
+  currentY += 25;
+  
+  // Itens da tabela com linhas alternadas
+  for (int i = 0; i < items.length; i++) {
+    var item = items[i];
+    double itemPrice = double.parse(item['price'].toString());
+    int quantity = int.parse(item['qty'].toString());
+    double totalItemPrice = itemPrice * quantity;
+    
+    // Cor de fundo alternada
+    if (i % 2 == 0) {
+      page.graphics.drawRectangle(
+        brush: PdfSolidBrush(PdfColor(250, 250, 250)),
+       bounds: Rect.fromLTWH(0, currentY, pageWidth, 25),
+      );
+    }
+    
+    page.graphics.drawString(
+      item['name'],
+      PdfStandardFont(PdfFontFamily.helvetica, 10),
+      bounds: Rect.fromLTWH(10, currentY + 8, 250, 15),
+    );
+    
+    page.graphics.drawString(
+      quantity.toString(),
+      PdfStandardFont(PdfFontFamily.helvetica, 10),
+      bounds: Rect.fromLTWH(300, currentY + 8, 50, 15),
+    );
+    
+    page.graphics.drawString(
+      '${itemPrice.toStringAsFixed(2)} MZN',
+      PdfStandardFont(PdfFontFamily.helvetica, 10),
+      bounds: Rect.fromLTWH(370, currentY + 8, 80, 15),
+    );
+    
+    page.graphics.drawString(
+      '${totalItemPrice.toStringAsFixed(2)} MZN',
+      PdfStandardFont(PdfFontFamily.helvetica, 10, style: PdfFontStyle.bold),
+      bounds: Rect.fromLTWH(460, currentY + 8, 80, 15),
+    );
+    
+    currentY += 25;
+  }
+  
+  currentY += 20;
+  
+  // Seção de totais com design moderno
+  double boxStartY = currentY;
+  page.graphics.drawRectangle(
+    brush: PdfSolidBrush(lightGray),
+    bounds: Rect.fromLTWH(300, boxStartY, 250, 80),
+  );
+  
+  // Borda colorida
+  page.graphics.drawRectangle(
+    pen: PdfPen(primaryColor, width: 2),
+    bounds: Rect.fromLTWH(300, boxStartY, 250, 80),
+  );
+  
+  double subTotal = CartService.getTotal();
   double delivery = 0;
   double total = subTotal + delivery;
+  // double boxStartY = currentY;
+  double boxWidth = 220; // DEFINIR boxWidth primeiro
+  double boxStartX = pageWidth - boxWidth; // Agora pode usar boxWidth
+  
+ // Subtotal
+page.graphics.drawString(
+  'Subtotal:',
+  PdfStandardFont(PdfFontFamily.helvetica, 12),
+  bounds: Rect.fromLTWH(boxStartX + 20, boxStartY + 15, 100, 15),
+);
 
-  page.graphics.drawString(
-    'SubTotal: ${subTotal.toStringAsFixed(2)} MZN',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(300, currentY, 200, 20),
-  );
+page.graphics.drawString(
+  '${subTotal.toStringAsFixed(2)} MZN',
+  PdfStandardFont(PdfFontFamily.helvetica, 12, style: PdfFontStyle.bold),
+  bounds: Rect.fromLTWH(boxStartX + 120, boxStartY + 15, 80, 15),
+);
+
+// Delivery
+page.graphics.drawString(
+  'Entrega:',
+  PdfStandardFont(PdfFontFamily.helvetica, 12),
+  bounds: Rect.fromLTWH(boxStartX + 20, boxStartY + 35, 100, 15),
+);
+
+page.graphics.drawString(
+  '${delivery.toStringAsFixed(2)} MZN',
+  PdfStandardFont(PdfFontFamily.helvetica, 12, style: PdfFontStyle.bold),
+  bounds: Rect.fromLTWH(boxStartX + 120, boxStartY + 35, 80, 15),
+);
+
+// Linha separadora
+page.graphics.drawLine(
+  PdfPen(darkGray),
+  Offset(boxStartX + 20, boxStartY + 50),
+  Offset(boxStartX + boxWidth - 20, boxStartY + 50),
+);
+
+// Total
+page.graphics.drawString(
+  'TOTAL:',
+  PdfStandardFont(PdfFontFamily.helvetica, 14, style: PdfFontStyle.bold),
+  brush: PdfSolidBrush(accentColor),
+  bounds: Rect.fromLTWH(boxStartX + 20, boxStartY + 55, 100, 20),
+);
+
+page.graphics.drawString(
+  '${total.toStringAsFixed(2)} MZN',
+  PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
+  brush: PdfSolidBrush(primaryColor),
+  bounds: Rect.fromLTWH(boxStartX + 80, boxStartY + 55, boxWidth - 100, 20),
+);
+
+currentY = boxStartY + 100;
+
+// Footer moderno
+page.graphics.drawLine(
+  PdfPen(lightGray, width: 2),
+  Offset(0, currentY), // CORRIGIDO: era 20, agora é 0
+  Offset(pageWidth, currentY),
+);
+  
   currentY += 20;
-
+  
   page.graphics.drawString(
-    'Custo de Entrega: ${delivery.toStringAsFixed(2)} MZN',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(300, currentY, 200, 20),
+    '🍕 Obrigado pelo seu pedido!',
+    PdfStandardFont(PdfFontFamily.helvetica, 14, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(primaryColor),
+    bounds: Rect.fromLTWH(0, currentY, 300, 20),
   );
-  currentY += 20;
-
+  
+  currentY += 25;
+  
   page.graphics.drawString(
-    'TOTAL: ${total.toStringAsFixed(2)} MZN',
-    PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
-    bounds: Rect.fromLTWH(300, currentY, 200, 25),
+    'Seu pedido será preparado com muito carinho.',
+    PdfStandardFont(PdfFontFamily.helvetica, 11),
+    brush: PdfSolidBrush(darkGray),
+    bounds: Rect.fromLTWH(0, currentY, 300, 15),
   );
-
-  currentY += 40;
-
-  // Rodapé
-  page.graphics.drawString(
-    'Obrigado pelo seu pedido!',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(0, currentY, page.getClientSize().width, 20),
-  );
-
-  page.graphics.drawString(
-    'Data: ${DateTime.now().toLocal()}',
-    PdfStandardFont(PdfFontFamily.helvetica, 10),
-    bounds: Rect.fromLTWH(0, currentY + 20, 300, 15),
-  );
-
+  
   // Gerar e salvar
   List<int> bytes = await document.save();
   document.dispose();
-
-  platform.saveAndLaunchFile(bytes, 'recibo_manna.pdf');
-
-//  if(kIsWeb) {
-//   await saveAndLaunchFileWeb(bytes, 'recibo_pedido.pdf');
-//  }
-//  else {
-//   await saveAndLaunchFile(bytes, 'recibo_pedido.pdf');
-//  }  
+  
+  String fileName = 'recibo_${restaurantName.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+  platform.saveAndLaunchFile(bytes, fileName);
+}
+Future<Uint8List> _readImageData(String source) async {
+  if (source.startsWith('http')) {
+    // Carregar imagem da URL
+    try {
+      final response = await http.get(Uri.parse(source));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        // Se falhar, usar imagem padrão
+        final data = await rootBundle.load('assets/img/manna_icon.png');
+        return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      }
+    } catch (e) {
+      print("Erro ao carregar logo: $e");
+      // Se falhar, usar imagem padrão
+      final data = await rootBundle.load('assets/img/manna_icon.png');
+      return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    }
+  } else {
+    // Carregar imagem dos assets
+    final data = await rootBundle.load(source);
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
+}
 }
 
 
-Future<Uint8List> _readImageData(String name) async {
-  final data = await rootBundle.load(name);
-  return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-}
 

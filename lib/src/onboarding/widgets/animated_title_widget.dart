@@ -7,32 +7,34 @@ import 'package:flutter_animate/flutter_animate.dart';
 class AnimatedTitleWidget extends StatelessWidget {
   final Duration titleDelayDuration;
   final Duration mainPlayDuration;
+  final String restaurantName;
 
   const AnimatedTitleWidget({
     Key? key,
     required this.titleDelayDuration,
     required this.mainPlayDuration,
+    required this.restaurantName,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
+    return Flexible( // Mudança principal: SizedBox por Flexible
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Text.rich(
           TextSpan(
               style: Theme.of(context).textTheme.displaySmall,
-              children: const [
+              children: [
                 TextSpan(
-                  text: Strings.onBoardingTitle,
+                  text: restaurantName.isNotEmpty ? restaurantName : Strings.onBoardingTitle,
                   style: TextStyle(color: AppColors.primarySpecial)
                 ),
                 TextSpan(
-                    text: ' everyday',
+                    text: ' Menu Digital',
                     style: TextStyle(color: AppColors.timeLineColor)),
               ]),
           textAlign: TextAlign.center,
+          overflow: TextOverflow.visible, // Permite overflow visível
         ),
       ),
     )
