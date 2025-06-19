@@ -9,6 +9,7 @@ import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // import './../../pdf/web.dart' if (dart.library.html) './../../pdf/mobile.dart' as platform;
 // import 'web.dart' if (dart.library.io) 'mobile.dart' as platform;
@@ -33,12 +34,71 @@ class _MyOrderViewState extends State<MyOrderView> {
   // ];
 
   List itemArr = CartService.getCartItems();
+  String restaurantName = '';
+  String restaurantLogo = '';
+  String restaurantAddress = '';
+  String restaurantCity = '';
+  bool isLoading = true;
+
+  @override
+void initState() {
+  super.initState();
+  loadRestaurantData();
+}
+
+Future<void> loadRestaurantData() async {
+  final prefs = await SharedPreferences.getInstance();
+  setState(() {
+    restaurantName = prefs.getString('restaurant_name') ?? 'Manna Restaurant';
+    restaurantLogo = prefs.getString('restaurant_logo') ?? '';
+    restaurantAddress = prefs.getString('restaurant_address') ?? '';
+    restaurantCity = prefs.getString('restaurant_city') ?? '';
+    isLoading = false;
+  });
+  
+  print("Dados do restaurante carregados: $restaurantName");
+}
+
+String _buildAddressText() {
+  List<String> addressParts = [];
+  
+  if (restaurantAddress.isNotEmpty) {
+    addressParts.add(restaurantAddress);
+  }
+  
+  if (restaurantCity.isNotEmpty) {
+    addressParts.add(restaurantCity);
+  }
+  
+  if (addressParts.isEmpty) {
+    return " ... "; // Fallback
+  }
+  
+  return addressParts.join(", ");
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TColor.white,
-      body: SingleChildScrollView(
+      body: isLoading 
+      ? Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: TColor.primary),
+              const SizedBox(height: 20),
+              Text(
+                "Loading restaurant info...",
+                style: TextStyle(
+                  color: TColor.secondaryText,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        )
+      :  SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
@@ -79,13 +139,28 @@ class _MyOrderViewState extends State<MyOrderView> {
                 child: Row(
                   children: [
                     ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
-                        child: Image.asset(
-                          "assets/img/manna_icon.png",
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                        )),
+    borderRadius: BorderRadius.circular(15),
+    child: restaurantLogo.isNotEmpty 
+        ? Image.network(
+            restaurantLogo,
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                "assets/img/manna_icon.png",
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              );
+            },
+          )
+        : Image.asset(
+            "assets/img/manna_icon.png",
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+          )),
                     const SizedBox(
                       width: 8,
                     ),
@@ -94,7 +169,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Manna Restaurant",
+                            restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: TColor.primaryText,
@@ -140,7 +215,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                "Manna Restaurant",
+                                restaurantName.isNotEmpty ? restaurantName : "Manna Restaurant",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: TColor.secondaryText, fontSize: 12),
@@ -176,7 +251,7 @@ class _MyOrderViewState extends State<MyOrderView> {
                               ),
                               Expanded(
                                 child: Text(
-                                  "Beira, Sofala, Mozambique",
+                                  _buildAddressText(),
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                       color: TColor.secondaryText,
