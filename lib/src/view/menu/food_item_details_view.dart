@@ -23,6 +23,7 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
   double price = 16;
   int qty = 1;
   bool isFav = false;
+  bool isAddingToCart = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +47,70 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
         children: [
           // Imagem de fundo
           Container(
-            width: media.width,
-            height: imageHeight,
-            child: Image.network(
-              widget.foodDetails["image"],
-              width: media.width,
-              height: imageHeight,
-              fit: BoxFit.cover,
-            ),
+  width: media.width,
+  height: imageHeight,
+  child: Image.network(
+    widget.foodDetails["image"],
+    width: media.width,
+    height: imageHeight,
+    fit: BoxFit.cover,
+    loadingBuilder: (context, child, loadingProgress) {
+      if (loadingProgress == null) return child;
+      return Container(
+        width: media.width,
+        height: imageHeight,
+        color: Colors.grey.shade200,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                    : null,
+                color: TColor.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Loading image...",
+                style: TextStyle(
+                  color: TColor.secondaryText,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
+        ),
+      );
+    },
+    errorBuilder: (context, error, stackTrace) {
+      return Container(
+        width: media.width,
+        height: imageHeight,
+        color: Colors.grey.shade200,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_not_supported,
+              size: 64,
+              color: TColor.secondaryText,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Unable to load image",
+              style: TextStyle(
+                color: TColor.secondaryText,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  ),
+),
           
           // Gradiente sobre a imagem
           Container(
@@ -315,31 +371,76 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
   }
   
   // Widget para exibir o preço
-  Widget _buildPriceWidget() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
+
+Widget _buildPriceWidget() {
+  bool isOnPromotion = widget.foodDetails["is_on_promotion"] == true;
+  double regularPrice = widget.foodDetails["regular_price"]?.toDouble() ?? price;
+  double currentPrice = price;
+  
+  // Calcular porcentagem de desconto
+  double discountPercent = 0;
+  if (isOnPromotion && regularPrice > currentPrice) {
+    discountPercent = ((regularPrice - currentPrice) / regularPrice) * 100;
+  }
+  
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      // Badge de promoção
+      if (isOnPromotion)
+        Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            "PROMOÇÃO -${discountPercent.toStringAsFixed(0)}%",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      
+      // Preços
+      if (isOnPromotion && regularPrice > currentPrice) ...[
+        // Preço original riscado
         Text(
-          "${price.toStringAsFixed(2)} MZN",
+          "${regularPrice.toStringAsFixed(2)} MZN",
           style: TextStyle(
-            color: TColor.primaryText,
-            fontSize: 31,
-            fontWeight: FontWeight.w700
+            color: TColor.secondaryText,
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            decoration: TextDecoration.lineThrough,
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          "/per Portion",
-          style: TextStyle(
-            color: TColor.primaryText,
-            fontSize: 11,
-            fontWeight: FontWeight.w500
-          ),
-        ),
       ],
-    );
-  }
-  
+      
+      // Preço atual
+      Text(
+        "${currentPrice.toStringAsFixed(2)} MZN",
+        style: TextStyle(
+          color: isOnPromotion ? Colors.red : TColor.primaryText,
+          fontSize: 31,
+          fontWeight: FontWeight.w700
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        "/per Portion",
+        style: TextStyle(
+          color: TColor.primaryText,
+          fontSize: 11,
+          fontWeight: FontWeight.w500
+        ),
+      ),
+    ],
+  );
+}
   // Widget para o seletor de quantidade
   Widget _buildQuantitySelector() {
     return Row(
@@ -463,13 +564,35 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
                 width: 160,
                 height: 40,
                 child: RoundIconButton(
-                  title: "Add to Cart",
-                  icon: "assets/img/shopping_add.png",
-                  color: TColor.primary,
-                  onPressed: () {
+                  title: isAddingToCart ? "Adding..." : "Add to Cart",
+                  icon: isAddingToCart ? "assets/img/shopping_add.png" : "assets/img/shopping_add.png",
+                  color: isAddingToCart ? TColor.secondaryText : TColor.primary,
+                  onPressed: isAddingToCart ? (){} : () async {
+                    setState(() {
+                      isAddingToCart = true;
+                    });
+                    
+                    // Simular delay para melhor UX
+                    await Future.delayed(const Duration(milliseconds: 800));
+                    
                     CartService.addToCart(widget.foodDetails["name"], qty, price);
+                    
+                    setState(() {
+                      isAddingToCart = false;
+                    });
+                    
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Adicionado ao carrinho!")),
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            Icon(Icons.check_circle, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Text("${widget.foodDetails["name"]} adicionado ao carrinho!"),
+                          ],
+                        ),
+                        backgroundColor: Colors.green,
+                        duration: const Duration(seconds: 2),
+                      ),
                     );
                   }
                 ),
@@ -584,20 +707,41 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
                       ),
                       const SizedBox(height: 15),
                       SizedBox(
-                        width: 130,
-                        height: 25,
-                        child: RoundIconButton(
-                          title: "Add to Cart",
-                          icon: "assets/img/shopping_add.png",
-                          color: TColor.primary,
-                          onPressed: () {
-                            CartService.addToCart(widget.foodDetails["name"], qty, price);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Adicionado ao carrinho!")),
-                            );
-                          }
-                        ),
-                      )
+  width: 130,
+  height: 25,
+  child: RoundIconButton(
+    title: isAddingToCart ? "Adding..." : "Add to Cart",
+    icon: isAddingToCart ? "assets/img/shopping_add.png" : "assets/img/shopping_add.png",
+    color: isAddingToCart ? TColor.secondaryText : TColor.primary,
+    onPressed: isAddingToCart ? (){} : () async {
+      setState(() {
+        isAddingToCart = true;
+      });
+      
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      CartService.addToCart(widget.foodDetails["name"], qty, price);
+      
+      setState(() {
+        isAddingToCart = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Expanded(child: Text("${widget.foodDetails["name"]} adicionado!")),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  ),
+)
                     ],
                   )
                 ),
