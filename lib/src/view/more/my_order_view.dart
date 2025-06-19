@@ -11,6 +11,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 // import './../../pdf/web.dart' if (dart.library.html) './../../pdf/mobile.dart' as platform;
 // import 'web.dart' if (dart.library.io) 'mobile.dart' as platform;
@@ -910,55 +911,97 @@ void _showCheckoutDialog() {
 Future<void> _createPDFv2() async {
   final PdfDocument document = PdfDocument();
   final page = document.pages.add();
-
-  // Logo (imagem do restaurante ou padrão)
-  final PdfBitmap logo = PdfBitmap(await _readImageData('assets/img/manna_icon.png'));
-  page.graphics.drawImage(logo, Rect.fromLTWH(0, 0, 80, 80));
-
-  // Nome da loja DINÂMICO
+  
+  // Cores modernas
+  final PdfColor primaryColor = PdfColor(255, 107, 53); // Laranja moderno
+  final PdfColor accentColor = PdfColor(45, 55, 72); // Azul escuro
+  final PdfColor lightGray = PdfColor(247, 250, 252);
+  final PdfColor darkGray = PdfColor(113, 128, 150);
+  
+  double currentY = 0;
+  double pageWidth = page.getClientSize().width;
+  
+  // Header colorido de fundo
+  page.graphics.drawRectangle(
+    brush: PdfSolidBrush(primaryColor),
+    bounds: Rect.fromLTWH(0, 0, pageWidth, 100),
+  );
+  
+  // Logo com fundo branco arredondado
+ page.graphics.drawEllipse(
+  Rect.fromLTWH(20, 15, 70, 70),
+  brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+);
+  
+  // Logo do restaurante
+  String logoSource = restaurantLogo.isNotEmpty 
+      ? restaurantLogo 
+      : 'assets/img/manna_icon.png';
+  
+  try {
+  final PdfBitmap logo = PdfBitmap(await _readImageData(logoSource));
+  page.graphics.drawImage(logo, Rect.fromLTWH(25, 20, 60, 60));
+} catch (e) {
+  print("Erro ao carregar logo: $e");
+  // Desenhar círculo como placeholder
+  page.graphics.drawEllipse(
+    Rect.fromLTWH(25, 20, 60, 60),
+    brush: PdfSolidBrush(PdfColor(200, 200, 200)),
+  );
+}
+  
+  // Informações do restaurante no header
   page.graphics.drawString(
     restaurantName.isNotEmpty ? restaurantName : 'Manna Restaurant',
-    PdfStandardFont(PdfFontFamily.helvetica, 18, style: PdfFontStyle.bold),
-    bounds: Rect.fromLTWH(90, 0, 500, 25),
+    PdfStandardFont(PdfFontFamily.helvetica, 22, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 20, 400, 30),
   );
-
-  // Endereço DINÂMICO
+  
   page.graphics.drawString(
     _buildAddressText(),
     PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(90, 25, 500, 20),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 45, 400, 20),
   );
+  
+  // Número do pedido e data
+  String orderNumber = "PD${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
   page.graphics.drawString(
-    'Categoria: Restaurante',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(90, 45, 500, 20),
+    'Pedido #$orderNumber',
+    PdfStandardFont(PdfFontFamily.helvetica, 10, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 65, 200, 15),
   );
-
-  double currentY = 100;
-
-  // Tabela de itens
-  PdfGrid grid = PdfGrid();
-  grid.columns.add(count: 3);
-  grid.headers.add(1);
-
-  PdfGridRow header = grid.headers[0];
-  header.cells[0].value = 'Produto';
-  header.cells[1].value = 'Qtd';
-  header.cells[2].value = 'Preço Total';
-
-  // Usar items do carrinho ATUAL
+  
+  page.graphics.drawString(
+    DateTime.now().toLocal().toString().split('.')[0],
+    PdfStandardFont(PdfFontFamily.helvetica, 10),
+    brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    bounds: Rect.fromLTWH(110, 80, 200, 15),
+  );
+  
+  currentY = 120;
+  
+  // Título da seção de itens
+  page.graphics.drawString(
+  'ITENS DO PEDIDO',
+  PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
+  brush: PdfSolidBrush(accentColor),
+  bounds: Rect.fromLTWH(0, currentY, 300, 20),
+);
+  
+  currentY += 35;
+  
+  // Tabela moderna de itens
   List<Map<String, dynamic>> items = CartService.getCartItems();
-
-  print("=== Gerando PDF ===");
-  print("Número de itens no carrinho: ${items.length}");
-  print("Lista de Items: $items");
-
-  // Verificar se carrinho não está vazio
+  
   if (items.isEmpty) {
     page.graphics.drawString(
       'Nenhum item no carrinho!',
-      PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
-      bounds: Rect.fromLTWH(0, currentY, 500, 25),
+      PdfStandardFont(PdfFontFamily.helvetica, 14),
+     brush: PdfSolidBrush(PdfColor(255, 0, 0)), 
+      bounds: Rect.fromLTWH(20, currentY, 500, 25),
     );
     
     List<int> bytes = await document.save();
@@ -966,84 +1009,212 @@ Future<void> _createPDFv2() async {
     platform.saveAndLaunchFile(bytes, 'recibo_vazio.pdf');
     return;
   }
-
-  for (var item in items) {
-    PdfGridRow row = grid.rows.add();
+  
+  // Header da tabela com fundo colorido
+  page.graphics.drawRectangle(
+    brush: PdfSolidBrush(lightGray),
+    bounds: Rect.fromLTWH(0, currentY, pageWidth, 25),
+  );
+  
+  page.graphics.drawString(
+    'PRODUTO',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(10, currentY + 8, 200, 15),
+  );
+  
+  page.graphics.drawString(
+    'QTD',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(300, currentY + 8, 50, 15),
+  );
+  
+  page.graphics.drawString(
+    'PREÇO UNIT.',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(370, currentY + 8, 80, 15),
+  );
+  
+  page.graphics.drawString(
+    'TOTAL',
+    PdfStandardFont(PdfFontFamily.helvetica, 11, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(accentColor),
+    bounds: Rect.fromLTWH(460, currentY + 8, 80, 15),
+  );
+  
+  currentY += 25;
+  
+  // Itens da tabela com linhas alternadas
+  for (int i = 0; i < items.length; i++) {
+    var item = items[i];
     double itemPrice = double.parse(item['price'].toString());
     int quantity = int.parse(item['qty'].toString());
     double totalItemPrice = itemPrice * quantity;
     
-    row.cells[0].value = item['name'];
-    row.cells[1].value = "${item['qty']}";
-    row.cells[2].value = "${totalItemPrice.toStringAsFixed(2)} MZN";
+    // Cor de fundo alternada
+    if (i % 2 == 0) {
+      page.graphics.drawRectangle(
+        brush: PdfSolidBrush(PdfColor(250, 250, 250)),
+       bounds: Rect.fromLTWH(0, currentY, pageWidth, 25),
+      );
+    }
+    
+    page.graphics.drawString(
+      item['name'],
+      PdfStandardFont(PdfFontFamily.helvetica, 10),
+      bounds: Rect.fromLTWH(10, currentY + 8, 250, 15),
+    );
+    
+    page.graphics.drawString(
+      quantity.toString(),
+      PdfStandardFont(PdfFontFamily.helvetica, 10),
+      bounds: Rect.fromLTWH(300, currentY + 8, 50, 15),
+    );
+    
+    page.graphics.drawString(
+      '${itemPrice.toStringAsFixed(2)} MZN',
+      PdfStandardFont(PdfFontFamily.helvetica, 10),
+      bounds: Rect.fromLTWH(370, currentY + 8, 80, 15),
+    );
+    
+    page.graphics.drawString(
+      '${totalItemPrice.toStringAsFixed(2)} MZN',
+      PdfStandardFont(PdfFontFamily.helvetica, 10, style: PdfFontStyle.bold),
+      bounds: Rect.fromLTWH(460, currentY + 8, 80, 15),
+    );
+    
+    currentY += 25;
   }
-
-  grid.style = PdfGridStyle(
-    font: PdfStandardFont(PdfFontFamily.helvetica, 12),
-    cellPadding: PdfPaddings(left: 5, right: 5, top: 3, bottom: 3),
+  
+  currentY += 20;
+  
+  // Seção de totais com design moderno
+  double boxStartY = currentY;
+  page.graphics.drawRectangle(
+    brush: PdfSolidBrush(lightGray),
+    bounds: Rect.fromLTWH(300, boxStartY, 250, 80),
   );
-
-  grid.draw(
-    page: page,
-    bounds: Rect.fromLTWH(0, currentY, page.getClientSize().width, 0),
+  
+  // Borda colorida
+  page.graphics.drawRectangle(
+    pen: PdfPen(primaryColor, width: 2),
+    bounds: Rect.fromLTWH(300, boxStartY, 250, 80),
   );
-
-  currentY += 20 + (items.length * 25); // Ajustar para após a tabela
-
-  // CORRIGIR cálculo do subtotal
-  double subTotal = CartService.getTotal(); // Usar função que já calcula corretamente
+  
+  double subTotal = CartService.getTotal();
   double delivery = 0;
   double total = subTotal + delivery;
+  // double boxStartY = currentY;
+  double boxWidth = 220; // DEFINIR boxWidth primeiro
+  double boxStartX = pageWidth - boxWidth; // Agora pode usar boxWidth
+  
+ // Subtotal
+page.graphics.drawString(
+  'Subtotal:',
+  PdfStandardFont(PdfFontFamily.helvetica, 12),
+  bounds: Rect.fromLTWH(boxStartX + 20, boxStartY + 15, 100, 15),
+);
 
-  print("SubTotal calculado: $subTotal");
-  print("Total final: $total");
+page.graphics.drawString(
+  '${subTotal.toStringAsFixed(2)} MZN',
+  PdfStandardFont(PdfFontFamily.helvetica, 12, style: PdfFontStyle.bold),
+  bounds: Rect.fromLTWH(boxStartX + 120, boxStartY + 15, 80, 15),
+);
 
-  page.graphics.drawString(
-    'SubTotal: ${subTotal.toStringAsFixed(2)} MZN',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(300, currentY, 200, 20),
-  );
+// Delivery
+page.graphics.drawString(
+  'Entrega:',
+  PdfStandardFont(PdfFontFamily.helvetica, 12),
+  bounds: Rect.fromLTWH(boxStartX + 20, boxStartY + 35, 100, 15),
+);
+
+page.graphics.drawString(
+  '${delivery.toStringAsFixed(2)} MZN',
+  PdfStandardFont(PdfFontFamily.helvetica, 12, style: PdfFontStyle.bold),
+  bounds: Rect.fromLTWH(boxStartX + 120, boxStartY + 35, 80, 15),
+);
+
+// Linha separadora
+page.graphics.drawLine(
+  PdfPen(darkGray),
+  Offset(boxStartX + 20, boxStartY + 50),
+  Offset(boxStartX + boxWidth - 20, boxStartY + 50),
+);
+
+// Total
+page.graphics.drawString(
+  'TOTAL:',
+  PdfStandardFont(PdfFontFamily.helvetica, 14, style: PdfFontStyle.bold),
+  brush: PdfSolidBrush(accentColor),
+  bounds: Rect.fromLTWH(boxStartX + 20, boxStartY + 55, 100, 20),
+);
+
+page.graphics.drawString(
+  '${total.toStringAsFixed(2)} MZN',
+  PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
+  brush: PdfSolidBrush(primaryColor),
+  bounds: Rect.fromLTWH(boxStartX + 80, boxStartY + 55, boxWidth - 100, 20),
+);
+
+currentY = boxStartY + 100;
+
+// Footer moderno
+page.graphics.drawLine(
+  PdfPen(lightGray, width: 2),
+  Offset(0, currentY), // CORRIGIDO: era 20, agora é 0
+  Offset(pageWidth, currentY),
+);
+  
   currentY += 20;
-
+  
   page.graphics.drawString(
-    'Custo de Entrega: ${delivery.toStringAsFixed(2)} MZN',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(300, currentY, 200, 20),
+    '🍕 Obrigado pelo seu pedido!',
+    PdfStandardFont(PdfFontFamily.helvetica, 14, style: PdfFontStyle.bold),
+    brush: PdfSolidBrush(primaryColor),
+    bounds: Rect.fromLTWH(0, currentY, 300, 20),
   );
-  currentY += 20;
-
+  
+  currentY += 25;
+  
   page.graphics.drawString(
-    'TOTAL: ${total.toStringAsFixed(2)} MZN',
-    PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
-    bounds: Rect.fromLTWH(300, currentY, 200, 25),
+    'Seu pedido será preparado com muito carinho.',
+    PdfStandardFont(PdfFontFamily.helvetica, 11),
+    brush: PdfSolidBrush(darkGray),
+    bounds: Rect.fromLTWH(0, currentY, 300, 15),
   );
-
-  currentY += 40;
-
-  // Rodapé
-  page.graphics.drawString(
-    'Obrigado pelo seu pedido!',
-    PdfStandardFont(PdfFontFamily.helvetica, 12),
-    bounds: Rect.fromLTWH(0, currentY, page.getClientSize().width, 20),
-  );
-
-  page.graphics.drawString(
-    'Data: ${DateTime.now().toLocal().toString().split('.')[0]}', // Formato melhor
-    PdfStandardFont(PdfFontFamily.helvetica, 10),
-    bounds: Rect.fromLTWH(0, currentY + 20, 300, 15),
-  );
-
+  
   // Gerar e salvar
   List<int> bytes = await document.save();
   document.dispose();
-
+  
   String fileName = 'recibo_${restaurantName.replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}.pdf';
   platform.saveAndLaunchFile(bytes, fileName);
 }
-
-Future<Uint8List> _readImageData(String name) async {
-  final data = await rootBundle.load(name);
-  return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+Future<Uint8List> _readImageData(String source) async {
+  if (source.startsWith('http')) {
+    // Carregar imagem da URL
+    try {
+      final response = await http.get(Uri.parse(source));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      } else {
+        // Se falhar, usar imagem padrão
+        final data = await rootBundle.load('assets/img/manna_icon.png');
+        return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      }
+    } catch (e) {
+      print("Erro ao carregar logo: $e");
+      // Se falhar, usar imagem padrão
+      final data = await rootBundle.load('assets/img/manna_icon.png');
+      return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    }
+  } else {
+    // Carregar imagem dos assets
+    final data = await rootBundle.load(source);
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
 }
 }
 
