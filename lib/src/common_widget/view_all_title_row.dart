@@ -22,7 +22,7 @@ class ViewAllTitleRow extends StatelessWidget {
         TextButton(
           onPressed: onView,
           child: Text(
-            "View all",
+            "",
             style: TextStyle(
                 color: TColor.primary,
                 fontSize: 13,

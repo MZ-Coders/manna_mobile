@@ -156,12 +156,14 @@ class _HomeViewState extends State<HomeView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      _buildWelcomeMessage(),
-                      style: TextStyle(
-                          color: TColor.primaryText,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800),
+                    Expanded(
+                      child: Text(
+                        _buildWelcomeMessage(),
+                        style: TextStyle(
+                            color: TColor.primaryText,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800),
+                      ),
                     ),
                     IconButton(
                       onPressed: () {
