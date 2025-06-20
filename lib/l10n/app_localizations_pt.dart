@@ -104,6 +104,15 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get orderPlaced => 'Pedido realizado com sucesso!';
 
+    @override
+  String get orderQuestion => 'Tem a certeza que pretende finalizar o pedido?';
+
+@override
+String get totalAmount => 'Valor Total';
+
+@override
+String get confirmAndGenerateReceipt => 'Confirmar e Gerar Recibo';
+
   // @override
   // String get offers => 'Promoções';
   
@@ -320,6 +329,22 @@ String get loadingTitle => 'Carregando...';
 
 @override
 String get noPathFor => 'Nenhum caminho para';
+
+ //Offers Page
+  @override
+  String get latestOffers => 'Últimas Ofertas';
+
+  @override
+  String get findDiscounts => 'Encontre descontos, ofertas especiais\n e muito mais!';
+
+  @override
+  String get checkOffers => 'Verificar Ofertas';
+
+  @override
+  String get noPromotions => 'Nenhuma Promoção Disponível';
+
+  @override
+  String get checkBack => 'Solicite ao restaurante que verifique o link e tente novamente.';
 
   // Language
   @override

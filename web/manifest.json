@@ -1,6 +1,6 @@
 {
-    "name": "recipe",
-    "short_name": "recipe",
+    "name": "MannaSoftware",
+    "short_name": "mannasoftware",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common_widget/menu_item_row.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:dribbble_challenge/src/view/menu/food_item_details_view.dart';
@@ -140,7 +141,7 @@ class _OfferViewState extends State<OfferView> {
                     Flexible(
                       child: Expanded(
                         child: Text(
-                          "Latest Offers - $restaurantName",
+                          AppLocalizations.of(context).latestOffers +" - $restaurantName",
                           style: TextStyle(
                               color: TColor.primaryText,
                               fontSize: 20,
@@ -173,7 +174,7 @@ class _OfferViewState extends State<OfferView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Find discounts, Offers special\nmeals and more!",
+                      AppLocalizations.of(context).findDiscounts,
                       style: TextStyle(
                           color: TColor.secondaryText,
                           fontSize: 14,
@@ -190,7 +191,7 @@ class _OfferViewState extends State<OfferView> {
                 child: SizedBox(
                   width: 140,
                   height: 30,
-                  child: RoundButton(title: "check Offers", fontSize: 12 , onPressed: () {}),
+                  child: RoundButton(title: AppLocalizations.of(context).checkOffers, fontSize: 12 , onPressed: () {}),
                 ),
               ),
               const SizedBox(
@@ -216,7 +217,7 @@ class _OfferViewState extends State<OfferView> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                "No promotions available",
+                                AppLocalizations.of(context).noPromotions,
                                 style: TextStyle(
                                   color: TColor.secondaryText,
                                   fontSize: 16,
@@ -224,7 +225,7 @@ class _OfferViewState extends State<OfferView> {
                                 ),
                               ),
                               Text(
-                                "Check back later for special offers!",
+                                AppLocalizations.of(context).checkBack,
                                 style: TextStyle(
                                   color: TColor.secondaryText,
                                   fontSize: 14,

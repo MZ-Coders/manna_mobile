@@ -46,6 +46,13 @@ abstract class AppLocalizations {
   String get noResultsFound;
   String get clearSearch;
   String get loadingMenu;
+
+  //Offers Page
+  String get latestOffers;
+  String get findDiscounts;
+  String get checkOffers;
+  String get noPromotions;
+  String get checkBack;
   
   // Cart/Order
   String get myOrder;
@@ -88,6 +95,9 @@ String get tax;
 String get continueShopping;
 String get itemsInCart;
 String get addSomeItems;
+String get orderQuestion;
+String get totalAmount;
+String get confirmAndGenerateReceipt;
 
   //Food Details
   String get description;

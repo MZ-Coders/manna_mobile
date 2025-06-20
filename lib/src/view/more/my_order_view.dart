@@ -271,14 +271,14 @@ void _showCheckoutDialog() {
           children: [
             Icon(Icons.shopping_cart_checkout, color: TColor.primary),
             const SizedBox(width: 12),
-            Text("Confirm Order"),
+            Text(AppLocalizations.of(context).confirmOrderTitle),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Are you sure you want to place this order?"),
+            Text(AppLocalizations.of(context).orderQuestion),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -290,7 +290,7 @@ void _showCheckoutDialog() {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Total Amount:",
+                    AppLocalizations.of(context).totalAmount,
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   Text(
@@ -311,7 +311,7 @@ void _showCheckoutDialog() {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text("Cancel"),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -334,7 +334,7 @@ void _showCheckoutDialog() {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text("Confirm & Generate Receipt"),
+            child: Text(AppLocalizations.of(context).confirmAndGenerateReceipt),
           ),
         ],
       );

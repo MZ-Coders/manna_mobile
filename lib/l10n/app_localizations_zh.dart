@@ -103,6 +103,16 @@ class AppLocalizationsZh extends AppLocalizations {
   
   @override
   String get orderPlaced => '订单下单成功！';
+
+@override
+String get orderQuestion => '您确认要提交此订单吗？';
+
+@override
+String get totalAmount => '总金额';
+
+@override
+String get confirmAndGenerateReceipt => '确认并生成收据';
+
   
   // Restaurant info
   @override
@@ -313,6 +323,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get promos => '促销';
+
+   //Offers Page
+  @override
+  String get latestOffers => '最新优惠';
+
+  @override
+  String get findDiscounts => '寻找折扣，优惠特餐\n及更多！';
+
+  @override
+  String get checkOffers => '查看优惠';
+
+  @override
+  String get noPromotions => '没有可用的促销活动';
+
+  @override
+  String get checkBack => '稍后查看特别优惠！';
 
   // Language
   @override

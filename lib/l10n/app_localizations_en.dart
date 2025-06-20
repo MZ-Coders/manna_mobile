@@ -105,6 +105,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get orderPlaced => 'Order placed successfully!';
 
+  @override
+  String get orderQuestion => 'Are you sure you whant to place this order?';
+
+@override
+String get totalAmount => 'Total Amount';
+
+@override
+String get confirmAndGenerateReceipt => 'Confirm & Generate Receipt';
   // @override
   // String get offers => 'Offers';
   
@@ -322,6 +330,22 @@ String get noPathFor => 'No path for';
 
 @override
 String get promos => 'Promotions';
+
+  //Offers Page
+  @override
+  String get latestOffers => 'Latest Offers';
+
+  @override
+  String get findDiscounts => 'Find discounts, Offers special\nmeals and more!';
+
+  @override
+  String get checkOffers => 'Check Offers';
+
+  @override
+  String get noPromotions => 'No Promotions Available';
+
+  @override
+  String get checkBack => 'Check back later for special offers!';
   // Language
   @override
   String get language => 'Language';
