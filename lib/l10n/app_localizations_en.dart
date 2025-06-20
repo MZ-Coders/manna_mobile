@@ -67,6 +67,9 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String get clearSearch => 'Clear Search';
+
+  @override
+  String get loadingMenu => 'Loading Menu...';
   
   // Cart/Order
   @override
@@ -328,4 +331,6 @@ String get promos => 'Promotions';
   
   @override
   String get english => 'English';
+
+  String get chinese => 'Chinese';
 }

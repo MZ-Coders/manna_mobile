@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_pt.dart';
+import 'app_localizations_zh.dart';
 
 abstract class AppLocalizations {
   static AppLocalizations of(BuildContext context) {
@@ -16,6 +17,7 @@ abstract class AppLocalizations {
   static const List<Locale> supportedLocales = [
     Locale('en'),
     Locale('pt'),
+    Locale('zh'),
   ];
 
   // Strings gerais
@@ -43,6 +45,7 @@ abstract class AppLocalizations {
   String get searchResults;
   String get noResultsFound;
   String get clearSearch;
+  String get loadingMenu;
   
   // Cart/Order
   String get myOrder;
@@ -67,6 +70,7 @@ abstract class AppLocalizations {
   String get language;
   String get portuguese;
   String get english;
+  String get chinese;
 
   // Order management
 String get orderItems;
@@ -162,7 +166,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 
   @override
   bool isSupported(Locale locale) {
-    return ['en', 'pt'].contains(locale.languageCode);
+    return ['en', 'pt', 'zh'].contains(locale.languageCode);
   }
 
   @override
@@ -170,6 +174,8 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
     switch (locale.languageCode) {
       case 'pt':
         return AppLocalizationsPt();
+      case 'zh':
+        return AppLocalizationsZh();
       case 'en':
       default:
         return AppLocalizationsEn();

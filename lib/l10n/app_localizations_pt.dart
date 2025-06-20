@@ -51,7 +51,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get welcome => 'Bem-vindo';
   
   @override
-  String get searchFood => 'Buscar Comida';
+  String get searchFood => 'Pesquisar';
   
   @override
   String get mostPopular => 'Mais Popular';
@@ -68,12 +68,14 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get clearSearch => 'Limpar Busca';
   
+   @override
+  String get loadingMenu => 'Carregando Menu...';
   // Cart/Order
   @override
   String get myOrder => 'Meu Pedido';
   
   @override
-  String get addToCart => 'Adicionar ao Carrinho';
+  String get addToCart => 'Adicionar';
   
   @override
   String get removeFromCart => 'Remover do Carrinho';
@@ -328,4 +330,7 @@ String get noPathFor => 'Nenhum caminho para';
   
   @override
   String get english => 'Inglês';
+
+  @override
+String get chinese => 'Chinês';
 }

@@ -187,7 +187,7 @@ void _performSearch() {
             const CircularProgressIndicator(),
             const SizedBox(height: 20),
             Text(
-              "Loading menu...",
+             AppLocalizations.of(context).loadingMenu,
               style: TextStyle(
                 color: TColor.secondaryText,
                 fontSize: 16,

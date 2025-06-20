@@ -49,6 +49,20 @@ class LanguageSelector extends StatelessWidget {
             ],
           ),
         ),
+        PopupMenuItem<String>(
+  value: 'zh',
+  child: Row(
+    children: [
+      Text('🇨🇳'),
+      const SizedBox(width: 8),
+      Text(localizations.chinese),
+      if (languageService.currentLocale.languageCode == 'zh')
+        const SizedBox(width: 8),
+      if (languageService.currentLocale.languageCode == 'zh')
+        Icon(Icons.check, color: TColor.primary, size: 16),
+    ],
+  ),
+),
       ],
     );
   }
