@@ -131,6 +131,11 @@ String get pleaseWait;
 // POS App
 String get mannaPOS;
 
+// POS Menu items
+String get history;
+String get settings;
+String get promos;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

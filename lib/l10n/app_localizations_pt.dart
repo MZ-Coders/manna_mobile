@@ -267,6 +267,15 @@ String get pleaseWait => 'Por favor, aguarde um momento';
 @override
 String get mannaPOS => 'Manna POS';
 
+@override
+String get history => 'Histórico';
+
+@override
+String get settings => 'Configurações';
+
+@override
+String get promos => 'Promoções';
+
   // Language
   @override
   String get language => 'Idioma';
