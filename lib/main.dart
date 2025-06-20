@@ -46,13 +46,19 @@ void main() async {
   await prefs!.clear();
   print("Dados antigos limpos do SharedPreferences");
   
-  // Salvar IDs básicos primeiro
-  if (restaurantId != null) {
-    prefs!.setString('restaurant_id', restaurantId);
-    print("Restaurant ID: $restaurantId");
-  } else {
-    prefs!.setString('restaurant_id', '');
+  // Verificar se restaurantID existe
+  if (restaurantId == null || restaurantId.isEmpty) {
+    print("ERRO: Restaurant ID não encontrado na URL");
+    runApp(const ErrorApp(
+      errorType: ErrorType.missingRestaurantId,
+      errorMessage: "ID do restaurante não encontrado na URL",
+    ));
+    return;
   }
+  
+  // Salvar IDs básicos primeiro
+  prefs!.setString('restaurant_id', restaurantId);
+  print("Restaurant ID: $restaurantId");
 
   if (tableId != null) {
     prefs!.setString('table_id', tableId);
@@ -61,17 +67,23 @@ void main() async {
     prefs!.setString('table_id', '');
   }
 
-  // IMPORTANTE: Aguardar o carregamento completo dos dados do restaurante
-  if (restaurantId != null && restaurantId.isNotEmpty) {
-    print("Carregando dados do restaurante...");
-    
-    // Mostrar loading durante o carregamento
-    runApp(const LoadingApp());
-    
-    // Aguardar carregamento dos dados
-    await loadBasicRestaurantDataSync(restaurantId);
-    print("Dados do restaurante carregados com sucesso");
+  // Mostrar loading durante o carregamento
+  runApp(const LoadingApp());
+  
+  // Aguardar carregamento dos dados do restaurante
+  print("Carregando dados do restaurante...");
+  final loadingSuccess = await loadBasicRestaurantDataSync(restaurantId);
+  
+  if (!loadingSuccess) {
+    print("ERRO: Falha ao carregar dados do restaurante");
+    runApp(const ErrorApp(
+      errorType: ErrorType.loadingError,
+      errorMessage: "Não foi possível carregar os dados do restaurante",
+    ));
+    return;
   }
+  
+  print("Dados do restaurante carregados com sucesso");
 
   if (Globs.udValueBool(Globs.userLogin)) {
     ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
@@ -79,7 +91,7 @@ void main() async {
   
   print("Processo inicial completo");
   
-  // Iniciar o app principal após o carregamento
+  // Iniciar o app principal após o carregamento bem-sucedido
   runApp(const AppSelector());
   print("Iniciou AppSelector");
 }
@@ -107,10 +119,11 @@ void configLoading() {
 }
 
 // Versão síncrona da função que aguarda o carregamento completo
-Future<void> loadBasicRestaurantDataSync(String restaurantUUID) async {
+// Retorna true se carregou com sucesso, false se houve erro
+Future<bool> loadBasicRestaurantDataSync(String restaurantUUID) async {
   try {
     // Usar um Completer para aguardar a resposta da API
-    final completer = Completer<void>();
+    final completer = Completer<bool>();
     
     ServiceCall.getMenuItems(restaurantUUID,
         withSuccess: (Map<String, dynamic> data) {
@@ -122,18 +135,226 @@ Future<void> loadBasicRestaurantDataSync(String restaurantUUID) async {
             prefs!.setString('restaurant_address', restaurant['address'] ?? '');
             prefs!.setString('restaurant_city', restaurant['city'] ?? '');
             print("Dados do restaurante salvos: ${restaurant['name']}");
+            completer.complete(true); // Sucesso
+          } else {
+            print("Erro: Dados do restaurante não encontrados na resposta");
+            completer.complete(false); // Falha
           }
-          completer.complete(); // Marca como concluído
         },
         failure: (String error) {
           print("Erro ao buscar dados do restaurante: $error");
-          completer.complete(); // Mesmo com erro, continua a execução
+          completer.complete(false); // Falha
         });
     
     // Aguarda a conclusão da chamada API
-    await completer.future;
+    return await completer.future;
   } catch (e) {
     print("Error loading restaurant data: $e");
+    return false; // Falha
+  }
+}
+
+// Enum para tipos de erro
+enum ErrorType {
+  missingRestaurantId,
+  loadingError,
+}
+
+// App de Erro que é mostrado quando há problemas
+class ErrorApp extends StatelessWidget {
+  final ErrorType errorType;
+  final String errorMessage;
+
+  const ErrorApp({
+    Key? key,
+    required this.errorType,
+    required this.errorMessage,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Erro',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        fontFamily: "Metropolis",
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+      ),
+      home: ErrorScreen(
+        errorType: errorType,
+        errorMessage: errorMessage,
+      ),
+    );
+  }
+}
+
+// Tela de Erro personalizada
+class ErrorScreen extends StatelessWidget {
+  final ErrorType errorType;
+  final String errorMessage;
+
+  const ErrorScreen({
+    Key? key,
+    required this.errorType,
+    required this.errorMessage,
+  }) : super(key: key);
+
+  String _getErrorTitle() {
+    switch (errorType) {
+      case ErrorType.missingRestaurantId:
+        return 'Restaurante Não Encontrado';
+      case ErrorType.loadingError:
+        return 'Erro de Conexão';
+    }
+  }
+
+  String _getErrorDescription() {
+    switch (errorType) {
+      case ErrorType.missingRestaurantId:
+        return 'Esta URL não contém as informações necessárias do restaurante. Verifique se você está acessando o link correto fornecido pelo restaurante.';
+      case ErrorType.loadingError:
+        return 'Não conseguimos carregar as informações do restaurante. Verifique sua conexão com a internet e tente novamente.';
+    }
+  }
+
+  IconData _getErrorIcon() {
+    switch (errorType) {
+      case ErrorType.missingRestaurantId:
+        return Icons.link_off;
+      case ErrorType.loadingError:
+        return Icons.wifi_off;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Ícone de erro
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(60),
+                  border: Border.all(
+                    color: Colors.red.shade200,
+                    width: 2,
+                  ),
+                ),
+                child: Icon(
+                  _getErrorIcon(),
+                  color: Colors.red.shade400,
+                  size: 60,
+                ),
+              ),
+              
+              const SizedBox(height: 30),
+              
+              // Título do erro
+              Text(
+                _getErrorTitle(),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 15),
+              
+              // Descrição do erro
+              Text(
+                _getErrorDescription(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 30),
+              
+              // Botão de tentar novamente (apenas para erro de loading)
+              if (errorType == ErrorType.loadingError) ...[
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Recarregar a página
+                    if (kIsWeb) {
+                      // Para web, recarregar a página
+                      // window.location.reload(); // Descomente se necessário
+                    }
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Tentar Novamente'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+              
+              // Informações de contato/suporte
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey.shade200,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.support_agent,
+                      color: Colors.grey,
+                      size: 24,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Precisa de ajuda?',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      errorType == ErrorType.missingRestaurantId
+                          ? 'Entre em contato com o restaurante para obter o link correto'
+                          : 'Entre em contato com o suporte técnico se o problema persistir',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
