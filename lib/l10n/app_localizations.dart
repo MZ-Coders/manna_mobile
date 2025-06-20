@@ -136,6 +136,21 @@ String get history;
 String get settings;
 String get promos;
 
+// Onboarding screen
+String get reloadData;
+String get chooseApp;
+String get selectApp;
+String get posApp;
+String get posDescription;
+String get restaurant;
+String get restaurantAppDescription;
+
+// App types and descriptions  
+String get pointOfSaleSystem;
+String get restaurantOrderApp;
+
+String get getStarted;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

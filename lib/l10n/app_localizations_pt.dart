@@ -276,6 +276,40 @@ String get settings => 'Configurações';
 @override
 String get promos => 'Promoções';
 
+// Adicionar essas traduções ao final da classe AppLocalizationsPt:
+
+// Onboarding screen
+@override
+String get reloadData => 'Recarregar dados';
+
+@override
+String get chooseApp => 'Escolher aplicativo';
+
+@override
+String get selectApp => 'Selecione o aplicativo';
+
+@override
+String get posApp => 'POS App';
+
+@override
+String get posDescription => 'Sistema de ponto de venda';
+
+@override
+String get restaurant => 'Restaurante';
+
+@override
+String get restaurantAppDescription => 'Aplicativo de pedido no restaurante';
+
+// App types and descriptions
+@override
+String get pointOfSaleSystem => 'Sistema de ponto de venda';
+
+@override
+String get restaurantOrderApp => 'Aplicativo de pedido no restaurante';
+
+@override
+String get getStarted => 'Avançar';
+
   // Language
   @override
   String get language => 'Idioma';

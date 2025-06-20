@@ -274,6 +274,40 @@ String get history => 'History';
 @override
 String get settings => 'Settings';
 
+// Adicionar essas traduções ao final da classe AppLocalizationsEn:
+
+// Onboarding screen
+@override
+String get reloadData => 'Reload Data';
+
+@override
+String get chooseApp => 'Choose Application';
+
+@override
+String get selectApp => 'Select Application';
+
+@override
+String get posApp => 'POS App';
+
+@override
+String get posDescription => 'Point of Sale System';
+
+@override
+String get restaurant => 'Restaurant';
+
+@override
+String get restaurantAppDescription => 'Restaurant order application';
+
+// App types and descriptions
+@override
+String get pointOfSaleSystem => 'Point of Sale System';
+
+@override
+String get restaurantOrderApp => 'Restaurant order application';
+
+@override
+String get getStarted => 'Get Started';
+
 @override
 String get promos => 'Promotions';
   // Language
