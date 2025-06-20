@@ -151,6 +151,10 @@ String get restaurantOrderApp;
 
 String get getStarted;
 
+String get errorTitle;
+String get loadingTitle;
+String get noPathFor;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

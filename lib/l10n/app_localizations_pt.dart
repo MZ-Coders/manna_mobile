@@ -310,6 +310,15 @@ String get restaurantOrderApp => 'Aplicativo de pedido no restaurante';
 @override
 String get getStarted => 'Avançar';
 
+@override
+String get errorTitle => 'Erro';
+
+@override
+String get loadingTitle => 'Carregando...';
+
+@override
+String get noPathFor => 'Nenhum caminho para';
+
   // Language
   @override
   String get language => 'Idioma';

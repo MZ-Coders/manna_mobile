@@ -309,6 +309,15 @@ String get restaurantOrderApp => 'Restaurant order application';
 String get getStarted => 'Get Started';
 
 @override
+String get errorTitle => 'Error';
+
+@override
+String get loadingTitle => 'Loading...';
+
+@override
+String get noPathFor => 'No path for';
+
+@override
 String get promos => 'Promotions';
   // Language
   @override
