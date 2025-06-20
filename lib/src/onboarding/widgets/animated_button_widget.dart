@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:dribbble_challenge/src/core/constants/strings.dart';
 import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 
 class AnimatedButtonWidget extends StatelessWidget {
   final Duration buttonDelayDuration;
@@ -59,7 +60,7 @@ class AnimatedTextWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: Text(Strings.onBoardingButton,
+      child: Text(AppLocalizations.of(context).getStarted,
           maxLines: 2,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyLarge),

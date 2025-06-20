@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common_widget/round_icon_button.dart';
@@ -194,7 +195,7 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 25),
                                   child: Text(
-                                    "Description",
+                                    AppLocalizations.of(context).description,
                                     style: TextStyle(
                                       color: TColor.primaryText,
                                       fontSize: isWideScreen ? 16 : 14,
@@ -231,7 +232,7 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
                                   child: Row(
                                     children: [
                                       Text(
-                                        "Number of Portions",
+                                        AppLocalizations.of(context).numberPortions,
                                         style: TextStyle(
                                           color: TColor.primaryText,
                                           fontSize: isWideScreen ? 16 : 14,
@@ -396,7 +397,7 @@ Widget _buildPriceWidget() {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            "PROMOÇÃO -${discountPercent.toStringAsFixed(0)}%",
+            "${AppLocalizations.of(context).promotion} -${discountPercent.toStringAsFixed(0)}%",
             style: const TextStyle(
               color: Colors.white,
               fontSize: 10,
@@ -431,7 +432,7 @@ Widget _buildPriceWidget() {
       ),
       const SizedBox(height: 4),
       Text(
-        "/per Portion",
+        AppLocalizations.of(context).perPortion,
         style: TextStyle(
           color: TColor.primaryText,
           fontSize: 11,
@@ -540,7 +541,7 @@ Widget _buildPriceWidget() {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Total Price",
+                AppLocalizations.of(context).totalPrice,
                 style: TextStyle(
                   color: TColor.primaryText,
                   fontSize: 14,
@@ -564,7 +565,7 @@ Widget _buildPriceWidget() {
                 width: 160,
                 height: 40,
                 child: RoundIconButton(
-                  title: isAddingToCart ? "Adding..." : "Add to Cart",
+                  title: isAddingToCart ? AppLocalizations.of(context).adding : AppLocalizations.of(context).addToCart,
                   icon: isAddingToCart ? "assets/img/shopping_add.png" : "assets/img/shopping_add.png",
                   color: isAddingToCart ? TColor.secondaryText : TColor.primary,
                   onPressed: isAddingToCart ? (){} : () async {
@@ -587,7 +588,7 @@ Widget _buildPriceWidget() {
                           children: [
                             Icon(Icons.check_circle, color: Colors.white),
                             const SizedBox(width: 8),
-                            Text("${widget.foodDetails["name"]} adicionado ao carrinho!"),
+                            Text("${widget.foodDetails["name"]} ${AppLocalizations.of(context).addedToCart}"),
                           ],
                         ),
                         backgroundColor: Colors.green,
@@ -710,7 +711,7 @@ Widget _buildPriceWidget() {
   width: 130,
   height: 25,
   child: RoundIconButton(
-    title: isAddingToCart ? "Adding..." : "Add to Cart",
+    title: isAddingToCart ? "Adding..." : AppLocalizations.of(context).addToCart,
     icon: isAddingToCart ? "assets/img/shopping_add.png" : "assets/img/shopping_add.png",
     color: isAddingToCart ? TColor.secondaryText : TColor.primary,
     onPressed: isAddingToCart ? (){} : () async {
@@ -732,7 +733,7 @@ Widget _buildPriceWidget() {
             children: [
               Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 8),
-              Expanded(child: Text("${widget.foodDetails["name"]} adicionado!")),
+              Expanded(child: Text("${widget.foodDetails["name"]} ${AppLocalizations.of(context).addedToCart}")),
             ],
           ),
           backgroundColor: Colors.green,

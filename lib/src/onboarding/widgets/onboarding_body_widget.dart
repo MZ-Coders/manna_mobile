@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
+import 'package:dribbble_challenge/src/common_widget/language_selector.dart';
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
+
 class OnBoardingBodyWidget extends StatefulWidget {
   const OnBoardingBodyWidget({super.key});
 
@@ -142,7 +146,9 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
     return Scaffold(
       body: Stack(
         children: [
+
           Column(
+            
             children: [
               const Flexible(
                 child: SizedBox(
@@ -193,6 +199,25 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Seletor de idioma
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Icon(
+                        //   Icons.language,
+                        //   size: 20,
+                        //   color: Colors.grey.shade600,
+                        // ),
+                        // const SizedBox(width: 8),
+                        LanguageSelector(),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20),
+
                     // Botão principal
                     GestureDetector(
                       onTap: _proceedToApp,
@@ -206,8 +231,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                     if (_restaurantName.isEmpty) // Mostrar apenas se não há dados do restaurante
                       TextButton(
                         onPressed: _refreshData,
-                        child: const Text(
-                          "Recarregar dados",
+                        child: Text(
+                          AppLocalizations.of(context).reloadData,
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
@@ -229,7 +254,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                     //       mainAxisSize: MainAxisSize.min,
                     //       children: [
                     //         Text(
-                    //           "Escolher aplicativo",
+                    //           AppLocalizations.of(context).chooseApp,
                     //           style: TextStyle(
                     //             color: Colors.grey.shade700,
                     //             fontSize: 12,
@@ -284,8 +309,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        "Selecione o aplicativo",
+                      Text(
+                        AppLocalizations.of(context).selectApp,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -295,8 +320,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       
                       // Opção POS App
                       _buildAppOption(
-                        title: "POS App",
-                        subtitle: "Sistema de ponto de venda",
+                        title: AppLocalizations.of(context).posApp,
+                        subtitle: AppLocalizations.of(context).posDescription,
                         icon: Icons.point_of_sale,
                         value: 'pos',
                       ),
@@ -305,8 +330,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       
                       // Opção Food Delivery App
                       _buildAppOption(
-                        title: "Restaurante",
-                        subtitle: "Aplicativo de pedido no restaurante",
+                        title: AppLocalizations.of(context).restaurant,
+                        subtitle: AppLocalizations.of(context).restaurantAppDescription,
                         icon: Icons.restaurant,
                         value: 'food_delivery',
                       ),
@@ -329,7 +354,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                        child: const Text("Confirmar"),
+                        child: Text(AppLocalizations.of(context).confirm),
                       ),
                     ],
                   ),

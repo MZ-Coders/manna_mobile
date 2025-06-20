@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:flutter/material.dart';
 
@@ -50,7 +51,7 @@ class _CheckoutMessageViewState extends State<CheckoutMessageView> {
               height: 25,
             ),
             Text(
-              "Thank You!",
+              AppLocalizations.of(context).thankYou,
               style: TextStyle(
                   color: TColor.primaryText,
                   fontSize: 26,
@@ -60,7 +61,7 @@ class _CheckoutMessageViewState extends State<CheckoutMessageView> {
               height: 8,
             ),
             Text(
-              "for your order",
+              AppLocalizations.of(context).forYourOrder,
               style: TextStyle(
                   color: TColor.primaryText,
                   fontSize: 17,
@@ -70,18 +71,18 @@ class _CheckoutMessageViewState extends State<CheckoutMessageView> {
               height: 25,
             ),
             Text(
-              "Your Order is now being processed. We will let you know once the order is picked from the outlet. Check the status of your Order",
+              AppLocalizations.of(context).orderProcess,
               textAlign: TextAlign.center,
               style: TextStyle(color: TColor.primaryText, fontSize: 14),
             ),
             const SizedBox(
               height: 35,
             ),
-            RoundButton(title: "Track My Order", onPressed: () {}),
+            RoundButton(title: AppLocalizations.of(context).trackOrder, onPressed: () {}),
             TextButton(
               onPressed: () {},
               child: Text(
-                "Back To Home",
+                AppLocalizations.of(context).backToHome,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: TColor.primaryText,
