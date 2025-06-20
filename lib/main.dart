@@ -562,7 +562,19 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _updateTitle();
   }
+
+  void _updateTitle() {
+  // Força a atualização do título quando os dados do restaurante estão disponíveis
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      setState(() {
+        // Força rebuild para atualizar o título
+      });
+    }
+  });
+}
 
   @override
   void dispose() {
@@ -586,10 +598,20 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
     print("Todos os dados foram limpos!");
   }
 
+  String _buildAppTitle() {
+  String restaurantName = prefs?.getString('restaurant_name') ?? '';
+  
+  if (restaurantName.isNotEmpty) {
+    return 'Manna Software - $restaurantName';
+  } else {
+    return 'Manna Software';
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'App Selector',
+      title: _buildAppTitle(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: "Metropolis",
