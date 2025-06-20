@@ -56,7 +56,7 @@ abstract class AppLocalizations {
   String get emptyCart;
   String get continueMenu;
   String get orderPlaced;
-  String get offers;
+  // String get offers;
   
   // Restaurant info
   String get tableNumber;
@@ -96,6 +96,40 @@ String get addSomeItems;
   String get promotion;
   String get totalPrice;
   String get findOffers;
+
+  // Checkout
+String get deliveryAddress;
+String get change;
+String get paymentMethod;
+String get addCard;
+String get cashOnDelivery;
+String get otherMethods;
+String get sendOrder;
+String get discount;
+String get subTotal;
+
+// Navigation
+String get offers;
+String get myOrders;
+String get home;
+String get profile;
+String get more;
+
+// Error screens
+String get restaurantNotFound;
+String get connectionError;
+String get missingRestaurantMessage;
+String get loadingRestaurantError;
+String get needHelp;
+String get contactRestaurantMessage;
+String get contactSupportMessage;
+
+// Loading screen
+String get loadingRestaurantData;
+String get pleaseWait;
+
+// POS App
+String get mannaPOS;
 
 }
 

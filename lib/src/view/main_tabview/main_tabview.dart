@@ -130,7 +130,7 @@ class _MainTabViewState extends State<MainTabView> {
               //     },
               //     isSelected: selctTab == 3),
               TabButton(
-                  title: "My Orders",
+                  title: AppLocalizations.of(context).myOrders,
                   icon: "assets/img/shopping_cart.png",
                   onTap: () {
                     if (selctTab != 4) {

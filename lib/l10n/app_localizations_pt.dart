@@ -102,8 +102,8 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get orderPlaced => 'Pedido realizado com sucesso!';
 
-  @override
-  String get offers => 'Promoções';
+  // @override
+  // String get offers => 'Promoções';
   
   // Restaurant info
   @override
@@ -191,6 +191,82 @@ String get totalPrice => 'Preço Total';
 
 @override
 String get findOffers => 'Encontre descontos, ofertas especiais\ne muito mais!';
+
+@override
+String get deliveryAddress => 'Endereço de Entrega';
+
+@override
+String get change => 'Alterar';
+
+@override
+String get paymentMethod => 'Método de pagamento';
+
+@override
+String get addCard => 'Adicionar Cartão';
+
+@override
+String get cashOnDelivery => 'Dinheiro/Cartão na Entrega';
+
+@override
+String get otherMethods => 'Outros Métodos';
+
+@override
+String get sendOrder => 'Enviar Pedido';
+
+@override
+String get discount => 'Desconto';
+
+@override
+String get subTotal => 'Subtotal';
+
+@override
+String get offers => 'Ofertas';
+
+@override
+String get myOrders => 'Meus Pedidos';
+
+@override
+String get home => 'Início';
+
+@override
+String get profile => 'Perfil';
+
+@override
+String get more => 'Mais';
+
+// Error screens
+@override
+String get restaurantNotFound => 'Restaurante Não Encontrado';
+
+@override
+String get connectionError => 'Erro de Conexão';
+
+@override
+String get missingRestaurantMessage => 'Esta URL não contém as informações necessárias do restaurante. Verifique se você está acessando o link correto fornecido pelo restaurante.';
+
+@override
+String get loadingRestaurantError => 'Não conseguimos carregar as informações do restaurante. Verifique sua conexão com a internet e tente novamente.';
+
+@override
+String get needHelp => 'Precisa de ajuda?';
+
+@override
+String get contactRestaurantMessage => 'Entre em contato com o restaurante para obter o link correto';
+
+@override
+String get contactSupportMessage => 'Entre em contato com o suporte técnico se o problema persistir';
+
+// Loading screen
+@override
+String get loadingRestaurantData => 'Carregando dados do restaurante...';
+
+@override
+String get pleaseWait => 'Por favor, aguarde um momento';
+
+// POS App
+@override
+String get mannaPOS => 'Manna POS';
+
   // Language
   @override
   String get language => 'Idioma';

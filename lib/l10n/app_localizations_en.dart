@@ -102,8 +102,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get orderPlaced => 'Order placed successfully!';
 
-  @override
-  String get offers => 'Offers';
+  // @override
+  // String get offers => 'Offers';
   
   // Restaurant info
   @override
@@ -192,6 +192,81 @@ String get totalPrice => 'Total Price';
 
 @override
 String get findOffers => 'Find discounts, Offers special\nmeals and more!';
+
+@override
+String get deliveryAddress => 'Delivery Address';
+
+@override
+String get change => 'Change';
+
+@override
+String get paymentMethod => 'Payment method';
+
+@override
+String get addCard => 'Add Card';
+
+@override
+String get cashOnDelivery => 'Cash/Card On Delivery';
+
+@override
+String get otherMethods => 'Other Methods';
+
+@override
+String get sendOrder => 'Send Order';
+
+@override
+String get discount => 'Discount';
+
+@override
+String get subTotal => 'Sub Total';
+
+@override
+String get offers => 'Offers';
+
+@override
+String get myOrders => 'My Orders';
+
+@override
+String get home => 'Home';
+
+@override
+String get profile => 'Profile';
+
+@override
+String get more => 'More';
+
+// Error screens
+@override
+String get restaurantNotFound => 'Restaurant Not Found';
+
+@override
+String get connectionError => 'Connection Error';
+
+@override
+String get missingRestaurantMessage => 'This URL does not contain the necessary restaurant information. Please check that you are accessing the correct link provided by the restaurant.';
+
+@override
+String get loadingRestaurantError => 'We could not load the restaurant information. Please check your internet connection and try again.';
+
+@override
+String get needHelp => 'Need help?';
+
+@override
+String get contactRestaurantMessage => 'Contact the restaurant to get the correct link';
+
+@override
+String get contactSupportMessage => 'Contact technical support if the problem persists';
+
+// Loading screen
+@override
+String get loadingRestaurantData => 'Loading restaurant data...';
+
+@override
+String get pleaseWait => 'Please wait a moment';
+
+// POS App
+@override
+String get mannaPOS => 'Manna POS';
   // Language
   @override
   String get language => 'Language';
