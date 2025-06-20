@@ -21,6 +21,7 @@ import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
 
 import 'dart:async';
+
 // Definindo enum para os tipos de aplicativo
 enum AppType { posApp, foodDeliveryApp }
 
@@ -34,6 +35,9 @@ void main() async {
   // Inicializações específicas do Food Delivery app
   setUpLocator();
   HttpOverrides.global = MyHttpOverrides();
+  
+  // Configuração do EasyLoading primeiro
+  configLoading();
   
   // Obter parâmetros da URL
   final restaurantId = getUrlParameter("restaurant");
@@ -60,6 +64,11 @@ void main() async {
   // IMPORTANTE: Aguardar o carregamento completo dos dados do restaurante
   if (restaurantId != null && restaurantId.isNotEmpty) {
     print("Carregando dados do restaurante...");
+    
+    // Mostrar loading durante o carregamento
+    runApp(const LoadingApp());
+    
+    // Aguardar carregamento dos dados
     await loadBasicRestaurantDataSync(restaurantId);
     print("Dados do restaurante carregados com sucesso");
   }
@@ -69,11 +78,8 @@ void main() async {
   }
   
   print("Processo inicial completo");
-  // Configuração do EasyLoading
-  configLoading();
-  print("Configurou loading");
   
-  // Sempre iniciar com a tela de onboarding para seleção de app
+  // Iniciar o app principal após o carregamento
   runApp(const AppSelector());
   print("Iniciou AppSelector");
 }
@@ -128,6 +134,173 @@ Future<void> loadBasicRestaurantDataSync(String restaurantUUID) async {
     await completer.future;
   } catch (e) {
     print("Error loading restaurant data: $e");
+  }
+}
+
+// App de Loading que é mostrado durante o carregamento inicial
+class LoadingApp extends StatelessWidget {
+  const LoadingApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Carregando...',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        fontFamily: "Metropolis",
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const LoadingScreen(),
+    );
+  }
+}
+
+// Tela de Loading personalizada
+class LoadingScreen extends StatefulWidget {
+  const LoadingScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LoadingScreen> createState() => _LoadingScreenState();
+}
+
+class _LoadingScreenState extends State<LoadingScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _rotationController;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+    
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _pulseAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Logo/Ícone animado
+            AnimatedBuilder(
+              animation: _rotationController,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: _rotationController.value * 2 * 3.14159,
+                  child: AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _pulseAnimation.value,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.orange.withOpacity(0.3),
+                                blurRadius: 20,
+                                spreadRadius: 5,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.restaurant,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 30),
+            
+            // Texto de carregamento
+            const Text(
+              'Carregando dados do restaurante...',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            
+            const SizedBox(height: 10),
+            
+            const Text(
+              'Por favor, aguarde um momento',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            
+            const SizedBox(height: 30),
+            
+            // Barra de progresso personalizada
+            Container(
+              width: 200,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: AnimatedBuilder(
+                animation: _rotationController,
+                builder: (context, child) {
+                  return FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: (_rotationController.value * 0.8) + 0.2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.orange, Colors.deepOrange],
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -436,5 +609,3 @@ class AppSwitcherHelper {
     }
   }
 }
-
-// Adicionar import necessário no topo do arquivo
