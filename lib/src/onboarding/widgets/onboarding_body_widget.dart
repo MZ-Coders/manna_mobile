@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
+import 'package:dribbble_challenge/src/common_widget/language_selector.dart';
+
 class OnBoardingBodyWidget extends StatefulWidget {
   const OnBoardingBodyWidget({super.key});
 
@@ -195,6 +198,25 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Seletor de idioma
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Icon(
+                        //   Icons.language,
+                        //   size: 20,
+                        //   color: Colors.grey.shade600,
+                        // ),
+                        // const SizedBox(width: 8),
+                        LanguageSelector(),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20),
+
                     // Botão principal
                     GestureDetector(
                       onTap: _proceedToApp,
