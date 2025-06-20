@@ -20,11 +20,10 @@ import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/l10n/language_service.dart';
 import 'package:provider/provider.dart';
-
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'dart:async';
 
@@ -78,12 +77,7 @@ void main() async {
   }
 
   // Mostrar loading durante o carregamento
-  runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider.value(value: languageService),
-    ],
-    child: const LoadingApp(),
-  ));
+  runApp(const LoadingApp());
   
   // Aguardar carregamento dos dados do restaurante
   print("Carregando dados do restaurante...");
@@ -91,14 +85,9 @@ void main() async {
   
   if (!loadingSuccess) {
     print("ERRO: Falha ao carregar dados do restaurante");
-    runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: languageService),
-      ],
-      child: const ErrorApp(
-        errorType: ErrorType.loadingError,
-        errorMessage: "Não foi possível carregar os dados do restaurante",
-      ),
+    runApp(const ErrorApp(
+      errorType: ErrorType.loadingError,
+      errorMessage: "Não foi possível carregar os dados do restaurante",
     ));
     return;
   }
@@ -198,29 +187,17 @@ class ErrorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LanguageService>(
-      builder: (context, languageService, child) {
-        return MaterialApp(
-          title: 'Error',
-          debugShowCheckedModeBanner: false,
-          locale: languageService.currentLocale,
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: ThemeData(
-            fontFamily: "Metropolis",
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-          ),
-          home: ErrorScreen(
-            errorType: errorType,
-            errorMessage: errorMessage,
-          ),
-        );
-      },
+    return MaterialApp(
+      title: 'Erro',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        fontFamily: "Metropolis",
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+      ),
+      home: ErrorScreen(
+        errorType: errorType,
+        errorMessage: errorMessage,
+      ),
     );
   }
 }
@@ -236,23 +213,21 @@ class ErrorScreen extends StatelessWidget {
     required this.errorMessage,
   }) : super(key: key);
 
-  String _getErrorTitle(AppLocalizations? localizations) {
+  String _getErrorTitle() {
     switch (errorType) {
       case ErrorType.missingRestaurantId:
-        return localizations?.restaurantNotFound ?? 'Restaurant Not Found';
+        return 'Restaurante Não Encontrado';
       case ErrorType.loadingError:
-        return localizations?.connectionError ?? 'Connection Error';
+        return 'Erro de Conexão';
     }
   }
 
-  String _getErrorDescription(AppLocalizations? localizations) {
+  String _getErrorDescription() {
     switch (errorType) {
       case ErrorType.missingRestaurantId:
-        return localizations?.missingRestaurantMessage ?? 
-               'This URL does not contain the necessary restaurant information. Please check that you are accessing the correct link provided by the restaurant.';
+        return 'Esta URL não contém as informações necessárias do restaurante. Verifique se você está acessando o link correto fornecido pelo restaurante.';
       case ErrorType.loadingError:
-        return localizations?.loadingRestaurantError ?? 
-               'We could not load the restaurant information. Please check your internet connection and try again.';
+        return 'Não conseguimos carregar as informações do restaurante. Verifique sua conexão com a internet e tente novamente.';
     }
   }
 
@@ -267,8 +242,6 @@ class ErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -300,7 +273,7 @@ class ErrorScreen extends StatelessWidget {
               
               // Título do erro
               Text(
-                _getErrorTitle(localizations),
+                _getErrorTitle(),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -313,7 +286,7 @@ class ErrorScreen extends StatelessWidget {
               
               // Descrição do erro
               Text(
-                _getErrorDescription(localizations),
+                _getErrorDescription(),
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -335,7 +308,7 @@ class ErrorScreen extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.refresh),
-                  label: Text(localizations?.tryAgain ?? 'Try Again'),
+                  label: const Text('Tentar Novamente'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     foregroundColor: Colors.white,
@@ -369,9 +342,9 @@ class ErrorScreen extends StatelessWidget {
                       size: 24,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      localizations?.needHelp ?? 'Need help?',
-                      style: const TextStyle(
+                    const Text(
+                      'Precisa de ajuda?',
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
@@ -380,8 +353,8 @@ class ErrorScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       errorType == ErrorType.missingRestaurantId
-                          ? (localizations?.contactRestaurantMessage ?? 'Contact the restaurant to get the correct link')
-                          : (localizations?.contactSupportMessage ?? 'Contact technical support if the problem persists'),
+                          ? 'Entre em contato com o restaurante para obter o link correto'
+                          : 'Entre em contato com o suporte técnico se o problema persistir',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
@@ -405,26 +378,14 @@ class LoadingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LanguageService>(
-      builder: (context, languageService, child) {
-        return MaterialApp(
-          title: 'Loading...',
-          debugShowCheckedModeBanner: false,
-          locale: languageService.currentLocale,
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: ThemeData(
-            fontFamily: "Metropolis",
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          ),
-          home: const LoadingScreen(),
-        );
-      },
+    return MaterialApp(
+      title: 'Carregando...',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        fontFamily: "Metropolis",
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const LoadingScreen(),
     );
   }
 }
@@ -475,8 +436,6 @@ class _LoadingScreenState extends State<LoadingScreen>
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -524,9 +483,9 @@ class _LoadingScreenState extends State<LoadingScreen>
             const SizedBox(height: 30),
             
             // Texto de carregamento
-            Text(
-              localizations?.loadingRestaurantData ?? 'Loading restaurant data...',
-              style: const TextStyle(
+            const Text(
+              'Carregando dados do restaurante...',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
@@ -536,9 +495,9 @@ class _LoadingScreenState extends State<LoadingScreen>
             
             const SizedBox(height: 10),
             
-            Text(
-              localizations?.pleaseWait ?? 'Please wait a moment',
-              style: const TextStyle(
+            const Text(
+              'Por favor, aguarde um momento',
+              style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
               ),
@@ -802,8 +761,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _sideMenu() {
-    final localizations = AppLocalizations.of(context);
-    
     return Column(children: [
       _logo(),
       const SizedBox(height: 20),
@@ -813,27 +770,22 @@ class _MainPageState extends State<MainPage> {
             _itemMenu(
               menu: 'Home',
               icon: Icons.rocket_sharp,
-              displayName: localizations?.home ?? 'Home',
             ),
             _itemMenu(
               menu: 'Menu',
               icon: Icons.format_list_bulleted_rounded,
-              displayName: localizations?.menu ?? 'Menu',
             ),
             _itemMenu(
               menu: 'History',
               icon: Icons.history_toggle_off_rounded,
-              displayName: localizations?.history ?? 'History',
             ),
             _itemMenu(
               menu: 'Promos',
               icon: Icons.discount_outlined,
-              displayName: localizations?.promos ?? 'Promotions',
             ),
             _itemMenu(
               menu: 'Settings',
               icon: Icons.sports_soccer_outlined,
-              displayName: localizations?.settings ?? 'Settings',
             ),
           ],
         ),
@@ -842,8 +794,6 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _logo() {
-    final localizations = AppLocalizations.of(context);
-    
     return Column(
       children: [
         Container(
@@ -860,7 +810,7 @@ class _MainPageState extends State<MainPage> {
         ),
         const SizedBox(height: 10),
         Text(
-          localizations?.mannaPOS ?? 'Manna POS',
+          'Manna POS',
           style: TextStyle(
             color: AppColors.primaryText,
             fontSize: 8,
@@ -871,11 +821,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _itemMenu({
-    required String menu, 
-    required IconData icon, 
-    required String displayName
-  }) {
+  Widget _itemMenu({required String menu, required IconData icon}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 9),
       child: GestureDetector(
@@ -902,7 +848,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    displayName,
+                    menu,
                     style: TextStyle(
                       color: pageActive == menu 
                           ? Colors.white 

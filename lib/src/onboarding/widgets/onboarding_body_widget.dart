@@ -1,10 +1,6 @@
-import 'package:dribbble_challenge/l10n/app_localizations.dart';
-import 'package:dribbble_challenge/l10n/language_service.dart';
-import 'package:dribbble_challenge/src/common_widget/language_selector.dart';
 import 'package:dribbble_challenge/src/onboarding/widgets/onboarding_screen_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnBoardingBodyWidget extends StatefulWidget {
@@ -143,34 +139,10 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
       );
     }
     
-    return Consumer<LanguageService>(
-  builder: (context, languageService, child) {
     return Scaffold(
       body: Stack(
         children: [
-          
-// Seletor de idioma no canto superior direito
-Positioned(
-  top: 50,
-  right: 20,
-  child: Container(
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.9),
-      borderRadius: BorderRadius.circular(25),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 10,
-          spreadRadius: 2,
-        ),
-      ],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: LanguageSelector(),
-    ),
-  ),
-),
+
           Column(
             
             children: [
@@ -236,8 +208,8 @@ Positioned(
                     if (_restaurantName.isEmpty) // Mostrar apenas se não há dados do restaurante
                       TextButton(
                         onPressed: _refreshData,
-                        child: Text(
-                          AppLocalizations.of(context)?.tryAgain ?? "Recarregar dados",
+                        child: const Text(
+                          "Recarregar dados",
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
@@ -314,8 +286,8 @@ Positioned(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        AppLocalizations.of(context)?.language ?? "Selecione o aplicativo",
+                      const Text(
+                        "Selecione o aplicativo",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -359,7 +331,7 @@ Positioned(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                        child: Text(AppLocalizations.of(context)?.confirm ?? "Confirmar"),
+                        child: const Text("Confirmar"),
                       ),
                     ],
                   ),
@@ -369,8 +341,6 @@ Positioned(
         ],
       ),
     );
-     },
-);
   }
 
   Widget _buildAppOption({
