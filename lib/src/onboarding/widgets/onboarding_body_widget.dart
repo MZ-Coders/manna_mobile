@@ -20,30 +20,82 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
   String _restaurantAddress = '';
   String _restaurantCity = '';
   String _restaurantLogo = '';
+  
+  // Adicionar flag para controlar se os dados já foram carregados
+  bool _dataLoaded = false;
 
   @override
   void initState() {
-    _controller = AnimationController(vsync: this);
-    // Verifica se já existe uma preferência salva
-    _loadPreference();
     super.initState();
+    _controller = AnimationController(vsync: this);
+    print("OnBoarding initState");
+    _loadPreference();
+    print("Fim initState");
   }
 
   Future<void> _loadPreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedApp = prefs.getString('app_type') ?? 'food_delivery';
-
-      _restaurantName = prefs.getString('restaurant_name') ?? '';
-      _restaurantAddress = prefs.getString('restaurant_address') ?? '';
-      _restaurantCity = prefs.getString('restaurant_city') ?? '';
-      _restaurantLogo = prefs.getString('restaurant_logo') ?? '';
-    });
+    print("Iniciando _loadPreference");
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      print("SharedPreferences obtido");
+      
+      // Sempre carregar os dados mais recentes do SharedPreferences
+      final newSelectedApp = prefs.getString('app_type') ?? 'food_delivery';
+      final newRestaurantName = prefs.getString('restaurant_name') ?? '';
+      final newRestaurantAddress = prefs.getString('restaurant_address') ?? '';
+      final newRestaurantCity = prefs.getString('restaurant_city') ?? '';
+      final newRestaurantLogo = prefs.getString('restaurant_logo') ?? '';
+      
+      print("Dados carregados:");
+      print("- App Type: $newSelectedApp");
+      print("- Restaurant Name: $newRestaurantName");
+      print("- Restaurant Address: $newRestaurantAddress");
+      print("- Restaurant City: $newRestaurantCity");
+      print("- Restaurant Logo: $newRestaurantLogo");
+      
+      // Apenas atualizar o estado se os dados realmente mudaram ou se é a primeira carga
+      if (!_dataLoaded || 
+          _selectedApp != newSelectedApp ||
+          _restaurantName != newRestaurantName ||
+          _restaurantAddress != newRestaurantAddress ||
+          _restaurantCity != newRestaurantCity ||
+          _restaurantLogo != newRestaurantLogo) {
+        
+        setState(() {
+          _selectedApp = newSelectedApp;
+          _restaurantName = newRestaurantName;
+          _restaurantAddress = newRestaurantAddress;
+          _restaurantCity = newRestaurantCity;
+          _restaurantLogo = newRestaurantLogo;
+          _dataLoaded = true;
+        });
+        
+        print("Estado atualizado com novos dados");
+      } else {
+        print("Dados não mudaram, mantendo estado atual");
+      }
+    } catch (e) {
+      print("Erro ao carregar preferências: $e");
+      setState(() {
+        _dataLoaded = true; // Marcar como carregado mesmo com erro
+      });
+    }
   }
 
   Future<void> _savePreference(String appType) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('app_type', appType);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('app_type', appType);
+      print("Preferência salva: $appType");
+    } catch (e) {
+      print("Erro ao salvar preferência: $e");
+    }
+  }
+
+  // Método para recarregar dados quando necessário
+  Future<void> _refreshData() async {
+    print("Recarregando dados...");
+    await _loadPreference();
   }
 
   @override
@@ -78,197 +130,214 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
     final buttonDelayDuration = descriptionDelayDuration + 100.ms;
     final buttonPlayDuration = mainPlayDuration - 200.ms;
     
-    return Stack(
-      children: [
-        Column(
-          children: [
-            const Flexible(
-              child: SizedBox(
-                height: 50,
+    // Exibir loading enquanto os dados não foram carregados
+    if (!_dataLoaded) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
+    return Scaffold(
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              const Flexible(
+                child: SizedBox(
+                  height: 50,
+                ),
               ),
-            ),
-            Flexible(
-              flex: 6,
-              child: AnimatedDishWidget(
-                dishPlayDuration: mainPlayDuration,
-                leavesDelayDuration: leavesDelayDuration,
-                restaurantLogo: _restaurantLogo,
+              Flexible(
+                flex: 6,
+                child: AnimatedDishWidget(
+                  dishPlayDuration: mainPlayDuration,
+                  leavesDelayDuration: leavesDelayDuration,
+                  restaurantLogo: _restaurantLogo,
+                ),
               ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            Flexible(
-              flex: 2,
-              child: Column(
-                children: [
-                  if (!_restaurantLogo.isNotEmpty)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                //     child: Container(
-                //   width: 80,
-                //   height: 80,
-                //   decoration: BoxDecoration(
-                //     color: Colors.grey.shade300,
-                //     borderRadius: BorderRadius.circular(50),
-                //   ),
-                //   child: const Icon(Icons.restaurant, size: 40),
-                // )
-                  ),
-                  AnimatedTitleWidget(
-                      titleDelayDuration: titleDelayDuration,
-                      mainPlayDuration: mainPlayDuration,
-                      restaurantName: _restaurantName),
-                ],
+              const SizedBox(
+                height: 30,
               ),
-            ),
-            const SizedBox(
-              height: 40,
-            ),
-            Flexible(
-              flex: 1,
-              child: AnimatedDescriptionWidget(
-                descriptionPlayDuration: mainPlayDuration,
-                descriptionDelayDuration: descriptionDelayDuration,
-                restaurantAddress: _restaurantAddress, // ADICIONAR ESTA LINHA
-                restaurantCity: _restaurantCity,
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Botão principal
-                  GestureDetector(
-                    onTap: _proceedToApp,
-                    child: AnimatedButtonWidget(
-                        buttonDelayDuration: buttonDelayDuration,
-                        buttonPlayDuration: buttonPlayDuration),
-                  ),
-                  
-                  // Botão para mostrar o seletor de apps
-                  // const SizedBox(height: 20),
-                  // InkWell(
-                  //   onTap: _toggleAppSelector,
-                  //   child: Container(
-                  //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  //     decoration: BoxDecoration(
-                  //       borderRadius: BorderRadius.circular(20),
-                  //       border: Border.all(color: Colors.grey.shade300),
-                  //     ),
-                  //     child: Row(
-                  //       mainAxisSize: MainAxisSize.min,
-                  //       children: [
-                  //         Text(
-                  //           "Escolher aplicativo",
-                  //           style: TextStyle(
-                  //             color: Colors.grey.shade700,
-                  //             fontSize: 12,
-                  //           ),
-                  //         ),
-                  //         const SizedBox(width: 5),
-                  //         Icon(
-                  //           _showAppSelector ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                  //           size: 16,
-                  //           color: Colors.grey.shade700,
-                  //         ),
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-            )
-          ],
-        )
-            .animate(
-              autoPlay: false,
-              controller: _controller,
-            )
-            .blurXY(begin: 0, end: 25, duration: 600.ms, curve: Curves.easeInOut)
-            .scaleXY(begin: 1, end: 0.6)
-            .fadeOut(
-              begin: 1,
-            ),
-            
-        // Painel de seleção de app que aparece quando _showAppSelector é true
-        if (_showAppSelector)
-          Positioned(
-            bottom: 100,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 250,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 1,
+              Flexible(
+                flex: 2,
+                child: Column(
+                  children: [
+                    if (_restaurantLogo.isEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 20),
+                      // Placeholder para logo se necessário
                     ),
+                    AnimatedTitleWidget(
+                        titleDelayDuration: titleDelayDuration,
+                        mainPlayDuration: mainPlayDuration,
+                        restaurantName: _restaurantName),
                   ],
                 ),
+              ),
+              const SizedBox(
+                height: 40,
+              ),
+              Flexible(
+                flex: 1,
+                child: AnimatedDescriptionWidget(
+                  descriptionPlayDuration: mainPlayDuration,
+                  descriptionDelayDuration: descriptionDelayDuration,
+                  restaurantAddress: _restaurantAddress,
+                  restaurantCity: _restaurantCity,
+                ),
+              ),
+              Expanded(
+                flex: 3,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Selecione o aplicativo",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Opção POS App
-                    _buildAppOption(
-                      title: "POS App",
-                      subtitle: "Sistema de ponto de venda",
-                      icon: Icons.point_of_sale,
-                      value: 'pos',
+                    // Botão principal
+                    GestureDetector(
+                      onTap: _proceedToApp,
+                      child: AnimatedButtonWidget(
+                          buttonDelayDuration: buttonDelayDuration,
+                          buttonPlayDuration: buttonPlayDuration),
                     ),
                     
-                    const Divider(height: 20),
-                    
-                    // Opção Food Delivery App
-                    _buildAppOption(
-                      title: "Restaurante",
-                      subtitle: "Aplicativo de pedido no restaurante",
-                      icon: Icons.restaurant,
-                      value: 'food_delivery',
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Botão para confirmar a seleção
-                    ElevatedButton(
-                      onPressed: () async {
-                        await _savePreference(_selectedApp);
-                        setState(() {
-                          _showAppSelector = false;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 40),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    // Botão para recarregar dados (útil para debug)
+                    const SizedBox(height: 10),
+                    if (_restaurantName.isEmpty) // Mostrar apenas se não há dados do restaurante
+                      TextButton(
+                        onPressed: _refreshData,
+                        child: const Text(
+                          "Recarregar dados",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                      child: const Text("Confirmar"),
-                    ),
+                    
+                    // Botão para mostrar o seletor de apps (comentado conforme original)
+                    // const SizedBox(height: 20),
+                    // InkWell(
+                    //   onTap: _toggleAppSelector,
+                    //   child: Container(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    //     decoration: BoxDecoration(
+                    //       borderRadius: BorderRadius.circular(20),
+                    //       border: Border.all(color: Colors.grey.shade300),
+                    //     ),
+                    //     child: Row(
+                    //       mainAxisSize: MainAxisSize.min,
+                    //       children: [
+                    //         Text(
+                    //           "Escolher aplicativo",
+                    //           style: TextStyle(
+                    //             color: Colors.grey.shade700,
+                    //             fontSize: 12,
+                    //           ),
+                    //         ),
+                    //         const SizedBox(width: 5),
+                    //         Icon(
+                    //           _showAppSelector ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                    //           size: 16,
+                    //           color: Colors.grey.shade700,
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                   ],
+                ),
+              )
+            ],
+          )
+              .animate(
+                autoPlay: false,
+                controller: _controller,
+              )
+              .blurXY(begin: 0, end: 25, duration: 600.ms, curve: Curves.easeInOut)
+              .scaleXY(begin: 1, end: 0.6)
+              .fadeOut(
+                begin: 1,
+              ),
+              
+          // Painel de seleção de app que aparece quando _showAppSelector é true
+          if (_showAppSelector)
+            Positioned(
+              bottom: 100,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  width: 250,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Selecione o aplicativo",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Opção POS App
+                      _buildAppOption(
+                        title: "POS App",
+                        subtitle: "Sistema de ponto de venda",
+                        icon: Icons.point_of_sale,
+                        value: 'pos',
+                      ),
+                      
+                      const Divider(height: 20),
+                      
+                      // Opção Food Delivery App
+                      _buildAppOption(
+                        title: "Restaurante",
+                        subtitle: "Aplicativo de pedido no restaurante",
+                        icon: Icons.restaurant,
+                        value: 'food_delivery',
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Botão para confirmar a seleção
+                      ElevatedButton(
+                        onPressed: () async {
+                          await _savePreference(_selectedApp);
+                          setState(() {
+                            _showAppSelector = false;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: const Text("Confirmar"),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 

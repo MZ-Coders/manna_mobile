@@ -20,6 +20,7 @@ import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
 
+import 'dart:async';
 // Definindo enum para os tipos de aplicativo
 enum AppType { posApp, foodDeliveryApp }
 
@@ -34,23 +35,17 @@ void main() async {
   setUpLocator();
   HttpOverrides.global = MyHttpOverrides();
   
-  // Obter TableID para o Food Delivery app
-  // final tableId = getTableIdFromUrl();
+  // Obter parâmetros da URL
   final restaurantId = getUrlParameter("restaurant");
   final tableId = getUrlParameter("table");
   prefs = await SharedPreferences.getInstance();
+  await prefs!.clear();
+  print("Dados antigos limpos do SharedPreferences");
   
-  // if (tableId != null) {
-  //   prefs!.setString('table_id', tableId);
-  // }
-
-  
-
+  // Salvar IDs básicos primeiro
   if (restaurantId != null) {
     prefs!.setString('restaurant_id', restaurantId);
     print("Restaurant ID: $restaurantId");
-
-    await loadBasicRestaurantData(restaurantId);
   } else {
     prefs!.setString('restaurant_id', '');
   }
@@ -61,26 +56,26 @@ void main() async {
   } else {
     prefs!.setString('table_id', '');
   }
+
+  // IMPORTANTE: Aguardar o carregamento completo dos dados do restaurante
+  if (restaurantId != null && restaurantId.isNotEmpty) {
+    print("Carregando dados do restaurante...");
+    await loadBasicRestaurantDataSync(restaurantId);
+    print("Dados do restaurante carregados com sucesso");
+  }
+
   if (Globs.udValueBool(Globs.userLogin)) {
     ServiceCall.userPayload = Globs.udValue(Globs.userPayload);
   }
   
+  print("Processo inicial completo");
   // Configuração do EasyLoading
   configLoading();
+  print("Configurou loading");
   
   // Sempre iniciar com a tela de onboarding para seleção de app
   runApp(const AppSelector());
-}
-
-String? getTableIdFromUrl() {
-  if (kIsWeb) {
-    // Para testes, usando uma URL fixa
-    final url = "https://example.com?table_id=12345";
-    final uri = Uri.parse(url);
-    return uri.queryParameters['table_id'];
-  } else {
-    return null;
-  }
+  print("Iniciou AppSelector");
 }
 
 String? getUrlParameter(String key) {
@@ -105,6 +100,38 @@ void configLoading() {
     ..dismissOnTap = false;
 }
 
+// Versão síncrona da função que aguarda o carregamento completo
+Future<void> loadBasicRestaurantDataSync(String restaurantUUID) async {
+  try {
+    // Usar um Completer para aguardar a resposta da API
+    final completer = Completer<void>();
+    
+    ServiceCall.getMenuItems(restaurantUUID,
+        withSuccess: (Map<String, dynamic> data) {
+          if (data.containsKey('restaurant') && data['restaurant'] != null) {
+            var restaurant = data['restaurant'];
+            // Salvar dados básicos do restaurante
+            prefs!.setString('restaurant_name', restaurant['name'] ?? '');
+            prefs!.setString('restaurant_logo', restaurant['logo'] ?? '');
+            prefs!.setString('restaurant_address', restaurant['address'] ?? '');
+            prefs!.setString('restaurant_city', restaurant['city'] ?? '');
+            print("Dados do restaurante salvos: ${restaurant['name']}");
+          }
+          completer.complete(); // Marca como concluído
+        },
+        failure: (String error) {
+          print("Erro ao buscar dados do restaurante: $error");
+          completer.complete(); // Mesmo com erro, continua a execução
+        });
+    
+    // Aguarda a conclusão da chamada API
+    await completer.future;
+  } catch (e) {
+    print("Error loading restaurant data: $e");
+  }
+}
+
+// Manter a função original para uso em outros locais se necessário
 Future<void> loadBasicRestaurantData(String restaurantUUID) async {
   try {
     ServiceCall.getMenuItems(restaurantUUID,
@@ -409,3 +436,5 @@ class AppSwitcherHelper {
     }
   }
 }
+
+// Adicionar import necessário no topo do arquivo
