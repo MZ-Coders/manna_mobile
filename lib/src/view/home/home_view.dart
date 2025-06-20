@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common_widget/menu_item_row.dart';
 import 'package:dribbble_challenge/src/common_widget/round_textfield.dart';
@@ -34,6 +36,7 @@ class _HomeViewState extends State<HomeView> {
   String? restaurantUUID;
   String restaurantName = '';
   bool isLoading = true;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -42,7 +45,63 @@ class _HomeViewState extends State<HomeView> {
     // Iniciar com itens da categoria Entradas/Starters
     // updateMenuItems();
     getDataFromApi();
+
+    txtSearch.addListener(_onSearchChanged);
   }
+
+void _onSearchChanged() {
+  if (_debounce?.isActive ?? false) _debounce!.cancel();
+  _debounce = Timer(const Duration(milliseconds: 300), () {
+    setState(() {
+      searchText = txtSearch.text.toLowerCase();
+      _performSearch();
+    });
+  });
+}
+
+void _performSearch() {
+  if (searchText.isEmpty) {
+    // Se a pesquisa está vazia, mostrar todos os itens da categoria selecionada
+    filteredMenuItems = List.from(originalFilteredItems);
+  } else {
+    // Pesquisar em TODAS as categorias, não apenas na selecionada
+    List<Map<String, dynamic>> allItems = [];
+    
+    for (var category in allMenuItems) {
+      if (category['products'] != null) {
+        List products = category['products'];
+        
+        for (var product in products) {
+          Map<String, dynamic> item = {
+            "id": product['id'],
+            "image": product['image_url'] ?? "assets/img/dess_1.png",
+            "name": product['name'],
+            "rate": "4.9",
+            "rating": "124",
+            "type": category['category_name'],
+            "food_type": category['category_name'],
+            "description": product['description'] ?? '',
+            "price": double.tryParse(product['current_price'].toString()) ?? 0.0,
+            "regular_price": double.tryParse(product['regular_price'].toString()) ?? 0.0,
+            "is_on_promotion": product['is_on_promotion'] ?? false,
+          };
+          allItems.add(item);
+        }
+      }
+    }
+    
+    // Filtrar itens baseado no texto de pesquisa
+    filteredMenuItems = allItems.where((item) {
+      String itemName = item['name'].toString().toLowerCase();
+      String itemDescription = item['description'].toString().toLowerCase();
+      String itemType = item['type'].toString().toLowerCase();
+      
+      return itemName.contains(searchText) || 
+             itemDescription.contains(searchText) || 
+             itemType.contains(searchText);
+    }).toList();
+  }
+}
 
   Future<void> loadTableId() async {
     final prefs = await SharedPreferences.getInstance();
@@ -63,6 +122,9 @@ class _HomeViewState extends State<HomeView> {
   // Lista de itens filtrados pela categoria
   List filteredMenuItems = [];
   List allMenuItems = [];
+
+  String searchText = '';
+  List originalFilteredItems = []; // Para armazenar itens antes da pesquisa
 
   List popArr = [
   ];
@@ -184,89 +246,136 @@ class _HomeViewState extends State<HomeView> {
               const SizedBox(height: 20),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: RoundTextfield(
-                  hintText: "Search Food",
-                  controller: txtSearch,
-                  left: Container(
-                    alignment: Alignment.center,
-                    width: 30,
-                    child: Image.asset(
-                      "assets/img/search.png",
-                      width: 20,
-                      height: 20,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: RoundTextfield(
+    hintText: searchText.isEmpty ? "Search Food" : "Searching...",
+    controller: txtSearch,
+    left: Container(
+      alignment: Alignment.center,
+      width: 30,
+      child: searchText.isEmpty 
+        ? Image.asset(
+            "assets/img/search.png",
+            width: 20,
+            height: 20,
+          )
+        : IconButton(
+            onPressed: () {
+              txtSearch.clear();
+              searchText = '';
+              _performSearch();
+            },
+            icon: Icon(
+              Icons.clear,
+              size: 20,
+              color: TColor.secondaryText,
+            ),
+          ),
+    ),
+  ),
+),
+              const SizedBox(height: 20),
+
+// Mostrar resultado da pesquisa se houver texto
+if (searchText.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Row(
+      children: [
+        Icon(Icons.search, size: 16, color: TColor.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            'Searching for "$searchText" - ${filteredMenuItems.length} results found',
+            style: TextStyle(
+              color: TColor.secondaryText,
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+
+const SizedBox(height: 10),
 
               // Lista de categorias
-              SizedBox(
-                height: 120,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  itemCount: catArr.length,
-                  itemBuilder: ((context, index) {
-                    var cObj = catArr[index] as Map? ?? {};
-                    bool isSelected = cObj["id"] == selectedCategoryId;
+             // Lista de categorias (esconder durante pesquisa)
+if (searchText.isEmpty)
+  SizedBox(
+    height: 120,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      itemCount: catArr.length,
+      itemBuilder: ((context, index) {
+        var cObj = catArr[index] as Map? ?? {};
+        bool isSelected = cObj["id"] == selectedCategoryId;
 
-                    return CategoryCell(
-                      cObj: cObj,
-                      // isSelected: isSelected,
-                      onTap: () {
-                        setState(() {
-                          selectedCategoryId = cObj["id"];
-                          updateMenuItems();
-                        });
-                      },
-                    );
-                  }),
-                ),
-              ),
-
+        return CategoryCell(
+          cObj: cObj,
+          onTap: () {
+            // Limpar pesquisa ao selecionar categoria
+            txtSearch.clear();
+            searchText = '';
+            setState(() {
+              selectedCategoryId = cObj["id"];
+              updateMenuItems();
+            });
+          },
+        );
+      }),
+    ),
+  ),
               // Seção de itens populares
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ViewAllTitleRow(
-                  title: "Most Popular",
-                  onView: () {},
-                ),
+              // Seção de itens populares (esconder durante pesquisa)
+if (searchText.isEmpty) ...[
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: ViewAllTitleRow(
+      title: "Most Popular",
+      onView: () {},
+    ),
+  ),
+  SizedBox(
+    height: 200,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      itemCount: mostPopArr.length,
+      itemBuilder: ((context, index) {
+        var mObj = mostPopArr[index] as Map? ?? {};
+        return MostPopularCell(
+          mObj: mObj,
+          onTap: () {
+             Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FoodItemDetailsView(
+                  foodDetails: mObj.cast<String, dynamic>()
+                )
               ),
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  itemCount: mostPopArr.length,
-                  itemBuilder: ((context, index) {
-                    var mObj = mostPopArr[index] as Map? ?? {};
-                    return MostPopularCell(
-                      mObj: mObj,
-                      onTap: () {
-                         Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FoodItemDetailsView(
-                              foodDetails: mObj.cast<String, dynamic>()
-                            )
-                          ),
-                        );
-                      },
-                    );
-                  }),
-                ),
-              ),
+            );
+          },
+        );
+      }),
+    ),
+  ),
+],
 
+             
               // Seção do menu da categoria selecionada
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ViewAllTitleRow(
-                 title: "Menu: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {"name": "Carregando..."})["name"]}",
+              // Seção do menu da categoria selecionada
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: ViewAllTitleRow(
+    title: searchText.isEmpty 
+      ? "Menu: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {"name": "Carregando..."})["name"]}"
+      : "Search Results",
     onView: () {},
-                ),
-              ),
+  ),
+),
               // 
               buildMenuItems(context, filteredMenuItems),
 
@@ -299,6 +408,53 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget buildMenuItems(BuildContext context, List filteredMenuItems) {
+
+    // Verificar se há resultados de pesquisa
+  if (searchText.isNotEmpty && filteredMenuItems.isEmpty) {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 60,
+            color: TColor.secondaryText,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No results found for "$searchText"',
+            style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Try searching with different keywords',
+            style: TextStyle(
+              color: TColor.secondaryText,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              txtSearch.clear();
+              searchText = '';
+              _performSearch();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColor.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Clear Search'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
   bool isMediumScreen = MediaQuery.of(context).size.width > 600 &&
                       MediaQuery.of(context).size.width < 1000;
@@ -322,19 +478,42 @@ bool isDesktopScreen = MediaQuery.of(context).size.width >= 1200;
       itemCount: filteredMenuItems.length,
       itemBuilder: ((context, index) {
         var mObj = filteredMenuItems[index] as Map? ?? {};
-        return MenuItemRow(
-          mObj: mObj,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FoodItemDetailsView(
-                  foodDetails: mObj.cast<String, dynamic>()
-                )
-              ),
-            );
-          },
+      return Column(
+  children: [
+    // Mostrar categoria apenas durante pesquisa
+    if (searchText.isNotEmpty)
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        margin: const EdgeInsets.only(bottom: 4),
+        decoration: BoxDecoration(
+          color: TColor.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          mObj["type"].toString(),
+          style: TextStyle(
+            color: TColor.primary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    MenuItemRow(
+      mObj: mObj,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FoodItemDetailsView(
+              foodDetails: mObj.cast<String, dynamic>()
+            )
+          ),
         );
+      },
+    ),
+  ],
+);
       }),
     );
   } else {
@@ -346,19 +525,42 @@ bool isDesktopScreen = MediaQuery.of(context).size.width >= 1200;
       itemCount: filteredMenuItems.length,
       itemBuilder: ((context, index) {
         var mObj = filteredMenuItems[index] as Map? ?? {};
-        return MenuItemRow(
-          mObj: mObj,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FoodItemDetailsView(
-                  foodDetails: mObj.cast<String, dynamic>()
-                )
-              ),
-            );
-          },
+       return Column(
+  children: [
+    // Mostrar categoria apenas durante pesquisa
+    if (searchText.isNotEmpty)
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        margin: const EdgeInsets.only(bottom: 4),
+        decoration: BoxDecoration(
+          color: TColor.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          mObj["type"].toString(),
+          style: TextStyle(
+            color: TColor.primary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    MenuItemRow(
+      mObj: mObj,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FoodItemDetailsView(
+              foodDetails: mObj.cast<String, dynamic>()
+            )
+          ),
         );
+      },
+    ),
+  ],
+);
       }),
     );
   }
@@ -392,7 +594,7 @@ void createMostPopularFromAPI() {
   mostPopArr = popularItems;
 }
   // Método para atualizar os itens do menu com base na categoria selecionada
- void updateMenuItems() {
+void updateMenuItems() {
   print("=== updateMenuItems chamada ===");
   print("selectedCategoryId: $selectedCategoryId");
   setState(() {
@@ -402,17 +604,17 @@ void createMostPopularFromAPI() {
       orElse: () => null,
     );
 
-  print("=== Categories ===");
-  print("selectedCategory: $selectedCategory");
-  
-  if (selectedCategory != null && selectedCategory['products'] != null) {
+    print("=== Categories ===");
+    print("selectedCategory: $selectedCategory");
+    
+    if (selectedCategory != null && selectedCategory['products'] != null) {
       // Converter produtos da API para o formato esperado
-      filteredMenuItems = (selectedCategory['products'] as List).map((product) {
+      List<Map<String, dynamic>> categoryItems = (selectedCategory['products'] as List).map((product) {
         return {
           "id": product['id'],
           "image": product['image_url'] ?? "assets/img/dess_1.png", 
           "name": product['name'],
-          "rate": "4.9", // Você pode adicionar rating na API ou manter padrão
+          "rate": "4.9",
           "rating": "124",
           "type": selectedCategory['category_name'],
           "food_type": selectedCategory['category_name'],
@@ -422,15 +624,24 @@ void createMostPopularFromAPI() {
           "is_on_promotion": product['is_on_promotion'] ?? false,
         };
       }).toList();
-      print(selectedCategory['products'].length);
+      
+      // Armazenar os itens originais antes de aplicar pesquisa
+      originalFilteredItems = List.from(categoryItems);
+      
+      // Aplicar pesquisa se houver texto no campo
+      if (searchText.isNotEmpty) {
+        _performSearch();
+      } else {
+        filteredMenuItems = List.from(originalFilteredItems);
+      }
+      
       print("Número de itens filtrados: ${filteredMenuItems.length}");
     } else {
+      originalFilteredItems = [];
       filteredMenuItems = [];
     }
   });
 }
-
-
 
   String getDefaultCategoryImage(int index) {
   // Lista de imagens padrão que você pode rotacionar
@@ -539,5 +750,13 @@ Future<void> getDataFromApi() async {
     isLoading = false; // ADICIONAR ESTA LINHA
   });
   }
+}
+
+@override
+void dispose() {
+  _debounce?.cancel();
+  txtSearch.removeListener(_onSearchChanged);
+  txtSearch.dispose();
+  super.dispose();
 }
 }
