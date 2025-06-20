@@ -101,6 +101,9 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String get orderPlaced => 'Order placed successfully!';
+
+  @override
+  String get offers => 'Offers';
   
   // Restaurant info
   @override
@@ -111,7 +114,84 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String get menuDigital => 'Digital Menu';
+
+  @override
+String get orderItems => 'Order Items';
+
+@override
+String get orderSummary => 'Order Summary';
+
+@override
+String get deliveryCost => 'Delivery Cost';
+
+@override
+String get confirmOrderTitle => 'Confirm Order';
+
+@override
+String get orderProcess => 'Your Order is now being processed. We will let you know once the order is picked from the outlet. Check the status of your Order';
+
+@override
+String get thankYou => 'Thank You!';
+
+@override
+String get forYourOrder => 'for your order';
+
+@override
+String get orderPlacedMessage => 'Order placed successfully!';
+
+@override
+String get trackOrder => 'Track My Order';
+
+@override
+String get backToHome => 'Back To Home';
+
+@override
+String get printBills => 'Print Bills';
+
+@override
+String get tax => 'Tax';
+
+@override
+String get continueShopping => 'Continue Shopping';
+
+@override
+String get itemsInCart => 'items';
+
+@override
+String get addSomeItems => 'Add some delicious items from our menu\nto get started!';
   
+
+  @override
+String get description => 'Description';
+
+@override
+String get numberPortions => 'Number of Portions';
+
+@override
+String get offerText => 'Special Offer';
+
+@override
+String get perPortion => '/per Portion';
+
+ // Corrigindo o typo
+
+@override
+String get adding => 'Adding...';
+
+@override
+String get addedToCart => 'Added to cart!';
+
+@override
+String get portions => 'Portions';
+
+@override
+String get promotion => 'PROMOTION';
+
+@override
+String get totalPrice => 'Total Price';
+
+@override
+String get findOffers => 'Find discounts, Offers special\nmeals and more!';
   // Language
   @override
   String get language => 'Language';

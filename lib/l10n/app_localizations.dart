@@ -56,6 +56,7 @@ abstract class AppLocalizations {
   String get emptyCart;
   String get continueMenu;
   String get orderPlaced;
+  String get offers;
   
   // Restaurant info
   String get tableNumber;
@@ -66,6 +67,36 @@ abstract class AppLocalizations {
   String get language;
   String get portuguese;
   String get english;
+
+  // Order management
+String get orderItems;
+String get orderSummary;
+String get deliveryCost;
+String get confirmOrderTitle;
+String get orderProcess;
+String get thankYou;
+String get forYourOrder;
+String get orderPlacedMessage;
+String get trackOrder;
+String get backToHome;
+String get printBills;
+String get tax;
+String get continueShopping;
+String get itemsInCart;
+String get addSomeItems;
+
+  //Food Details
+  String get description;
+  String get numberPortions;
+  String get offerText;
+  String get perPortion;
+  String get adding;
+  String get addedToCart;
+  String get portions;
+  String get promotion;
+  String get totalPrice;
+  String get findOffers;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

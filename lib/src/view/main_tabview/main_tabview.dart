@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common_widget/tab_button.dart';
 import 'package:dribbble_challenge/src/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +100,7 @@ class _MainTabViewState extends State<MainTabView> {
               //     },
               //     isSelected: selctTab == 0),
               TabButton(
-                  title: "Offer",
+                  title: AppLocalizations.of(context).offers,
                   icon: "assets/img/tab_offer.png",
                   onTap: () {
                     if (selctTab != 1) {

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:dribbble_challenge/src/view/home/home_view.dart';
@@ -128,8 +129,8 @@ Widget _buildEmptyCartView() {
           const SizedBox(height: 30),
           
           // Título
-          Text(
-            "Your cart is empty",
+         Text(
+            AppLocalizations.of(context).emptyCart,
             style: TextStyle(
               color: TColor.primaryText,
               fontSize: 24,
@@ -141,7 +142,7 @@ Widget _buildEmptyCartView() {
           
           // Descrição
           Text(
-            "Add some delicious items from our menu\nto get started!",
+            AppLocalizations.of(context).findOffers,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: TColor.secondaryText,
@@ -155,7 +156,7 @@ Widget _buildEmptyCartView() {
           SizedBox(
             width: 200,
             child: RoundButton(
-              title: "Browse Menu",
+              title: AppLocalizations.of(context).continueMenu,
               onPressed: () {
                 Navigator.of(context).pushNamedAndRemoveUntil(
         'home',
@@ -355,7 +356,7 @@ void _showCheckoutDialog() {
             CircularProgressIndicator(color: TColor.primary),
             const SizedBox(height: 20),
             Text(
-              "Loading restaurant info...",
+             AppLocalizations.of(context).loading,
               style: TextStyle(
                 color: TColor.secondaryText,
                 fontSize: 16,
@@ -413,14 +414,14 @@ void _showCheckoutDialog() {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "My Order",
+              AppLocalizations.of(context).myOrder,
               style: TextStyle(
                   color: TColor.primaryText,
                   fontSize: 22,
                   fontWeight: FontWeight.w800),
             ),
             Text(
-              "${itemArr.length} ${itemArr.length == 1 ? 'item' : 'items'}",
+             "${itemArr.length} ${AppLocalizations.of(context).itemsInCart}",
               style: TextStyle(
                   color: TColor.secondaryText,
                   fontSize: 14,
@@ -609,7 +610,7 @@ void _showCheckoutDialog() {
             ),
             const SizedBox(width: 12),
             Text(
-              "Order Items",
+              AppLocalizations.of(context).orderItems,
               style: TextStyle(
                 color: TColor.primaryText,
                 fontSize: 18,
@@ -624,7 +625,7 @@ void _showCheckoutDialog() {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                "${itemArr.length} items",
+                "${itemArr.length} ${AppLocalizations.of(context).itemsInCart}",
                 style: TextStyle(
                   color: TColor.primary,
                   fontSize: 12,
@@ -814,7 +815,7 @@ void _showCheckoutDialog() {
           ),
           const SizedBox(width: 12),
           Text(
-            "Order Summary",
+            AppLocalizations.of(context).orderSummary,
             style: TextStyle(
               color: TColor.primaryText,
               fontSize: 18,
@@ -827,12 +828,12 @@ void _showCheckoutDialog() {
       const SizedBox(height: 20),
       
       // Subtotal
-      _buildSummaryRow("Sub Total", "${CartService.getTotal().toStringAsFixed(2)} MZN", false),
+      _buildSummaryRow(AppLocalizations.of(context).subtotal, "${CartService.getTotal().toStringAsFixed(2)} MZN", false),
       
       const SizedBox(height: 12),
       
       // Delivery cost
-      _buildSummaryRow("Delivery Cost", "0 MZN", false),
+      _buildSummaryRow(AppLocalizations.of(context).deliveryCost, "0 MZN", false),
       
       const SizedBox(height: 16),
       
@@ -845,7 +846,7 @@ void _showCheckoutDialog() {
       const SizedBox(height: 16),
       
       // Total
-      _buildSummaryRow("Total", "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN", true),
+      _buildSummaryRow(AppLocalizations.of(context).total, "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN", true),
       
       const SizedBox(height: 30),
       
@@ -868,7 +869,7 @@ void _showCheckoutDialog() {
       );
                 },
                 child: Text(
-                  "Continue Shopping",
+                  AppLocalizations.of(context).continueShopping,
                   style: TextStyle(
                     color: TColor.primary,
                     fontSize: 16,
@@ -887,7 +888,7 @@ void _showCheckoutDialog() {
             child: Container(
               height: 50,
               child: RoundButton(
-                title: "Checkout",
+                title: AppLocalizations.of(context).checkout,
                 onPressed: () {
                   if (!itemArr.isEmpty) {
                     _showCheckoutDialog();

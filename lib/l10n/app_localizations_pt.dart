@@ -101,6 +101,9 @@ class AppLocalizationsPt extends AppLocalizations {
   
   @override
   String get orderPlaced => 'Pedido realizado com sucesso!';
+
+  @override
+  String get offers => 'Promoções';
   
   // Restaurant info
   @override
@@ -111,7 +114,83 @@ class AppLocalizationsPt extends AppLocalizations {
   
   @override
   String get menuDigital => 'Menu Digital';
+
+  @override
+String get orderItems => 'Itens do Pedido';
+
+@override
+String get orderSummary => 'Resumo do Pedido';
+
+@override
+String get deliveryCost => 'Taxa de Entrega';
+
+@override
+String get confirmOrderTitle => 'Confirmar Pedido';
+
+@override
+String get orderProcess => 'Seu pedido está sendo processado. Te avisaremos quando o pedido for retirado do estabelecimento. Verifique o status do seu pedido';
+
+@override
+String get thankYou => 'Obrigado!';
+
+@override
+String get forYourOrder => 'pelo seu pedido';
+
+@override
+String get orderPlacedMessage => 'Pedido realizado com sucesso!';
+
+@override
+String get trackOrder => 'Rastrear Pedido';
+
+@override
+String get backToHome => 'Voltar ao Início';
+
+@override
+String get printBills => 'Imprimir Recibo';
+
+@override
+String get tax => 'Taxa';
+
+@override
+String get continueShopping => 'Continuar Comprando';
+
+@override
+String get itemsInCart => 'itens';
+
+@override
+String get addSomeItems => 'Adicione alguns itens deliciosos do nosso menu\npara começar!';
   
+  @override
+String get description => 'Descrição';
+
+@override
+String get numberPortions => 'Número de Porções';
+
+@override
+String get offerText => 'Oferta Especial';
+
+@override
+String get perPortion => '/por Porção';
+
+ // Corrigindo o typo
+
+@override
+String get adding => 'Adicionando...';
+
+@override
+String get addedToCart => 'Adicionado ao carrinho!';
+
+@override
+String get portions => 'Porções';
+
+@override
+String get promotion => 'PROMOÇÃO';
+
+@override
+String get totalPrice => 'Preço Total';
+
+@override
+String get findOffers => 'Encontre descontos, ofertas especiais\ne muito mais!';
   // Language
   @override
   String get language => 'Idioma';

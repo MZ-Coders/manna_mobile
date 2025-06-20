@@ -20,6 +20,11 @@ import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
+import 'package:dribbble_challenge/l10n/language_service.dart';
+import 'package:provider/provider.dart';
+
 import 'dart:async';
 
 // Definindo enum para os tipos de aplicativo
@@ -31,6 +36,10 @@ SharedPreferences? prefs;
 void main() async {
   // Inicialização comum aos dois apps
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar serviço de idioma
+  final languageService = LanguageService();
+  await languageService.loadSavedLanguage();
   
   // Inicializações específicas do Food Delivery app
   setUpLocator();
@@ -92,7 +101,12 @@ void main() async {
   print("Processo inicial completo");
   
   // Iniciar o app principal após o carregamento bem-sucedido
-  runApp(const AppSelector());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider.value(value: languageService),
+    ],
+    child: const AppSelector(),
+  ));
   print("Iniciou AppSelector");
 }
 
@@ -610,9 +624,19 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<LanguageService>(
+    builder: (context, languageService, child) {
     return MaterialApp(
       title: _buildAppTitle(),
       debugShowCheckedModeBanner: false,
+       locale: languageService.currentLocale,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         fontFamily: "Metropolis",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -645,7 +669,8 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
         return FlutterEasyLoading(child: child);
       },
     );
-  }
+  },
+    );}
 }
 
 // Router para o app POS

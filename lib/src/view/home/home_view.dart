@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
+import 'package:dribbble_challenge/src/common_widget/language_selector.dart';
 import 'package:dribbble_challenge/src/common_widget/menu_item_row.dart';
 import 'package:dribbble_challenge/src/common_widget/round_textfield.dart';
 import 'package:dribbble_challenge/src/view/menu/food_item_details_view.dart';
@@ -214,41 +216,42 @@ void _performSearch() {
             children: [
               const SizedBox(height: 46),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _buildWelcomeMessage(),
-                        style: TextStyle(
-                            color: TColor.primaryText,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MyOrderView()));
-                      },
-                      icon: Image.asset(
-                        "assets/img/shopping_cart.png",
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Expanded(
+        child: Text(
+          _buildWelcomeMessage(),
+          style: TextStyle(
+              color: TColor.primaryText,
+              fontSize: 20,
+              fontWeight: FontWeight.w800),
+        ),
+      ),
+      LanguageSelector(), // Adicionar o seletor de idioma
+      IconButton(
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const MyOrderView()));
+        },
+        icon: Image.asset(
+          "assets/img/shopping_cart.png",
+          width: 25,
+          height: 25,
+        ),
+      ),
+    ],
+  ),
+),
               const SizedBox(height: 20),
 
               Padding(
   padding: const EdgeInsets.symmetric(horizontal: 20),
   child: RoundTextfield(
-    hintText: searchText.isEmpty ? "Search Food" : "Searching...",
+    hintText: searchText.isEmpty ? AppLocalizations.of(context).searchFood : "Searching...",
     controller: txtSearch,
     left: Container(
       alignment: Alignment.center,
@@ -286,7 +289,7 @@ if (searchText.isNotEmpty)
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Searching for "$searchText" - ${filteredMenuItems.length} results found',
+            '${AppLocalizations.of(context).search} "$searchText" - ${filteredMenuItems.length} results found',
             style: TextStyle(
               color: TColor.secondaryText,
               fontSize: 14,
@@ -334,7 +337,7 @@ if (searchText.isEmpty) ...[
   Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20),
     child: ViewAllTitleRow(
-      title: "Most Popular",
+      title: AppLocalizations.of(context).mostPopular,
       onView: () {},
     ),
   ),
@@ -371,9 +374,9 @@ Padding(
   padding: const EdgeInsets.symmetric(horizontal: 20),
   child: ViewAllTitleRow(
     title: searchText.isEmpty 
-      ? "Menu: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {"name": "Carregando..."})["name"]}"
-      : "Search Results",
-    onView: () {},
+    ? "${AppLocalizations.of(context).menu}: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {"name": "Loading..."})["name"]}"
+    : AppLocalizations.of(context).searchResults,
+  onView: () {},
   ),
 ),
               // 
@@ -662,7 +665,8 @@ void updateMenuItems() {
 }
 
 String _buildWelcomeMessage() {
-  String message = "Hello";
+  final localizations = AppLocalizations.of(context);
+  String message = localizations.hello;
   
   // Adicionar nome do usuário se existir
   String userName = ServiceCall.userPayload[KKey.name] ?? "";
@@ -674,12 +678,12 @@ String _buildWelcomeMessage() {
   
   // Adicionar informação da mesa apenas se existir
   if (tableId != null && tableId!.isNotEmpty) {
-    message += "\nYour Table is $tableId";
+    message += "\n${localizations.tableNumber} $tableId";
   }
   
   // Adicionar nome do restaurante
   if (restaurantName.isNotEmpty) {
-    message += "\nWelcome to $restaurantName";
+    message += "\n${localizations.welcomeToRestaurant} $restaurantName";
   }
   
   return message;
