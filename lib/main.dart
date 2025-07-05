@@ -20,6 +20,11 @@ import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
+import 'package:dribbble_challenge/l10n/language_service.dart';
+import 'package:provider/provider.dart';
+
 import 'dart:async';
 
 // Definindo enum para os tipos de aplicativo
@@ -31,6 +36,10 @@ SharedPreferences? prefs;
 void main() async {
   // Inicialização comum aos dois apps
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar serviço de idioma
+  final languageService = LanguageService();
+  await languageService.loadSavedLanguage();
   
   // Inicializações específicas do Food Delivery app
   setUpLocator();
@@ -92,7 +101,12 @@ void main() async {
   print("Processo inicial completo");
   
   // Iniciar o app principal após o carregamento bem-sucedido
-  runApp(const AppSelector());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider.value(value: languageService),
+    ],
+    child: const AppSelector(),
+  ));
   print("Iniciou AppSelector");
 }
 
@@ -174,8 +188,15 @@ class ErrorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Erro',
+      title: 'Error - Manna Software',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+  AppLocalizations.delegate,
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+],
+supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         fontFamily: "Metropolis",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
@@ -199,23 +220,23 @@ class ErrorScreen extends StatelessWidget {
     required this.errorMessage,
   }) : super(key: key);
 
-  String _getErrorTitle() {
+  String _getErrorTitle(BuildContext context) {
     switch (errorType) {
       case ErrorType.missingRestaurantId:
-        return 'Restaurante Não Encontrado';
+        return AppLocalizations.of(context).restaurantNotFound;
       case ErrorType.loadingError:
         return 'Erro de Conexão';
     }
   }
 
-  String _getErrorDescription() {
-    switch (errorType) {
-      case ErrorType.missingRestaurantId:
-        return 'Esta URL não contém as informações necessárias do restaurante. Verifique se você está acessando o link correto fornecido pelo restaurante.';
-      case ErrorType.loadingError:
-        return 'Não conseguimos carregar as informações do restaurante. Verifique sua conexão com a internet e tente novamente.';
-    }
+  String _getErrorDescription(BuildContext context) {
+  switch (errorType) {
+    case ErrorType.missingRestaurantId:
+      return AppLocalizations.of(context).missingRestaurantMessage;
+    case ErrorType.loadingError:
+      return AppLocalizations.of(context).loadingRestaurantError;
   }
+}
 
   IconData _getErrorIcon() {
     switch (errorType) {
@@ -259,7 +280,7 @@ class ErrorScreen extends StatelessWidget {
               
               // Título do erro
               Text(
-                _getErrorTitle(),
+                _getErrorTitle(context),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -272,7 +293,7 @@ class ErrorScreen extends StatelessWidget {
               
               // Descrição do erro
               Text(
-                _getErrorDescription(),
+                _getErrorDescription(context),
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -294,7 +315,7 @@ class ErrorScreen extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Tentar Novamente'),
+                  label: Text(AppLocalizations.of(context).tryAgain),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     foregroundColor: Colors.white,
@@ -328,8 +349,8 @@ class ErrorScreen extends StatelessWidget {
                       size: 24,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Precisa de ajuda?',
+                    Text(
+                     AppLocalizations.of(context).needHelp,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -339,8 +360,8 @@ class ErrorScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       errorType == ErrorType.missingRestaurantId
-                          ? 'Entre em contato com o restaurante para obter o link correto'
-                          : 'Entre em contato com o suporte técnico se o problema persistir',
+                          ? AppLocalizations.of(context).contactRestaurantMessage
+                          : AppLocalizations.of(context).contactSupportMessage,
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.grey,
@@ -365,8 +386,15 @@ class LoadingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Carregando...',
+      title: 'Manna Software - Loading',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+  AppLocalizations.delegate,
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+],
+supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         fontFamily: "Metropolis",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -469,8 +497,8 @@ class _LoadingScreenState extends State<LoadingScreen>
             const SizedBox(height: 30),
             
             // Texto de carregamento
-            const Text(
-              'Carregando dados do restaurante...',
+            Text(
+              AppLocalizations.of(context).loadingRestaurantData,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -481,8 +509,8 @@ class _LoadingScreenState extends State<LoadingScreen>
             
             const SizedBox(height: 10),
             
-            const Text(
-              'Por favor, aguarde um momento',
+            Text(
+              AppLocalizations.of(context).pleaseWait,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -610,9 +638,19 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<LanguageService>(
+    builder: (context, languageService, child) {
     return MaterialApp(
       title: _buildAppTitle(),
       debugShowCheckedModeBanner: false,
+       locale: languageService.currentLocale,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         fontFamily: "Metropolis",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -635,7 +673,7 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
             return MaterialPageRoute(
               builder: (context) => Scaffold(
                 body: Center(
-                  child: Text("No path for ${routeSettings.name}"),
+                  child: Text("${AppLocalizations.of(context).noPathFor} ${routeSettings.name}"),
                 ),
               ),
             );
@@ -645,7 +683,8 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
         return FlutterEasyLoading(child: child);
       },
     );
-  }
+  },
+    );}
 }
 
 // Router para o app POS
@@ -743,23 +782,23 @@ class _MainPageState extends State<MainPage> {
         child: ListView(
           children: [
             _itemMenu(
-              menu: 'Home',
+              menu: AppLocalizations.of(context).home,
               icon: Icons.rocket_sharp,
             ),
             _itemMenu(
-              menu: 'Menu',
+              menu: AppLocalizations.of(context).menu,
               icon: Icons.format_list_bulleted_rounded,
             ),
             _itemMenu(
-              menu: 'History',
+              menu: AppLocalizations.of(context).history,
               icon: Icons.history_toggle_off_rounded,
             ),
             _itemMenu(
-              menu: 'Promos',
+              menu: AppLocalizations.of(context).promos,
               icon: Icons.discount_outlined,
             ),
             _itemMenu(
-              menu: 'Settings',
+              menu: AppLocalizations.of(context).settings,
               icon: Icons.sports_soccer_outlined,
             ),
           ],

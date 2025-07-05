@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -50,7 +51,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                     ),
                     Expanded(
                       child: Text(
-                        "Checkout",
+                        AppLocalizations.of(context).checkout,
                         style: TextStyle(
                             color: TColor.primaryText,
                             fontSize: 20,
@@ -67,7 +68,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Delivery Address",
+                      AppLocalizations.of(context).deliveryAddress,
                       textAlign: TextAlign.center,
                       style:
                           TextStyle(color: TColor.secondaryText, fontSize: 12),
@@ -100,7 +101,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                             );
                           },
                           child: Text(
-                            "Change",
+                            AppLocalizations.of(context).change,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 color: TColor.primary,
@@ -129,7 +130,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Payment method",
+                          AppLocalizations.of(context).paymentMethod,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: TColor.secondaryText,
@@ -140,7 +141,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                           onPressed: () {},
                           icon: Icon(Icons.add, color: TColor.primary),
                           label: Text(
-                            "Add Card",
+                            AppLocalizations.of(context).addCard,
                             style: TextStyle(
                                 color: TColor.primary,
                                 fontSize: 13,
@@ -221,7 +222,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Sub Total",
+                          AppLocalizations.of(context).subTotal,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: TColor.primaryText,
@@ -244,7 +245,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Delivery Cost",
+                          AppLocalizations.of(context).deliveryCost,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: TColor.primaryText,
@@ -267,7 +268,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Discount",
+                          AppLocalizations.of(context).discount,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: TColor.primaryText,
@@ -297,7 +298,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Total",
+                          AppLocalizations.of(context).total,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: TColor.primaryText,
@@ -327,7 +328,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                 padding:
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
                 child: RoundButton(
-                    title: "Send Order",
+                    title: AppLocalizations.of(context).sendOrder,
                     onPressed: () {
                       showModalBottomSheet(
                           context: context,

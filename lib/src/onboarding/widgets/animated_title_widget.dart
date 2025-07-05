@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/core/constants/strings.dart';
 import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class AnimatedTitleWidget extends StatelessWidget {
                   style: TextStyle(color: AppColors.primarySpecial)
                 ),
                 TextSpan(
-                    text: ' Menu Digital',
+                    text: ' ${AppLocalizations.of(context).menuDigital}',
                     style: TextStyle(color: AppColors.timeLineColor)),
               ]),
           textAlign: TextAlign.center,
