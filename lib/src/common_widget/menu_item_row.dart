@@ -25,12 +25,26 @@ class MenuItemRow extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.network(
+              child: mObj["image"] != null && mObj["image"].toString().isNotEmpty ?
+              Image.network(
                 mObj["image"].toString(),
                 width: double.maxFinite,
                 height: itemHeight,
                 fit: BoxFit.cover,
-              ),
+                errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'images/dish.png',
+                  width: double.maxFinite,
+                  height: itemHeight,
+                  fit: BoxFit.cover,
+                );},
+              ) : 
+                Image.asset(
+              'image/dish.png',
+              width: double.maxFinite,
+              height: itemHeight,
+              fit: BoxFit.cover,
+            ),
             ),
             Container(
               width: double.maxFinite,

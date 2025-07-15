@@ -16,14 +16,29 @@ class CategoryCell extends StatelessWidget {
         child: Column(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                cObj["image"].toString(),
-                width: 85,
-                height: 85,
-                fit: BoxFit.cover,
-              ),
-            ),
+  borderRadius: BorderRadius.circular(10),
+  child: cObj["image"] != null && cObj["image"].toString().isNotEmpty
+      ? Image.network(
+          cObj["image"].toString(),
+          width: 85,
+          height: 85,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Image.asset(
+              'images/dish.png',
+              width: 85,
+              height: 85,
+              fit: BoxFit.cover,
+            );
+          },
+        )
+      : Image.asset(
+          'image/dish.png',
+          width: 85,
+          height: 85,
+          fit: BoxFit.cover,
+        ),
+),
             const SizedBox(
               height: 8,
             ),
