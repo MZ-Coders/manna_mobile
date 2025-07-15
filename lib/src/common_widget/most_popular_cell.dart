@@ -17,14 +17,29 @@ class MostPopularCell extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                mObj["image"].toString(),
-                width: 220,
-                height: 130,
-                fit: BoxFit.cover,
-              ),
-            ),
+  borderRadius: BorderRadius.circular(10),
+  child: mObj["image"] != null && mObj["image"].toString().isNotEmpty
+      ? Image.network(
+          mObj["image"].toString(),
+          width: 220,
+          height: 130,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Image.asset(
+              'images/dish.png',
+              width: 220,
+              height: 130,
+              fit: BoxFit.cover,
+            );
+          },
+        )
+      : Image.asset(
+          'image/dish.png',
+          width: 220,
+          height: 130,
+          fit: BoxFit.cover,
+        ),
+),
             const SizedBox(
               height: 8,
             ),
