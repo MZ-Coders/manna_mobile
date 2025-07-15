@@ -25,7 +25,7 @@ class CategoryCell extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Image.asset(
-              'images/dish.png',
+              'assets/images/dish.png',
               width: 85,
               height: 85,
               fit: BoxFit.cover,
@@ -33,7 +33,7 @@ class CategoryCell extends StatelessWidget {
           },
         )
       : Image.asset(
-          'image/dish.png',
+          'assets/images/dish.png',
           width: 85,
           height: 85,
           fit: BoxFit.cover,

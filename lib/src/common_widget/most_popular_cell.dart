@@ -26,7 +26,7 @@ class MostPopularCell extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Image.asset(
-              'images/dish.png',
+              'assets/images/dish.png',
               width: 220,
               height: 130,
               fit: BoxFit.cover,
@@ -34,7 +34,7 @@ class MostPopularCell extends StatelessWidget {
           },
         )
       : Image.asset(
-          'image/dish.png',
+          'assets/images/dish.png',
           width: 220,
           height: 130,
           fit: BoxFit.cover,
