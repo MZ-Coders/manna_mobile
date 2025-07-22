@@ -152,7 +152,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
             children: [
               const Flexible(
                 child: SizedBox(
-                  height: 50,
+                  height: 10,
                 ),
               ),
               Flexible(
@@ -164,7 +164,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                 ),
               ),
               const SizedBox(
-                height: 30,
+                height: 10,
               ),
               Flexible(
                 flex: 2,
@@ -183,7 +183,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                 ),
               ),
               const SizedBox(
-                height: 40,
+                height: 20,
               ),
               Flexible(
                 flex: 1,
@@ -201,7 +201,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                   children: [
                     // Seletor de idioma
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -216,7 +216,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                     ),
                   ),
                   
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 0),
 
                     // Botão principal
                     GestureDetector(
@@ -241,35 +241,35 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       ),
                     
                     // Botão para mostrar o seletor de apps (comentado conforme original)
-                    // const SizedBox(height: 20),
-                    // InkWell(
-                    //   onTap: _toggleAppSelector,
-                    //   child: Container(
-                    //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    //     decoration: BoxDecoration(
-                    //       borderRadius: BorderRadius.circular(20),
-                    //       border: Border.all(color: Colors.grey.shade300),
-                    //     ),
-                    //     child: Row(
-                    //       mainAxisSize: MainAxisSize.min,
-                    //       children: [
-                    //         Text(
-                    //           AppLocalizations.of(context).chooseApp,
-                    //           style: TextStyle(
-                    //             color: Colors.grey.shade700,
-                    //             fontSize: 12,
-                    //           ),
-                    //         ),
-                    //         const SizedBox(width: 5),
-                    //         Icon(
-                    //           _showAppSelector ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                    //           size: 16,
-                    //           color: Colors.grey.shade700,
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: _toggleAppSelector,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context).chooseApp,
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Icon(
+                              _showAppSelector ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                              size: 16,
+                              color: Colors.grey.shade700,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -319,11 +319,20 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       const SizedBox(height: 16),
                       
                       // Opção POS App
-                      _buildAppOption(
+                      // _buildAppOption(
+                      //   title: AppLocalizations.of(context).posApp,
+                      //   subtitle: AppLocalizations.of(context).posDescription,
+                      //   icon: Icons.point_of_sale,
+                      //   value: 'pos',
+                      // ),
+                      
+                      // const Divider(height: 20),
+                      
+                       _buildAppOption(
                         title: AppLocalizations.of(context).posApp,
                         subtitle: AppLocalizations.of(context).posDescription,
                         icon: Icons.point_of_sale,
-                        value: 'pos',
+                        value: 'garcon',
                       ),
                       
                       const Divider(height: 20),

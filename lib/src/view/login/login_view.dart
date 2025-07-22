@@ -4,6 +4,7 @@ import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:dribbble_challenge/src/view/login/rest_password_view.dart';
 import 'package:dribbble_challenge/src/view/login/sing_up_view.dart';
+import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/on_boarding_view.dart';
 import 'package:flutter/material.dart';
 
@@ -98,63 +99,6 @@ class _LoginViewState extends State<LoginView> {
               const SizedBox(
                 height: 30,
               ),
-              Text(
-                "or Login With",
-                style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              RoundIconButton(
-                icon: "assets/img/facebook_logo.png",
-                title: "Login with Facebook",
-                color: const Color(0xff367FC0),
-                onPressed: () {},
-              ),
-              const SizedBox(
-                height: 25,
-              ),
-              RoundIconButton(
-                icon: "assets/img/google_logo.png",
-                title: "Login with Google",
-                color: const Color(0xffDD4B39),
-                onPressed: () {},
-              ),
-              const SizedBox(
-                height: 80,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SignUpView(),
-                    ),
-                  );
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Don't have an Account? ",
-                      style: TextStyle(
-                          color: TColor.secondaryText,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      "Sign Up",
-                      style: TextStyle(
-                          color: TColor.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
@@ -182,13 +126,8 @@ class _LoginViewState extends State<LoginView> {
   //TODO: ServiceCall
 
   void serviceCallLogin(Map<String, dynamic> parameter) {
-     Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(
-            builder: (context) => const OnBoardingView(),
-          ), (route) => false);
-Globs.hideHUD();
-          return
-    // Globs.showHUD();
-print('test');
+    
+    Globs.showHUD();
     ServiceCall.post(parameter, SVKey.svLogin,
         withSuccess: (responseObj) async {
       Globs.hideHUD();

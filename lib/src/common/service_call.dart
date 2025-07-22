@@ -126,4 +126,39 @@ static void getMenuItems(
         if (failure != null) failure(err);
       });
 }
+
+static Future<Map<String, dynamic>> makeApiCall({
+    required String url,
+    required String method,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      // Implementar chamada HTTP aqui
+      // Por enquanto, simulando resposta
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Simular resposta de sucesso para demonstração
+      if (data['email'] == 'garcom@exemplo.com' && data['password'] == '123456') {
+        return {
+          'success': true,
+          'data': {
+            'id': 1,
+            'name': 'João Garçom',
+            'email': data['email'],
+            'role': 'waiter',
+          },
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Email ou senha incorretos',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Erro de conexão',
+      };
+    }
+  }
 }

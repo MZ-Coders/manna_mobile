@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dribbble_challenge/src/common/cart_service.dart';
+import 'package:dribbble_challenge/src/view/login/login_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -660,13 +661,19 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
       onGenerateRoute: (routeSettings) {
         // Verificar qual app foi selecionado quando a navegação ocorrer
         switch (routeSettings.name) {
+          case "login":  // NOVA ROTA
+            return MaterialPageRoute(builder: (context) => const LoginView());
           case "home":
             // Verifica o tipo de app selecionado
             final appType = prefs?.getString('app_type') ?? 'food_delivery';
             
             if (appType == 'pos') {
               return MaterialPageRoute(builder: (context) => const POSAppRouter());
-            } else {
+            }
+            else if (appType == 'garcon') {
+              return MaterialPageRoute(builder: (context) => const LoginView());
+            }
+             else {
               return MaterialPageRoute(builder: (context) => const MainTabView());
             }
           default:

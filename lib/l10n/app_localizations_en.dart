@@ -346,6 +346,52 @@ String get promos => 'Promotions';
 
   @override
   String get checkBack => 'Check back later for special offers!';
+
+  // Login screen
+  @override
+  String get welcomeMessage => 'Welcome';
+
+  @override
+  String get howToContinue => 'How would you like to continue?';
+
+  @override
+  String get continueAsCustomer => 'Continue as customer';
+
+  @override
+  String get waiterLogin => 'Waiter Login';
+
+  @override
+  String get accessAsEmployee => 'Access as employee';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get enterEmail => 'Enter your email';
+
+  @override
+  String get enterPassword => 'Enter your password';
+
+  @override
+  String get enterValidEmail => 'Enter a valid email';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 6 characters';
+
+  @override
+  String get login => 'Login';
+
+  @override
+  String get incorrectCredentials => 'Incorrect email or password';
+
+  @override
+  String get enterYourEmail => 'Enter your email';
+
+  @override
+  String get enterYourPassword => 'Enter your password';
   // Language
   @override
   String get language => 'Language';
