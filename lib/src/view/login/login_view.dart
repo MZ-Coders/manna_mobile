@@ -34,9 +34,7 @@ class _LoginViewState extends State<LoginView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(
-                height: 64,
-              ),
+              const SizedBox(height: 64),
               Text(
                 "Login",
                 style: TextStyle(
@@ -51,34 +49,26 @@ class _LoginViewState extends State<LoginView> {
                     fontSize: 14,
                     fontWeight: FontWeight.w500),
               ),
-              const SizedBox(
-                height: 25,
-              ),
+              const SizedBox(height: 25),
               RoundTextfield(
                 hintText: "Your Email",
                 controller: txtEmail,
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(
-                height: 25,
-              ),
+              const SizedBox(height: 25),
               RoundTextfield(
                 hintText: "Password",
                 controller: txtPassword,
                 obscureText: true,
               ),
-              const SizedBox(
-                height: 25,
-              ),
+              const SizedBox(height: 25),
               RoundButton(
-                  title: "Login",
-                  onPressed: () {
-                    btnLogin();
-                    
-                  }),
-              const SizedBox(
-                height: 4,
+                title: "Login",
+                onPressed: () {
+                  btnLogin();
+                },
               ),
+              const SizedBox(height: 4),
               TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -96,9 +86,7 @@ class _LoginViewState extends State<LoginView> {
                       fontWeight: FontWeight.w500),
                 ),
               ),
-              const SizedBox(
-                height: 30,
-              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -120,32 +108,50 @@ class _LoginViewState extends State<LoginView> {
 
     endEditing();
 
-    serviceCallLogin({"email": txtEmail.text, "password": txtPassword.text, "push_token": "" });
+    serviceCallLogin({});
   }
 
   //TODO: ServiceCall
-
   void serviceCallLogin(Map<String, dynamic> parameter) {
-    
     Globs.showHUD();
-    ServiceCall.post(parameter, SVKey.svLogin,
-        withSuccess: (responseObj) async {
-      Globs.hideHUD();
-      if (responseObj[KKey.status] == "1") {
+    
+    ServiceCall.login(
+      txtEmail.text, 
+      txtPassword.text,
+      withSuccess: (responseObj) async {
+        Globs.hideHUD();
+        // if (kDebugMode) {
+          print('Login response: $responseObj');
+        // }
         
-        Globs.udSet( responseObj[KKey.payload] as Map? ?? {} , Globs.userPayload);
-        Globs.udBoolSet(true, Globs.userLogin);
+        // Verificar se o login foi bem-sucedido
+        if (responseObj['success'] == true) {
+          // Salvar dados do usuário se existir
+          if (responseObj.containsKey('data')) {
+            Globs.udSet(responseObj['data'] as Map? ?? {}, Globs.userPayload);
+          }
+          
+          // Marcar como logado
+          Globs.udBoolSet(true, Globs.userLogin);
 
-          Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(
-            builder: (context) => const OnBoardingView(),
-          ), (route) => false);
-      } else {
-        mdShowAlert(Globs.appName,
-            responseObj[KKey.message] as String? ?? MSG.fail, () {});
+          // Navegar para a próxima tela
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const OnBoardingView(),
+              ),
+              (route) => false);
+              
+        } else {
+          // Login falhou
+          String errorMessage = responseObj['message'] as String? ?? MSG.fail;
+          mdShowAlert(Globs.appName, errorMessage, () {});
+        }
+      }, 
+      failure: (err) async {
+        Globs.hideHUD();
+        mdShowAlert(Globs.appName, err, () {});
       }
-    }, failure: (err) async {
-      Globs.hideHUD();
-      mdShowAlert(Globs.appName, err.toString(), () {});
-    });
+    );
   }
 }
