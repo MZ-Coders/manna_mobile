@@ -140,4 +140,44 @@ static void getMenuItems(
     userPayload = {};
     navigationService.navigateTo("welcome");
   }
+
+  // Função para registar compra
+static void purchase(Map<String, dynamic> purchaseData,
+    {ResSuccess? withSuccess, ResFailure? failure}) {
+  Future(() {
+    try {
+      var headers = {'Content-Type': 'application/json'};
+
+      if (kDebugMode) {
+        print("Purchase Data: ${json.encode(purchaseData)}");
+      }
+
+      http
+          .post(Uri.parse(SVKey.baseUrl + "orders"), 
+               body: json.encode(purchaseData), 
+               headers: headers)
+          .then((value) {
+        if (kDebugMode) {
+          print("Purchase Response: ${value.body}");
+        }
+        try {
+          var jsonObj =
+              json.decode(value.body) as Map<String, dynamic>? ?? {};
+
+          if (jsonObj['success'] == true || value.statusCode == 200 || value.statusCode == 201) {
+            if (withSuccess != null) withSuccess(jsonObj);
+          } else {
+            if (failure != null) failure(jsonObj['message'] ?? 'Erro ao processar compra');
+          }
+        } catch (err) {
+          if (failure != null) failure(err.toString());
+        }
+      }).catchError((e) {
+         if (failure != null) failure(e.toString());
+      });
+    } catch (err) {
+      if (failure != null) failure(err.toString());
+    }
+  });
+}
 }

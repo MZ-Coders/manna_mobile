@@ -20,6 +20,9 @@ import 'package:http/http.dart' as http;
 import './../../pdf/mobile.dart' if (dart.library.html) './../../pdf/web.dart' as platform;
 import 'checkout_view.dart';
 
+import 'package:dribbble_challenge/src/common/service_call.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+
 class MyOrderView extends StatefulWidget {
   const MyOrderView({super.key});
 
@@ -43,10 +46,27 @@ class _MyOrderViewState extends State<MyOrderView> {
   String restaurantCity = '';
   bool isLoading = true;
 
+  String restaurantId = '';
+  String tableId = '';
+
+  // Controladores para o formulário do cliente
+  final TextEditingController _customerNameController = TextEditingController();
+  final TextEditingController _customerPhoneController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
   @override
 void initState() {
   super.initState();
   loadRestaurantData();
+}
+
+@override
+void dispose() {
+  _customerNameController.dispose();
+  _customerPhoneController.dispose();
+  _notesController.dispose();
+  super.dispose();
 }
 
 Future<void> loadRestaurantData() async {
@@ -57,6 +77,8 @@ Future<void> loadRestaurantData() async {
     restaurantAddress = prefs.getString('restaurant_address') ?? '';
     restaurantCity = prefs.getString('restaurant_city') ?? '';
     isLoading = false;
+    restaurantId = prefs.getString('restaurant_id') ?? '';
+    tableId = prefs.getString('table_id') ?? '';
   });
   
   print("Dados do restaurante carregados: $restaurantName");
@@ -260,6 +282,8 @@ Widget _buildSummaryRow(String label, String value, bool isTotal) {
 }
 
 void _showCheckoutDialog() {
+  bool hasTable = tableId.isNotEmpty;
+  
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -274,37 +298,85 @@ void _showCheckoutDialog() {
             Text(AppLocalizations.of(context).confirmOrderTitle),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(AppLocalizations.of(context).orderQuestion),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: TColor.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).totalAmount,
-                    style: TextStyle(fontWeight: FontWeight.w600),
+        content: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(AppLocalizations.of(context).orderQuestion),
+              const SizedBox(height: 16),
+              
+              // Se não tiver mesa, mostrar campos do cliente
+              if (!hasTable) ...[
+                TextFormField(
+                  controller: _customerNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nome do Cliente *',
+                    border: OutlineInputBorder(),
                   ),
-                  Text(
-                    "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN",
-                    style: TextStyle(
-                      color: TColor.primary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Nome é obrigatório';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _customerPhoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Telefone do Cliente *',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Telefone é obrigatório';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+              
+              // Campo de notas (sempre visível)
+              TextFormField(
+                controller: _notesController,
+                decoration: InputDecoration(
+                  labelText: 'Observações',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
+              
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: TColor.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).totalAmount,
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
-                  ),
-                ],
+                    Text(
+                      "${(CartService.getTotal() + 0).toStringAsFixed(2)} MZN",
+                      style: TextStyle(
+                        color: TColor.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -315,18 +387,13 @@ void _showCheckoutDialog() {
           ),
           ElevatedButton(
             onPressed: () {
-  Navigator.of(context).pop();
-  _createPDFv2().then((_) {
-    // Só limpar carrinho DEPOIS de gerar o PDF
-    CartService.clearCart();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HomeView(),
-      ),
-    );
-  });
-},
+              if (!hasTable && !_formKey.currentState!.validate()) {
+                return;
+              }
+              
+              Navigator.of(context).pop();
+              _processPurchase();
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: TColor.primary,
               foregroundColor: Colors.white,
@@ -342,7 +409,107 @@ void _showCheckoutDialog() {
   );
 }
 
+void _processPurchase() async {
+  EasyLoading.show(status: 'Processando pedido...');
+  
+  try {
+    print("=== DEBUG CART ITEMS ===");
+    for (int i = 0; i < itemArr.length; i++) {
+      print("Item $i: ${itemArr[i]}");
+    }
+    print("========================");
+    // Preparar itens do carrinho
+    List<Map<String, dynamic>> items = [];
+    for (var item in itemArr) {
+      items.add({
+        "product_id": item['id'] ?? item['product_id'], // Ajuste conforme sua estrutura
+        "quantity": int.parse(item['qty'].toString())
+      });
+    }
+    
+    // Preparar dados da compra
+    Map<String, dynamic> purchaseData = {
+      "restaurant_id": int.parse(restaurantId),
+      "items": items,
+    };
+    
+    // Adicionar dados específicos baseado na presença da mesa
+    if (tableId.isNotEmpty) {
+      // Com mesa
+      purchaseData["table_number"] = int.parse(tableId);
+      if (_notesController.text.trim().isNotEmpty) {
+        purchaseData["notes"] = _notesController.text.trim();
+      }
+    } else {
+      // Sem mesa
+      purchaseData["customer_name"] = _customerNameController.text.trim();
+      purchaseData["customer_phone"] = _customerPhoneController.text.trim();
+      purchaseData["table_number"] = null;
+      if (_notesController.text.trim().isNotEmpty) {
+        purchaseData["notes"] = _notesController.text.trim();
+      }
+    }
+    
+    // Chamar API
+    ServiceCall.purchase(
+      purchaseData,
+      withSuccess: (response) {
+        EasyLoading.dismiss();
+        _onPurchaseSuccess(response);
+      },
+      failure: (error) {
+        EasyLoading.dismiss();
+        _onPurchaseError(error);
+      }
+    );
+    
+  } catch (e) {
+    EasyLoading.dismiss();
+    _onPurchaseError('Erro ao processar dados: $e');
+  }
+}
 
+void _onPurchaseSuccess(Map<String, dynamic> response) {
+  // Limpar formulário
+  _customerNameController.clear();
+  _customerPhoneController.clear();
+  _notesController.clear();
+  
+  // Gerar PDF e navegar
+  _createPDFv2().then((_) {
+    CartService.clearCart();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HomeView(),
+      ),
+    );
+    
+    // Mostrar mensagem de sucesso
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Pedido registrado com sucesso!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  });
+}
+
+void _onPurchaseError(String error) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Erro'),
+      content: Text('Falha ao registrar pedido: $error'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('OK'),
+        ),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
