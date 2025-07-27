@@ -56,6 +56,7 @@ void main() async {
   await prefs!.clear();
   print("Dados antigos limpos do SharedPreferences");
   
+  
   // Verificar se restaurantID existe
   if (restaurantId == null || restaurantId.isEmpty) {
     print("ERRO: Restaurant ID não encontrado na URL");
