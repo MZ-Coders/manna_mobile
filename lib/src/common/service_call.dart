@@ -5,6 +5,8 @@ import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/common/locator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 typedef ResSuccess = void Function(Map<String, dynamic>);
 typedef ResFailure = void Function(String);
@@ -15,13 +17,17 @@ class ServiceCall {
 
   static void post(Map<String, dynamic> parameter, String path,
       {bool isToken = false, ResSuccess? withSuccess, ResFailure? failure}) {
-    Future(() {
+    Future(() async {
       try {
         var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
 
-        // if(isToken) {
-        //   headers["token"] = "";
-        // }
+        if(isToken) {
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+  if (token != null) {
+    headers["Authorization"] = "Bearer $token";
+  }
+}
 
         http
             .post(Uri.parse(path), body: parameter, headers: headers)
@@ -48,13 +54,17 @@ class ServiceCall {
 
 static void get(String path,
     {bool isToken = false, ResSuccess? withSuccess, ResFailure? failure}) {
-  Future(() {
+  Future(() async{
     try {
       var headers = {'Content-Type': 'application/json'};
 
-      // if(isToken) {
-      //   headers["token"] = "";
-      // }
+      if(isToken) {
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+  if (token != null) {
+    headers["Authorization"] = "Bearer $token";
+  }
+}
 
       http
           .get(Uri.parse(path), headers: headers)
@@ -135,11 +145,48 @@ static void getMenuItems(
     });
   }
 
-  static logout(){
-    Globs.udBoolSet(false, Globs.userLogin);
-    userPayload = {};
-    navigationService.navigateTo("welcome");
+ static logout() async {
+  final prefs = await SharedPreferences.getInstance();
+  
+  // Limpar dados específicos do usuário
+  await prefs.remove('auth_token');
+  await prefs.remove('user_id');
+  await prefs.remove('user_name');
+  await prefs.remove('user_email');
+  await prefs.remove('user_role');
+  await prefs.remove('tenant_id');
+  await prefs.remove('user_restaurant_id');
+  await prefs.remove('user_restaurant_uuid');
+  
+  Globs.udBoolSet(false, Globs.userLogin);
+  userPayload = {};
+  navigationService.navigateTo("welcome");
+}
+
+// Verificar se usuário está logado
+static Future<bool> isUserLoggedIn() async {
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+  bool isLogged = Globs.udValueBool(Globs.userLogin);
+  return token != null && isLogged;
+}
+
+// Obter dados do usuário logado
+static Future<Map<String, dynamic>?> getCurrentUser() async {
+  final prefs = await SharedPreferences.getInstance();
+  if (await isUserLoggedIn()) {
+    return {
+      'id': prefs.getString('user_id'),
+      'name': prefs.getString('user_name'),
+      'email': prefs.getString('user_email'),
+      'role': prefs.getString('user_role'),
+      'tenant_id': prefs.getString('tenant_id'),
+      'restaurant_id': prefs.getString('user_restaurant_id'),
+      'restaurant_uuid': prefs.getString('user_restaurant_uuid'),
+    };
   }
+  return null;
+}
 
   // Função para registar compra
 static void purchase(Map<String, dynamic> purchaseData,

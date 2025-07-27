@@ -7,6 +7,7 @@ import 'package:dribbble_challenge/src/view/login/sing_up_view.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/on_boarding_view.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/service_call.dart';
 import '../../common_widget/round_icon_button.dart';
@@ -125,28 +126,53 @@ class _LoginViewState extends State<LoginView> {
         // }
         
         // Verificar se o login foi bem-sucedido
-        if (responseObj['success'] == true) {
-          // Salvar dados do usuário se existir
-          if (responseObj.containsKey('data')) {
-            Globs.udSet(responseObj['data'] as Map? ?? {}, Globs.userPayload);
-          }
-          
-          // Marcar como logado
-          Globs.udBoolSet(true, Globs.userLogin);
-
-          // Navegar para a próxima tela
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const OnBoardingView(),
-              ),
-              (route) => false);
-              
-        } else {
-          // Login falhou
-          String errorMessage = responseObj['message'] as String? ?? MSG.fail;
-          mdShowAlert(Globs.appName, errorMessage, () {});
+       if (responseObj['user'] != null && responseObj['token'] != null) {
+    
+        // Salvar dados do usuário
+        Map<String, dynamic> userData = responseObj['user'] as Map<String, dynamic>;
+        Globs.udSet(userData, Globs.userPayload);
+        
+        // Salvar token separadamente para uso nas requisições
+        String token = responseObj['token'] as String;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+        await prefs.setString('user_id', userData['id'].toString());
+        await prefs.setString('user_name', userData['name'] ?? '');
+        await prefs.setString('user_email', userData['email'] ?? '');
+        await prefs.setString('user_role', userData['role'] ?? '');
+        
+        // Salvar dados específicos se existirem
+        // if (userData['tenant_id'] != null) {
+        //   await prefs.setString('tenant_id', userData['tenant_id'].toString());
+        // }
+        if (userData['restaurant_id'] != null) {
+          await prefs.setString('user_restaurant_id', userData['restaurant_id'].toString());
         }
+        if (userData['restaurant_uuid'] != null) {
+          await prefs.setString('user_restaurant_uuid', userData['restaurant_uuid']);
+        }
+        
+        print('Dados do usuário salvos: ${userData['name']} (${userData['role']})');
+        
+        // Marcar como logado
+        Globs.udBoolSet(true, Globs.userLogin);
+        
+        // Atualizar ServiceCall com os dados do usuário
+        ServiceCall.userPayload = userData;
+
+        // Navegar para a próxima tela
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MainTabView(),
+            ),
+            (route) => false);
+            
+      } else {
+        // Login falhou
+        String errorMessage = responseObj['message'] as String? ?? MSG.fail;
+        mdShowAlert(Globs.appName, errorMessage, () {});
+      } 
       }, 
       failure: (err) async {
         Globs.hideHUD();
