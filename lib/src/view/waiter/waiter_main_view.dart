@@ -32,12 +32,21 @@ class _WaiterMainViewState extends State<WaiterMainView> {
     });
   }
 
-  void navigateToMenuForTable(int tableNumber, String floor) {
+ void navigateToMenuForTable(int tableNumber, String floor) {
   setState(() {
-    selectedTab = 2; // Tab do menu
+    selectedTab = 2; // Apenas muda para tab do menu
   });
-
   
+  // Se quiser abrir como nova tela (opcional):
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => WaiterMenuView(
+        preSelectedTable: tableNumber,
+        preSelectedFloor: floor,
+      ),
+    ),
+  );
 }
 
   @override
@@ -81,16 +90,16 @@ class _WaiterMainViewState extends State<WaiterMainView> {
     );
   }
 
-  Widget _buildTabContent() {
-    switch (selectedTab) {
-      case 0:
-        return _buildTablesView();
-      case 1:
-        return _buildOrdersView();
-      case 2:
-        return _buildMenuView();
-      default:
-        return _buildTablesView();
+ Widget _buildTabContent() {
+  switch (selectedTab) {
+    case 0:
+      return WaiterTablesView(onTableAction: navigateToMenuForTable);
+    case 1:
+      return WaiterOrdersView(onNewOrder: navigateToMenuForTable);
+    case 2:
+      return WaiterMenuView();;
+    default:
+      return WaiterTablesView(onTableAction: navigateToMenuForTable);
     }
   }
 

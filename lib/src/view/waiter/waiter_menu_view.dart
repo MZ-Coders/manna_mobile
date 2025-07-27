@@ -34,7 +34,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   @override
   void initState() {
     super.initState();
-    selectedTable = widget.preSelectedTable;
+    selectedTable = widget.preSelectedTable == 0 ? null : widget.preSelectedTable;
     selectedFloor = widget.preSelectedFloor ?? 'First';
     loadMenu();
   }
@@ -169,6 +169,25 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   }
 
   Widget _buildTableSelector() {
+    if (widget.preSelectedTable != null && widget.preSelectedTable! > 0) {
+      return Container(
+        padding: EdgeInsets.all(16),
+        color: TColor.primary.withOpacity(0.1),
+        child: Row(
+          children: [
+            Icon(Icons.info, color: TColor.primary),
+            SizedBox(width: 8),
+            Text(
+              'Pedido para Mesa ${widget.preSelectedTable} - ${widget.preSelectedFloor}',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: TColor.primary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: EdgeInsets.all(16),
       color: TColor.white,

@@ -4,7 +4,8 @@ import 'package:dribbble_challenge/src/common/color_extension.dart';
 import '../../models/table_model.dart';
 
 class WaiterTablesView extends StatefulWidget {
-  const WaiterTablesView({super.key});
+  final Function(int tableNumber, String floor)? onTableAction;
+  const WaiterTablesView({super.key, this.onTableAction});
 
   @override
   State<WaiterTablesView> createState() => _WaiterTablesViewState();
@@ -642,8 +643,8 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
               // Ações
               if (table.status == TableStatus.empty)
                 _buildActionButton(
-                  'Ocupar Mesa',
-                  Icons.person_add,
+                 'Ocupar e Fazer Pedido',  // Novo texto
+                  Icons.restaurant_menu,    // Novo ícone
                   TColor.primary,
                   () => _occupyTable(table),
                 )
@@ -669,6 +670,18 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                     ),
                   ],
                 ),
+                SizedBox(height: 12),
+                _buildActionButton(
+    'Adicionar Itens',
+    Icons.add_shopping_cart,
+    Colors.green,
+    () {
+      Navigator.pop(context);
+      if (widget.onTableAction != null) {
+        widget.onTableAction!(table.number, table.floor);
+      }
+    },
+  ),
                 SizedBox(height: 12),
                 _buildActionButton(
                   'Liberar Mesa',
@@ -727,10 +740,10 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
   }
 
   // Implementação das ações
-  void _occupyTable(TableModel table) {
-    Navigator.pop(context);
-    _showGuestCountDialog(table);
-  }
+ void _occupyTable(TableModel table) {
+  Navigator.pop(context);
+  _showGuestCountDialog(table);
+}
 
   void _showGuestCountDialog(TableModel table) {
     int guestCount = 1;
@@ -781,12 +794,17 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
               child: Text('Cancelar'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _updateTableStatus(table, TableStatus.pending, guestCount: guestCount);
-              },
-              child: Text('Ocupar'),
-            ),
+  onPressed: () {
+    Navigator.pop(context);
+    _updateTableStatus(table, TableStatus.pending, guestCount: guestCount);
+    
+    // Navegar automaticamente para o menu
+    if (widget.onTableAction != null) {
+      widget.onTableAction!(table.number, table.floor);
+    }
+  },
+  child: Text('Ocupar e Fazer Pedido'),
+),
           ],
         ),
       ),
@@ -849,9 +867,10 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
   }
 
   void _showNewOrderDialog() {
-    // TODO: Implementar seleção de mesa para novo pedido
-    _showSuccessSnackBar('Funcionalidade de novo pedido em desenvolvimento...');
+  if (widget.onTableAction != null) {
+    widget.onTableAction!(0, 'First'); // Mesa 0 = seleção manual
   }
+}
 
   Future<void> _updateTableStatus(TableModel table, TableStatus newStatus, {int? guestCount}) async {
     try {

@@ -4,7 +4,8 @@ import 'package:dribbble_challenge/src/common/color_extension.dart';
 import '../../models/order_model.dart';
 
 class WaiterOrdersView extends StatefulWidget {
-  const WaiterOrdersView({super.key});
+  final Function(int tableNumber, String floor)? onNewOrder;
+  const WaiterOrdersView({super.key, this.onNewOrder});
 
   @override
   State<WaiterOrdersView> createState() => _WaiterOrdersViewState();
@@ -136,7 +137,9 @@ class _WaiterOrdersViewState extends State<WaiterOrdersView> with TickerProvider
       width: double.infinity,
       margin: EdgeInsets.all(16),
       child: ElevatedButton.icon(
-        onPressed: _showNewOrderDialog,
+        onPressed: widget.onNewOrder != null 
+          ? () => widget.onNewOrder!(0, 'First')
+          : _showNewOrderDialog,
         icon: Icon(Icons.add, color: TColor.white),
         label: Text(
           'Fazer Novo Pedido',
@@ -777,10 +780,11 @@ class _WaiterOrdersViewState extends State<WaiterOrdersView> with TickerProvider
   }
 
   // Ações
-  void _showNewOrderDialog() {
-    // TODO: Navegar para seleção de mesa + menu
-    _showSuccessSnackBar('Funcionalidade de novo pedido em desenvolvimento...');
+ void _showNewOrderDialog() {
+  if (widget.onNewOrder != null) {
+    widget.onNewOrder!(0, 'First'); // Mesa 0 = seleção manual
   }
+}
 
   Future<void> _updateOrderStatus(OrderModel order, OrderStatus newStatus) async {
     try {
