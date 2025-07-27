@@ -1,5 +1,6 @@
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
+import 'package:dribbble_challenge/src/view/waiter/waiter_tables_view.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -112,30 +113,9 @@ class _WaiterMainViewState extends State<WaiterMainView> {
   }
 
   // Placeholders para as views - vamos implementar uma por vez
-  Widget _buildTablesView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.table_restaurant, size: 64, color: TColor.primary),
-          SizedBox(height: 16),
-          Text(
-            'MESAS',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: TColor.primaryText,
-            ),
-          ),
-          Text(
-            'Em desenvolvimento...',
-            style: TextStyle(color: TColor.secondaryText),
-          ),
-        ],
-      ),
-    );
-  }
-
+Widget _buildTablesView() {
+  return WaiterTablesView();
+}
   Widget _buildOrdersView() {
     return Center(
       child: Column(
