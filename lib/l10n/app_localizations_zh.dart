@@ -340,6 +340,52 @@ String get confirmAndGenerateReceipt => '确认并生成收据';
   @override
   String get checkBack => '稍后查看特别优惠！';
 
+  // Login screen
+  @override
+  String get welcomeMessage => '欢迎';
+
+  @override
+  String get howToContinue => '您希望如何继续？';
+
+  @override
+  String get continueAsCustomer => '作为客户继续';
+
+  @override
+  String get waiterLogin => '服务员登录';
+
+  @override
+  String get accessAsEmployee => '作为员工访问';
+
+  @override
+  String get email => '邮箱';
+
+  @override
+  String get password => '密码';
+
+  @override
+  String get enterEmail => '请输入您的邮箱';
+
+  @override
+  String get enterPassword => '请输入您的密码';
+
+  @override
+  String get enterValidEmail => '请输入有效的邮箱地址';
+
+  @override
+  String get passwordMinLength => '密码至少需要6个字符';
+
+  @override
+  String get login => '登录';
+
+  @override
+  String get incorrectCredentials => '邮箱或密码错误';
+
+  @override
+  String get enterYourEmail => '请输入您的邮箱';
+
+  @override
+  String get enterYourPassword => '请输入您的密码';
+
   // Language
   @override
   String get language => '语言';

@@ -33,14 +33,14 @@ class MenuItemRow extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                 return Image.asset(
-                  'images/dish.png',
+                  'assets/images/dish.png',
                   width: double.maxFinite,
                   height: itemHeight,
                   fit: BoxFit.cover,
                 );},
               ) : 
                 Image.asset(
-              'image/dish.png',
+              'assets/images/dish.png',
               width: double.maxFinite,
               height: itemHeight,
               fit: BoxFit.cover,

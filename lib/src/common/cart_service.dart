@@ -1,21 +1,32 @@
 class CartService {
   static List<Map<String, dynamic>> itemArr = [];
 
-  static void addToCart(String name, int qty, double price) {
-    // Verifica se o item já existe
-    var existingItem = itemArr.firstWhere(
-      (item) => item["name"] == name,
-      orElse: () => {},
-    );
+ static void addToCart(String name, int qty, double price, [int? id]) {
+  // Verifica se o item já existe baseado no ID (se disponível) ou nome
+  var existingItem = itemArr.firstWhere(
+    (item) => id != null ? item["id"] == id : item["name"] == name,
+    orElse: () => {},
+  );
 
-    if (existingItem.isNotEmpty) {
-      print("Item já existe no carrinho" + existingItem.toString() + " qty: " + qty.toString());
-      existingItem["qty"] = qty.toString();
-          // (int.parse(existingItem["qty"]) + qty).toString();
-    } else {
-      itemArr.add({"name": name, "qty": qty.toString(), "price": price});
+  if (existingItem.isNotEmpty) {
+    print("Item já existe no carrinho" + existingItem.toString() + " qty: " + qty.toString());
+    existingItem["qty"] = qty.toString();
+  } else {
+    Map<String, dynamic> newItem = {
+      "name": name, 
+      "qty": qty.toString(), 
+      "price": price
+    };
+    
+    // Adicionar ID se foi fornecido
+    if (id != null) {
+      newItem["id"] = id;
     }
+    
+    itemArr.add(newItem);
+    print("Item adicionado ao carrinho: $newItem");
   }
+}
 
    static void removeFromCart(int index) {
     if (index >= 0 && index < itemArr.length) {

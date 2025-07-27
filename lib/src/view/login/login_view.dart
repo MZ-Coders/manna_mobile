@@ -4,8 +4,10 @@ import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
 import 'package:dribbble_challenge/src/view/login/rest_password_view.dart';
 import 'package:dribbble_challenge/src/view/login/sing_up_view.dart';
+import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/on_boarding_view.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/service_call.dart';
 import '../../common_widget/round_icon_button.dart';
@@ -33,9 +35,7 @@ class _LoginViewState extends State<LoginView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(
-                height: 64,
-              ),
+              const SizedBox(height: 64),
               Text(
                 "Login",
                 style: TextStyle(
@@ -50,34 +50,26 @@ class _LoginViewState extends State<LoginView> {
                     fontSize: 14,
                     fontWeight: FontWeight.w500),
               ),
-              const SizedBox(
-                height: 25,
-              ),
+              const SizedBox(height: 25),
               RoundTextfield(
                 hintText: "Your Email",
                 controller: txtEmail,
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(
-                height: 25,
-              ),
+              const SizedBox(height: 25),
               RoundTextfield(
                 hintText: "Password",
                 controller: txtPassword,
                 obscureText: true,
               ),
-              const SizedBox(
-                height: 25,
-              ),
+              const SizedBox(height: 25),
               RoundButton(
-                  title: "Login",
-                  onPressed: () {
-                    btnLogin();
-                    
-                  }),
-              const SizedBox(
-                height: 4,
+                title: "Login",
+                onPressed: () {
+                  btnLogin();
+                },
               ),
+              const SizedBox(height: 4),
               TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -95,66 +87,7 @@ class _LoginViewState extends State<LoginView> {
                       fontWeight: FontWeight.w500),
                 ),
               ),
-              const SizedBox(
-                height: 30,
-              ),
-              Text(
-                "or Login With",
-                style: TextStyle(
-                    color: TColor.secondaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              RoundIconButton(
-                icon: "assets/img/facebook_logo.png",
-                title: "Login with Facebook",
-                color: const Color(0xff367FC0),
-                onPressed: () {},
-              ),
-              const SizedBox(
-                height: 25,
-              ),
-              RoundIconButton(
-                icon: "assets/img/google_logo.png",
-                title: "Login with Google",
-                color: const Color(0xffDD4B39),
-                onPressed: () {},
-              ),
-              const SizedBox(
-                height: 80,
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SignUpView(),
-                    ),
-                  );
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Don't have an Account? ",
-                      style: TextStyle(
-                          color: TColor.secondaryText,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      "Sign Up",
-                      style: TextStyle(
-                          color: TColor.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -176,37 +109,75 @@ class _LoginViewState extends State<LoginView> {
 
     endEditing();
 
-    serviceCallLogin({"email": txtEmail.text, "password": txtPassword.text, "push_token": "" });
+    serviceCallLogin({});
   }
 
   //TODO: ServiceCall
-
   void serviceCallLogin(Map<String, dynamic> parameter) {
-     Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(
-            builder: (context) => const OnBoardingView(),
-          ), (route) => false);
-Globs.hideHUD();
-          return
-    // Globs.showHUD();
-print('test');
-    ServiceCall.post(parameter, SVKey.svLogin,
-        withSuccess: (responseObj) async {
-      Globs.hideHUD();
-      if (responseObj[KKey.status] == "1") {
+    Globs.showHUD();
+    
+    ServiceCall.login(
+      txtEmail.text, 
+      txtPassword.text,
+      withSuccess: (responseObj) async {
+        Globs.hideHUD();
+        // if (kDebugMode) {
+          print('Login response: $responseObj');
+        // }
         
-        Globs.udSet( responseObj[KKey.payload] as Map? ?? {} , Globs.userPayload);
+        // Verificar se o login foi bem-sucedido
+       if (responseObj['user'] != null && responseObj['token'] != null) {
+    
+        // Salvar dados do usuário
+        Map<String, dynamic> userData = responseObj['user'] as Map<String, dynamic>;
+        Globs.udSet(userData, Globs.userPayload);
+        
+        // Salvar token separadamente para uso nas requisições
+        String token = responseObj['token'] as String;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+        await prefs.setString('user_id', userData['id'].toString());
+        await prefs.setString('user_name', userData['name'] ?? '');
+        await prefs.setString('user_email', userData['email'] ?? '');
+        await prefs.setString('user_role', userData['role'] ?? '');
+        
+        // Salvar dados específicos se existirem
+        // if (userData['tenant_id'] != null) {
+        //   await prefs.setString('tenant_id', userData['tenant_id'].toString());
+        // }
+        if (userData['restaurant_id'] != null) {
+          await prefs.setString('user_restaurant_id', userData['restaurant_id'].toString());
+        }
+        if (userData['restaurant_uuid'] != null) {
+          await prefs.setString('user_restaurant_uuid', userData['restaurant_uuid']);
+        }
+        
+        print('Dados do usuário salvos: ${userData['name']} (${userData['role']})');
+        
+        // Marcar como logado
         Globs.udBoolSet(true, Globs.userLogin);
+        
+        // Atualizar ServiceCall com os dados do usuário
+        ServiceCall.userPayload = userData;
 
-          Navigator.pushAndRemoveUntil(context,  MaterialPageRoute(
-            builder: (context) => const OnBoardingView(),
-          ), (route) => false);
+        // Navegar para a próxima tela
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MainTabView(),
+            ),
+            (route) => false);
+            
       } else {
-        mdShowAlert(Globs.appName,
-            responseObj[KKey.message] as String? ?? MSG.fail, () {});
+        // Login falhou
+        String errorMessage = responseObj['message'] as String? ?? MSG.fail;
+        mdShowAlert(Globs.appName, errorMessage, () {});
+      } 
+      }, 
+      failure: (err) async {
+        Globs.hideHUD();
+        mdShowAlert(Globs.appName, err, () {});
       }
-    }, failure: (err) async {
-      Globs.hideHUD();
-      mdShowAlert(Globs.appName, err.toString(), () {});
-    });
+    );
   }
 }

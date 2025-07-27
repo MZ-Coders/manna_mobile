@@ -377,7 +377,7 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
                                                             "assets/img/shopping_add.png",
                                                         color: TColor.primary,
                                                         onPressed: () {
-                                                          CartService.addToCart(widget.recipe.name, qty, price);
+                                                          CartService.addToCart(widget.recipe.name, qty, price,widget.recipe.id as int?);
                                                           ScaffoldMessenger.of(context).showSnackBar(
                                                             SnackBar(content: Text("Adicionado ao carrinho!")),
                                                           );

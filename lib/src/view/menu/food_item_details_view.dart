@@ -576,7 +576,7 @@ Widget _buildPriceWidget() {
                     // Simular delay para melhor UX
                     await Future.delayed(const Duration(milliseconds: 800));
                     
-                    CartService.addToCart(widget.foodDetails["name"], qty, price);
+                    CartService.addToCart(widget.foodDetails["name"], qty, price, widget.foodDetails["id"]);
                     
                     setState(() {
                       isAddingToCart = false;
@@ -721,7 +721,7 @@ Widget _buildPriceWidget() {
       
       await Future.delayed(const Duration(milliseconds: 800));
       
-      CartService.addToCart(widget.foodDetails["name"], qty, price);
+      CartService.addToCart(widget.foodDetails["name"], qty, price, widget.foodDetails["id"]);
       
       setState(() {
         isAddingToCart = false;

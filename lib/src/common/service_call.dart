@@ -5,9 +5,8 @@ import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/common/locator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-// typedef ResSuccess = Future<void> Function(Map<String, dynamic>);
-// typedef ResFailure = Future<void> Function(dynamic);
 
 typedef ResSuccess = void Function(Map<String, dynamic>);
 typedef ResFailure = void Function(String);
@@ -16,16 +15,19 @@ class ServiceCall {
   static final NavigationService navigationService = locator<NavigationService>();
   static Map userPayload = {};
 
-
   static void post(Map<String, dynamic> parameter, String path,
       {bool isToken = false, ResSuccess? withSuccess, ResFailure? failure}) {
-    Future(() {
+    Future(() async {
       try {
         var headers = {'Content-Type': 'application/x-www-form-urlencoded'};
 
-        // if(isToken) {
-        //   headers["token"] = "";
-        // }
+        if(isToken) {
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+  if (token != null) {
+    headers["Authorization"] = "Bearer $token";
+  }
+}
 
         http
             .post(Uri.parse(path), body: parameter, headers: headers)
@@ -52,13 +54,17 @@ class ServiceCall {
 
 static void get(String path,
     {bool isToken = false, ResSuccess? withSuccess, ResFailure? failure}) {
-  Future(() {
+  Future(() async{
     try {
       var headers = {'Content-Type': 'application/json'};
 
-      // if(isToken) {
-      //   headers["token"] = "";
-      // }
+      if(isToken) {
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+  if (token != null) {
+    headers["Authorization"] = "Bearer $token";
+  }
+}
 
       http
           .get(Uri.parse(path), headers: headers)
@@ -83,31 +89,6 @@ static void get(String path,
   });
 }
 
-  static logout(){
-    Globs.udBoolSet(false, Globs.userLogin);
-    userPayload = {};
-    navigationService.navigateTo("welcome");
-  }
-
-// static Future<Map<String, dynamic>?> getMenuItems(String menu_id) async {
-//   Completer<Map<String, dynamic>?> completer = Completer();
-  
-//   post({}, SVKey.baseUrl + "menu/" + menu_id,
-//       isToken: false,
-//       withSuccess: (Map<String, dynamic> jsonObj) {
-//         if (jsonObj['status'] == 200) {
-//           completer.complete(jsonObj);
-//         } else {
-//           completer.completeError(jsonObj['message']);
-//         }
-//       },
-//       failure: (err) {
-//         completer.completeError(err);
-//       });
-      
-//   return completer.future;
-// }
-
 static void getMenuItems(
     String menu_id,
     {ResSuccess? withSuccess, ResFailure? failure}) {
@@ -117,7 +98,7 @@ static void getMenuItems(
         if (jsonObj['success'] == true) {
           if (withSuccess != null) withSuccess(jsonObj);
         } else {
-          // print("*******************");
+          // print("********************");
           if (failure != null) failure(jsonObj['message']);
         }
       },
@@ -125,5 +106,125 @@ static void getMenuItems(
         // print("@@@@@@@@@@@@@@@@@@@@@");
         if (failure != null) failure(err);
       });
+}
+
+  // Função específica para login
+  static void login(String email, String password,
+      {ResSuccess? withSuccess, ResFailure? failure}) {
+    Future(() {
+      try {
+        var headers = {'Content-Type': 'application/json'};
+        
+        var parameter = {
+          'email': email,
+          'password': password,
+        };
+
+        http
+            .post(Uri.parse(SVKey.svLogin), 
+                 body: json.encode(parameter), 
+                 headers: headers)
+            .then((value) {
+          if (kDebugMode) {
+            print("Login Response: ${value.body}");
+          }
+          try {
+            var jsonObj =
+                json.decode(value.body) as Map<String, dynamic>? ?? {};
+
+            if (withSuccess != null) withSuccess(jsonObj);
+          } catch (err) {
+            if (failure != null) failure(err.toString());
+          }
+        }).catchError((e) {
+           if (failure != null) failure(e.toString());
+        });
+      } catch (err) {
+        if (failure != null) failure(err.toString());
+      }
+    });
+  }
+
+ static logout() async {
+  final prefs = await SharedPreferences.getInstance();
+  
+  // Limpar dados específicos do usuário
+  await prefs.remove('auth_token');
+  await prefs.remove('user_id');
+  await prefs.remove('user_name');
+  await prefs.remove('user_email');
+  await prefs.remove('user_role');
+  await prefs.remove('tenant_id');
+  await prefs.remove('user_restaurant_id');
+  await prefs.remove('user_restaurant_uuid');
+  
+  Globs.udBoolSet(false, Globs.userLogin);
+  userPayload = {};
+  navigationService.navigateTo("welcome");
+}
+
+// Verificar se usuário está logado
+static Future<bool> isUserLoggedIn() async {
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('auth_token');
+  bool isLogged = Globs.udValueBool(Globs.userLogin);
+  return token != null && isLogged;
+}
+
+// Obter dados do usuário logado
+static Future<Map<String, dynamic>?> getCurrentUser() async {
+  final prefs = await SharedPreferences.getInstance();
+  if (await isUserLoggedIn()) {
+    return {
+      'id': prefs.getString('user_id'),
+      'name': prefs.getString('user_name'),
+      'email': prefs.getString('user_email'),
+      'role': prefs.getString('user_role'),
+      'tenant_id': prefs.getString('tenant_id'),
+      'restaurant_id': prefs.getString('user_restaurant_id'),
+      'restaurant_uuid': prefs.getString('user_restaurant_uuid'),
+    };
+  }
+  return null;
+}
+
+  // Função para registar compra
+static void purchase(Map<String, dynamic> purchaseData,
+    {ResSuccess? withSuccess, ResFailure? failure}) {
+  Future(() {
+    try {
+      var headers = {'Content-Type': 'application/json'};
+
+      if (kDebugMode) {
+        print("Purchase Data: ${json.encode(purchaseData)}");
+      }
+
+      http
+          .post(Uri.parse(SVKey.baseUrl + "orders"), 
+               body: json.encode(purchaseData), 
+               headers: headers)
+          .then((value) {
+        if (kDebugMode) {
+          print("Purchase Response: ${value.body}");
+        }
+        try {
+          var jsonObj =
+              json.decode(value.body) as Map<String, dynamic>? ?? {};
+
+          if (jsonObj['success'] == true || value.statusCode == 200 || value.statusCode == 201) {
+            if (withSuccess != null) withSuccess(jsonObj);
+          } else {
+            if (failure != null) failure(jsonObj['message'] ?? 'Erro ao processar compra');
+          }
+        } catch (err) {
+          if (failure != null) failure(err.toString());
+        }
+      }).catchError((e) {
+         if (failure != null) failure(e.toString());
+      });
+    } catch (err) {
+      if (failure != null) failure(err.toString());
+    }
+  });
 }
 }

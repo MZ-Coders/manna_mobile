@@ -346,6 +346,52 @@ String get noPathFor => 'Nenhum caminho para';
   @override
   String get checkBack => 'Solicite ao restaurante que verifique o link e tente novamente.';
 
+  // Login screen
+  @override
+  String get welcomeMessage => 'Bem-vindo';
+
+  @override
+  String get howToContinue => 'Como você gostaria de continuar?';
+
+  @override
+  String get continueAsCustomer => 'Continuar como cliente';
+
+  @override
+  String get waiterLogin => 'Login Garçom';
+
+  @override
+  String get accessAsEmployee => 'Acessar como funcionário';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Senha';
+
+  @override
+  String get enterEmail => 'Digite seu email';
+
+  @override
+  String get enterPassword => 'Digite sua senha';
+
+  @override
+  String get enterValidEmail => 'Digite um email válido';
+
+  @override
+  String get passwordMinLength => 'A senha deve ter pelo menos 6 caracteres';
+
+  @override
+  String get login => 'Entrar';
+
+  @override
+  String get incorrectCredentials => 'Email ou senha incorretos';
+
+  @override
+  String get enterYourEmail => 'Digite seu email';
+
+  @override
+  String get enterYourPassword => 'Digite sua senha';
+
   // Language
   @override
   String get language => 'Idioma';

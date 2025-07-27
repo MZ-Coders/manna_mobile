@@ -169,6 +169,23 @@ String get errorTitle;
 String get loadingTitle;
 String get noPathFor;
 
+// Login screen
+  String get welcomeMessage;
+  String get howToContinue;
+  String get continueAsCustomer;
+  String get waiterLogin;
+  String get accessAsEmployee;
+  String get email;
+  String get password;
+  String get enterEmail;
+  String get enterPassword;
+  String get enterValidEmail;
+  String get passwordMinLength;
+  String get login;
+  String get incorrectCredentials;
+  String get enterYourEmail;
+  String get enterYourPassword;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
