@@ -782,7 +782,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
                         ),
                       ),
                       Text(
-                        '\${total.toStringAsFixed(2)}',
+                        '\$${total.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
