@@ -6,6 +6,7 @@ import 'package:dribbble_challenge/src/view/login/rest_password_view.dart';
 import 'package:dribbble_challenge/src/view/login/sing_up_view.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
 import 'package:dribbble_challenge/src/view/on_boarding/on_boarding_view.dart';
+import 'package:dribbble_challenge/src/view/waiter/waiter_main_view.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -112,6 +113,22 @@ class _LoginViewState extends State<LoginView> {
     serviceCallLogin({});
   }
 
+  Widget _getHomePageByRole(String? userRole) {
+  switch (userRole?.toLowerCase()) {
+    case 'waiter':
+    case 'garcon':
+    case 'garçom':
+      return const WaiterMainView();
+    case 'admin':
+    case 'manager':
+      return const MainTabView(); // Por enquanto, depois criaremos interface admin
+    case 'customer':
+    case 'client':
+    default:
+      return const MainTabView();
+  }
+}
+
   //TODO: ServiceCall
   void serviceCallLogin(Map<String, dynamic> parameter) {
     Globs.showHUD();
@@ -161,12 +178,12 @@ class _LoginViewState extends State<LoginView> {
         ServiceCall.userPayload = userData;
 
         // Navegar para a próxima tela
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MainTabView(),
-            ),
-            (route) => false);
+       Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(
+      builder: (context) => _getHomePageByRole(userData['role']),
+    ),
+    (route) => false);
             
       } else {
         // Login falhou
