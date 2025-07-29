@@ -1,7 +1,7 @@
-import 'package:dribbble_challenge/src/common/waiter_menu_service.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import '../../models/menu_item_model.dart';
+import '../../common/waiter_menu_service.dart';
 
 class WaiterMenuView extends StatefulWidget {
   final int? preSelectedTable;
@@ -46,12 +46,14 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     super.dispose();
   }
 
+  // Carregar menu da API usando o mesmo método que o cliente
   Future<void> loadMenu() async {
     setState(() {
       isLoading = true;
     });
 
     try {
+      // Usar o serviço atualizado que pega dados da mesma API do cliente
       final menu = await WaiterMenuService.getMenuByCategory();
       setState(() {
         menuByCategory = menu;
@@ -62,6 +64,9 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
         }
         isLoading = false;
       });
+      
+      print("Menu do garçom carregado com ${categories.length} categorias");
+      
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -73,320 +78,214 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: TColor.primary),
-            SizedBox(height: 16),
-            Text('Carregando menu...', style: TextStyle(color: TColor.secondaryText)),
-          ],
+      return Scaffold(
+        backgroundColor: Colors.grey[50],
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: TColor.primary),
+              SizedBox(height: 16),
+              Text(
+                'Carregando menu...',
+                style: TextStyle(color: TColor.secondaryText),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: TColor.primary,
+        foregroundColor: Colors.white,
+        title: Text('Menu - ${selectedTable != null ? 'Mesa $selectedTable' : 'Selecionar Mesa'}'),
+        actions: [
+          if (cart.isNotEmpty)
+            Stack(
+              children: [
+                IconButton(
+                  onPressed: _showCart,
+                  icon: Icon(Icons.shopping_cart),
+                ),
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: BoxConstraints(minWidth: 16, minHeight: 16),
+                    child: Text(
+                      '${cart.length}',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
       body: Column(
         children: [
-          _buildHeader(),
-          if (selectedTable == null) _buildTableSelector(),
-          _buildCategoryTabs(),
-          Expanded(child: _buildMenuContent()),
+          // Header com informações da mesa
+          if (selectedTable != null) _buildTableHeader(),
+          
+          // Tabs das categorias
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              labelColor: TColor.primary,
+              unselectedLabelColor: TColor.secondaryText,
+              indicatorColor: TColor.primary,
+              onTap: (index) {
+                setState(() {
+                  selectedCategory = categories[index];
+                });
+              },
+              tabs: categories.map((category) => Tab(text: category)).toList(),
+            ),
+          ),
+          
+          // Lista de itens da categoria selecionada
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: categories.map((category) {
+                final items = menuByCategory[category] ?? [];
+                return _buildMenuItems(items);
+              }).toList(),
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: _buildCartSummary(),
+      floatingActionButton: selectedTable == null
+          ? FloatingActionButton(
+              onPressed: _selectTable,
+              backgroundColor: TColor.primary,
+              child: Icon(Icons.table_restaurant, color: Colors.white),
+            )
+          : cart.isNotEmpty
+              ? FloatingActionButton.extended(
+                  onPressed: _showCart,
+                  backgroundColor: TColor.primary,
+                  icon: Icon(Icons.shopping_cart, color: Colors.white),
+                  label: Text(
+                    'Ver Pedido (${cart.length})',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              : null,
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildTableHeader() {
     return Container(
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TColor.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.table_restaurant, color: TColor.primary),
+          SizedBox(width: 8),
+          Text(
+            'Mesa $selectedTable',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: TColor.primaryText,
+            ),
+          ),
+          Spacer(),
+          Text(
+            'Andar: $selectedFloor',
+            style: TextStyle(color: TColor.secondaryText),
           ),
         ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'CARDÁPIO',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: TColor.primaryText,
-                      ),
-                    ),
-                    if (selectedTable != null)
-                      Text(
-                        'Mesa ${selectedTable} - $selectedFloor',
-                        style: TextStyle(
-                          color: TColor.secondaryText,
-                          fontSize: 14,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (cart.isNotEmpty)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: TColor.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.shopping_cart, color: TColor.white, size: 16),
-                      SizedBox(width: 4),
-                      Text(
-                        '${cart.length}',
-                        style: TextStyle(
-                          color: TColor.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  Widget _buildTableSelector() {
-    if (widget.preSelectedTable != null && widget.preSelectedTable! > 0) {
-      return Container(
-        padding: EdgeInsets.all(16),
-        color: TColor.primary.withOpacity(0.1),
-        child: Row(
+  Widget _buildMenuItems(List<MenuItemModel> items) {
+    if (items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.info, color: TColor.primary),
-            SizedBox(width: 8),
+            Icon(Icons.restaurant_menu, size: 64, color: Colors.grey[400]),
+            SizedBox(height: 16),
             Text(
-              'Pedido para Mesa ${widget.preSelectedTable} - ${widget.preSelectedFloor}',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: TColor.primary,
-              ),
+              'Nenhum item disponível nesta categoria',
+              style: TextStyle(color: TColor.secondaryText),
             ),
           ],
         ),
       );
     }
-    return Container(
-      padding: EdgeInsets.all(16),
-      color: TColor.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Selecionar Mesa:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: TColor.primaryText,
-            ),
-          ),
-          SizedBox(height: 12),
-          Row(
-            children: [
-              // Seletor de andar
-              Expanded(
-                flex: 2,
-                child: DropdownButtonFormField<String>(
-                  value: selectedFloor,
-                  decoration: InputDecoration(
-                    labelText: 'Andar',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  items: ['First', 'Second', 'Third', 'Ground', 'Take Away']
-                      .map((floor) => DropdownMenuItem(
-                            value: floor,
-                            child: Text(floor),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedFloor = value!;
-                      selectedTable = null; // Reset mesa ao mudar andar
-                    });
-                  },
-                ),
-              ),
-              SizedBox(width: 12),
-              
-              // Seletor de mesa
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    labelText: selectedFloor == 'Take Away' ? 'Balcão' : 'Mesa',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) {
-                    selectedTable = int.tryParse(value);
-                  },
-                ),
-              ),
-              SizedBox(width: 12),
-              
-              // Número de pessoas
-              Expanded(
-                child: Column(
-                  children: [
-                    Text('Pessoas', style: TextStyle(fontSize: 12, color: TColor.secondaryText)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: guestCount > 1 ? () => setState(() => guestCount--) : null,
-                          icon: Icon(Icons.remove_circle_outline, size: 20),
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(),
-                        ),
-                        Text(
-                          '$guestCount',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          onPressed: guestCount < 10 ? () => setState(() => guestCount++) : null,
-                          icon: Icon(Icons.add_circle_outline, size: 20),
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildCategoryTabs() {
-    if (categories.isEmpty) return SizedBox.shrink();
-    
-    return Container(
-      color: TColor.white,
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: true,
-        labelColor: TColor.primary,
-        unselectedLabelColor: TColor.secondaryText,
-        indicatorColor: TColor.primary,
-        indicatorWeight: 3,
-        labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
-        tabs: categories.map((category) {
-          final itemCount = menuByCategory[category]?.length ?? 0;
-          return Tab(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(category),
-                SizedBox(width: 6),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: TColor.placeholder.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '$itemCount',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-        onTap: (index) {
-          setState(() {
-            selectedCategory = categories[index];
-          });
-        },
-      ),
-    );
-  }
-
-  Widget _buildMenuContent() {
-    if (categories.isEmpty) {
-      return Center(
-        child: Text(
-          'Nenhum item no menu',
-          style: TextStyle(color: TColor.secondaryText),
-        ),
-      );
-    }
-
-    return TabBarView(
-      controller: _tabController,
-      children: categories.map((category) {
-        final items = menuByCategory[category] ?? [];
-        return _buildMenuItemsList(items);
-      }).toList(),
-    );
-  }
-
-  Widget _buildMenuItemsList(List<MenuItemModel> items) {
     return ListView.builder(
       padding: EdgeInsets.all(16),
       itemCount: items.length,
       itemBuilder: (context, index) {
-        return _buildMenuItemCard(items[index]);
+        final item = items[index];
+        return _buildMenuItem(item);
       },
     );
   }
 
-  Widget _buildMenuItemCard(MenuItemModel item) {
+  Widget _buildMenuItem(MenuItemModel item) {
     final cartItem = cart.firstWhere(
       (cartItem) => cartItem.menuItem.id == item.id,
       orElse: () => CartItemModel(menuItem: item, quantity: 0),
     );
     final isInCart = cartItem.quantity > 0;
 
-    return Container(
+    return Card(
       margin: EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: TColor.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isInCart ? TColor.primary.withOpacity(0.3) : TColor.placeholder.withOpacity(0.2),
-          width: isInCart ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(12),
         child: Row(
           children: [
+            // Imagem do item
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[200],
+              ),
+              child: item.imageUrl != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        item.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Icon(Icons.restaurant, color: Colors.grey),
+                      ),
+                    )
+                  : Icon(Icons.restaurant, color: Colors.grey),
+            ),
+            SizedBox(width: 12),
+            
             // Informações do item
             Expanded(
               child: Column(
@@ -399,7 +298,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
                           item.name,
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                             color: TColor.primaryText,
                           ),
                         ),
@@ -409,12 +308,12 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
                           padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.orange,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            'Popular',
+                            'POPULAR',
                             style: TextStyle(
-                              color: TColor.white,
+                              color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -422,35 +321,61 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
                         ),
                     ],
                   ),
-                  
-                  if (item.description != null) ...[
+                  if (item.description?.isNotEmpty == true) ...[
                     SizedBox(height: 4),
                     Text(
                       item.description!,
                       style: TextStyle(
                         color: TColor.secondaryText,
-                        fontSize: 13,
+                        fontSize: 12,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  
                   SizedBox(height: 8),
                   
+                  // Preço e promoção
                   Row(
                     children: [
+                      if (item.isOnPromotion && item.regularPrice != null) ...[
+                        Text(
+                          item.formattedRegularPrice,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            item.formattedDiscount,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                      ],
                       Text(
                         item.formattedPrice,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: TColor.primary,
+                          color: item.isOnPromotion ? Colors.red : TColor.primary,
                         ),
                       ),
-                      SizedBox(width: 12),
-                      Icon(Icons.access_time, size: 14, color: TColor.secondaryText),
-                      SizedBox(width: 4),
+                      Spacer(),
                       Text(
-                        '${item.preparationTime}min',
+                        '${item.preparationTime} min',
                         style: TextStyle(
                           color: TColor.secondaryText,
                           fontSize: 12,
@@ -462,6 +387,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
               ),
             ),
             
+            // Botão adicionar
             SizedBox(width: 16),
             
             // Controles de quantidade
@@ -524,85 +450,33 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     );
   }
 
-  Widget _buildCartSummary() {
-    if (cart.isEmpty) return SizedBox.shrink();
-
-    final total = cart.fold(0.0, (sum, item) => sum + item.totalPrice);
-
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: TColor.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${cart.length} ${cart.length == 1 ? 'item' : 'itens'}',
-                    style: TextStyle(
-                      color: TColor.secondaryText,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    '\$${total.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: TColor.primaryText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: 16),
-            ElevatedButton.icon(
-              onPressed: _canSubmitOrder() ? _showOrderConfirmation : null,
-              icon: Icon(Icons.receipt_long, color: TColor.white),
-              label: Text(
-                'Enviar Pedido',
-                style: TextStyle(
-                  color: TColor.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _canSubmitOrder() ? TColor.primary : Colors.grey,
-                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Métodos de ação
   void _addToCart(MenuItemModel item) {
+    if (selectedTable == null) {
+      _selectTable();
+      return;
+    }
+
     setState(() {
+      // Verificar se o item já está no carrinho
       final existingIndex = cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
       
       if (existingIndex >= 0) {
+        // Se já existe, aumentar quantidade
         cart[existingIndex].quantity++;
       } else {
-        cart.add(CartItemModel(menuItem: item, quantity: 1));
+        // Se não existe, adicionar novo item
+        cart.add(CartItemModel(menuItem: item));
       }
     });
+
+    // Mostrar feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${item.name} adicionado ao pedido'),
+        duration: Duration(seconds: 1),
+        backgroundColor: TColor.primary,
+      ),
+    );
   }
 
   void _removeFromCart(MenuItemModel item) {
@@ -619,225 +493,229 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     });
   }
 
-  bool _canSubmitOrder() {
-    return cart.isNotEmpty && 
-           selectedTable != null && 
-           selectedTable! > 0;
+  int _getItemQuantityInCart(String itemId) {
+    try {
+      return cart.firstWhere((cartItem) => cartItem.menuItem.id == itemId).quantity;
+    } catch (e) {
+      return 0;
+    }
   }
 
-  void _showOrderConfirmation() {
-    final total = cart.fold(0.0, (sum, item) => sum + item.totalPrice);
-    
+  void _selectTable() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Selecionar Mesa'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Número da Mesa',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                selectedTable = int.tryParse(value);
+              },
+            ),
+            SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: selectedFloor,
+              decoration: InputDecoration(
+                labelText: 'Andar',
+                border: OutlineInputBorder(),
+              ),
+              items: ['First', 'Second', 'Third'].map((floor) {
+                return DropdownMenuItem(
+                  value: floor,
+                  child: Text(floor),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  selectedFloor = value;
+                }
+              },
+            ),
+            SizedBox(height: 16),
+            TextField(
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Número de Pessoas',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                guestCount = int.tryParse(value) ?? 2;
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (selectedTable != null) {
+                setState(() {});
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: TColor.primary),
+            child: Text('Confirmar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCart() {
+    if (cart.isEmpty) return;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: TColor.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+        padding: EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle
-            Container(
-              margin: EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: TColor.placeholder,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            
-            // Header
-            Padding(
-              padding: EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Icon(Icons.receipt_long, color: TColor.primary, size: 24),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Confirmar Pedido',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: TColor.primaryText,
-                          ),
-                        ),
-                        Text(
-                          'Mesa ${selectedTable} - $selectedFloor - $guestCount pessoas',
-                          style: TextStyle(
-                            color: TColor.secondaryText,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Pedido - Mesa $selectedTable',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: TColor.primaryText,
                   ),
-                ],
-              ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(Icons.close),
+                ),
+              ],
             ),
+            Divider(),
             
-            // Lista de itens
             Expanded(
               child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 20),
                 itemCount: cart.length,
                 itemBuilder: (context, index) {
-                  final item = cart[index];
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 8),
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: TColor.primary,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${item.quantity}',
-                              style: TextStyle(
-                                color: TColor.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  final cartItem = cart[index];
+                  return Card(
+                    child: ListTile(
+                      leading: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey[200],
+                        ),
+                        child: cartItem.menuItem.imageUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  cartItem.menuItem.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Icon(Icons.restaurant, color: Colors.grey),
+                                ),
+                              )
+                            : Icon(Icons.restaurant, color: Colors.grey),
+                      ),
+                      title: Text(cartItem.menuItem.name),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(cartItem.menuItem.formattedPrice),
+                          if (cartItem.notes?.isNotEmpty == true)
+                            Text(
+                              'Obs: ${cartItem.notes}',
+                              style: TextStyle(fontStyle: FontStyle.italic),
                             ),
+                        ],
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () => _updateCartItemQuantity(index, -1),
+                            icon: Icon(Icons.remove_circle_outline),
                           ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            item.menuItem.name,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: TColor.primaryText,
-                            ),
+                          Text('${cartItem.quantity}'),
+                          IconButton(
+                            onPressed: () => _updateCartItemQuantity(index, 1),
+                            icon: Icon(Icons.add_circle_outline),
                           ),
-                        ),
-                        Text(
-                          item.formattedTotal,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: TColor.primary,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
             ),
             
-            // Observações
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
-                controller: notesController,
-                decoration: InputDecoration(
-                  labelText: 'Observações (opcional)',
-                  hintText: 'Ex: sem cebola, ponto da carne...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+            Divider(),
+            
+            // Total
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total:',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
-                maxLines: 2,
-              ),
+                Text(
+                  _calculateTotal(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: TColor.primary,
+                  ),
+                ),
+              ],
             ),
             
-            // Total e botão
-            Container(
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+            SizedBox(height: 16),
+            
+            // Campo de observações
+            TextField(
+              controller: notesController,
+              decoration: InputDecoration(
+                labelText: 'Observações do pedido',
+                border: OutlineInputBorder(),
+                hintText: 'Ex: Sem cebola, bem passado...',
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'TOTAL',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: TColor.primaryText,
-                        ),
-                      ),
-                      Text(
-                        '\$${total.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: TColor.primary,
-                        ),
-                      ),
-                    ],
+              maxLines: 2,
+            ),
+            
+            SizedBox(height: 16),
+            
+            // Botão finalizar pedido
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _submitOrder,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: TColor.primary,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: Text(
+                  'Finalizar Pedido',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[300],
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancelar',
-                            style: TextStyle(
-                              color: TColor.primaryText,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: ElevatedButton.icon(
-                          onPressed: _submitOrder,
-                          icon: Icon(Icons.send, color: TColor.white),
-                          label: Text(
-                            'Enviar Pedido',
-                            style: TextStyle(
-                              color: TColor.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: TColor.primary,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -846,21 +724,29 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     );
   }
 
+  void _updateCartItemQuantity(int index, int change) {
+    setState(() {
+      cart[index].quantity += change;
+      if (cart[index].quantity <= 0) {
+        cart.removeAt(index);
+      }
+    });
+  }
+
+  String _calculateTotal() {
+    double total = cart.fold(0.0, (sum, item) => sum + item.totalPrice);
+    return 'MT ${total.toStringAsFixed(2)}';
+  }
+
   Future<void> _submitOrder() async {
-    Navigator.pop(context); // Fechar dialog de confirmação
-    
+    if (cart.isEmpty || selectedTable == null) return;
+
     // Mostrar loading
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(color: TColor.primary),
-            SizedBox(width: 16),
-            Text('Enviando pedido...'),
-          ],
-        ),
+      builder: (context) => Center(
+        child: CircularProgressIndicator(),
       ),
     );
 
@@ -870,42 +756,34 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
         floor: selectedFloor,
         items: cart,
         guestCount: guestCount,
-        notes: notesController.text.trim().isEmpty ? null : notesController.text.trim(),
+        notes: notesController.text.isNotEmpty ? notesController.text : null,
       );
 
       Navigator.pop(context); // Fechar loading
 
       if (success) {
-        _showSuccessSnackBar('Pedido enviado com sucesso para Mesa $selectedTable!');
-        
-        // Limpar carrinho e formulário
+        // Limpar carrinho
         setState(() {
           cart.clear();
-          selectedTable = widget.preSelectedTable;
           notesController.clear();
         });
 
-        // Se veio de uma mesa específica, voltar para a tela anterior
-        if (widget.preSelectedTable != null) {
-          Navigator.pop(context);
-        }
+        Navigator.pop(context); // Fechar modal do carrinho
+
+        // Mostrar sucesso
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Pedido enviado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
       } else {
-        _showErrorSnackBar('Erro ao enviar pedido. Tente novamente.');
+        throw Exception('Erro ao enviar pedido');
       }
     } catch (e) {
       Navigator.pop(context); // Fechar loading
-      _showErrorSnackBar('Erro: $e');
+      _showErrorSnackBar('Erro ao enviar pedido: $e');
     }
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   void _showErrorSnackBar(String message) {
@@ -913,7 +791,6 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }
