@@ -252,6 +252,12 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   }
 
   Widget _buildMenuItem(MenuItemModel item) {
+    final cartItem = cart.firstWhere(
+      (cartItem) => cartItem.menuItem.id == item.id,
+      orElse: () => CartItemModel(menuItem: item, quantity: 0),
+    );
+    final isInCart = cartItem.quantity > 0;
+
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -382,41 +388,62 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
             ),
             
             // Botão adicionar
-            Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () => _addToCart(item),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: TColor.primary,
-                    foregroundColor: Colors.white,
-                    minimumSize: Size(60, 36),
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                  ),
-                  child: Text(
-                    'Add',
-                    style: TextStyle(fontSize: 12),
-                  ),
+            SizedBox(width: 16),
+            
+            // Controles de quantidade
+            if (!isInCart)
+              ElevatedButton(
+                onPressed: () => _addToCart(item),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: TColor.primary,
+                  shape: CircleBorder(),
+                  padding: EdgeInsets.all(12),
+                  minimumSize: Size(0, 0),
                 ),
-                if (_getItemQuantityInCart(item.id) > 0) ...[
-                  SizedBox(height: 4),
+                child: Icon(Icons.add, color: TColor.white, size: 20),
+              )
+            else
+              Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () => _removeFromCart(item),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[300],
+                      shape: CircleBorder(),
+                      padding: EdgeInsets.all(8),
+                      minimumSize: Size(0, 0),
+                    ),
+                    child: Icon(Icons.remove, color: TColor.primaryText, size: 16),
+                  ),
+                  SizedBox(width: 12),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: TColor.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '${_getItemQuantityInCart(item.id)} no carrinho',
+                      '${cartItem.quantity}',
                       style: TextStyle(
-                        fontSize: 10,
-                        color: TColor.primary,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: TColor.primary,
                       ),
                     ),
                   ),
+                  SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () => _addToCart(item),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: TColor.primary,
+                      shape: CircleBorder(),
+                      padding: EdgeInsets.all(8),
+                      minimumSize: Size(0, 0),
+                    ),
+                    child: Icon(Icons.add, color: TColor.white, size: 16),
+                  ),
                 ],
-              ],
-            ),
+              ),
           ],
         ),
       ),
@@ -450,6 +477,20 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
         backgroundColor: TColor.primary,
       ),
     );
+  }
+
+  void _removeFromCart(MenuItemModel item) {
+    setState(() {
+      final existingIndex = cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
+      
+      if (existingIndex >= 0) {
+        if (cart[existingIndex].quantity > 1) {
+          cart[existingIndex].quantity--;
+        } else {
+          cart.removeAt(existingIndex);
+        }
+      }
+    });
   }
 
   int _getItemQuantityInCart(String itemId) {
