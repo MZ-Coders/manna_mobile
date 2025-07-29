@@ -29,7 +29,7 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
     });
 
     try {
-      final tables = await WaiterService.getTables();
+      final tables = await WaiterMenuService.getTables();
       setState(() {
         allTables = tables;
         filterTablesByFloor();
@@ -874,7 +874,7 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
 
   Future<void> _updateTableStatus(TableModel table, TableStatus newStatus, {int? guestCount}) async {
     try {
-      final success = await WaiterService.updateTableStatus(table.number, newStatus);
+      final success = await WaiterMenuService.updateTableStatus(table.number, newStatus);
       
       if (success) {
         // Atualizar localmente
