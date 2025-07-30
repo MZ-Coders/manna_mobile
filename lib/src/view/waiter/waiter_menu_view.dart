@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import '../../models/menu_item_model.dart';
 import '../../common/waiter_menu_service.dart';
+// import '../../common/mobile_printer_service.dart';
 
 class WaiterMenuView extends StatefulWidget {
   final int? preSelectedTable;
@@ -65,7 +67,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
         isLoading = false;
       });
       
-      print("Menu do garçom carregado com ${categories.length} categorias");
+      // print("Menu do garçom carregado com ${categories.length} categorias");
       
     } catch (e) {
       setState(() {
@@ -252,12 +254,6 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   }
 
   Widget _buildMenuItem(MenuItemModel item) {
-    final cartItem = cart.firstWhere(
-      (cartItem) => cartItem.menuItem.id == item.id,
-      orElse: () => CartItemModel(menuItem: item, quantity: 0),
-    );
-    final isInCart = cartItem.quantity > 0;
-
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -388,88 +384,85 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
             ),
             
             // Botão adicionar
-            SizedBox(width: 16),
-            
-            // Controles de quantidade
-            if (!isInCart)
-              ElevatedButton(
-                onPressed: () => _addToCart(item),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TColor.primary,
-                  shape: CircleBorder(),
-                  padding: EdgeInsets.all(12),
-                  minimumSize: Size(0, 0),
-                ),
-                child: Icon(Icons.add, color: TColor.white, size: 20),
-              )
-            else
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _removeFromCart(item),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[300],
-                      shape: CircleBorder(),
-                      padding: EdgeInsets.all(8),
-                      minimumSize: Size(0, 0),
-                    ),
-                    child: Icon(Icons.remove, color: TColor.primaryText, size: 16),
-                  ),
-                  SizedBox(width: 12),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: TColor.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${cartItem.quantity}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: TColor.primary,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () => _addToCart(item),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: TColor.primary,
-                      shape: CircleBorder(),
-                      padding: EdgeInsets.all(8),
-                      minimumSize: Size(0, 0),
-                    ),
-                    child: Icon(Icons.add, color: TColor.white, size: 16),
-                  ),
-                ],
+            Column(
+              children: [
+                if (_getItemQuantityInCart(item.id) > 0) ...[
+      // Controles + e - quando item já está no carrinho
+      Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: TColor.primary),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: () => _updateItemQuantity(item, -1),
+              icon: Icon(Icons.remove, size: 18),
+              padding: EdgeInsets.all(4),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                '${_getItemQuantityInCart(item.id)}',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
+            ),
+            IconButton(
+              onPressed: () => _updateItemQuantity(item, 1),
+              icon: Icon(Icons.add, size: 18),
+              padding: EdgeInsets.all(4),
+              constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+          ],
+        ),
+      ),
+    ] else ...[
+      // Botão + quando item não está no carrinho
+      ElevatedButton(
+        onPressed: () => _updateItemQuantity(item, 1),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: TColor.primary,
+          foregroundColor: Colors.white,
+          minimumSize: Size(60, 36),
+          shape: CircleBorder(),
+        ),
+        child: Icon(Icons.add, size: 20),
+      ),
+    ],
+  ],
+              
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _addToCart(MenuItemModel item) {
-    if (selectedTable == null) {
-      _selectTable();
-      return;
-    }
+  void _updateItemQuantity(MenuItemModel item, int change) {
+  if (selectedTable == null && change > 0) {
+    _selectTable();
+    return;
+  }
 
-    setState(() {
-      // Verificar se o item já está no carrinho
-      final existingIndex = cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
-      
-      if (existingIndex >= 0) {
-        // Se já existe, aumentar quantidade
-        cart[existingIndex].quantity++;
-      } else {
-        // Se não existe, adicionar novo item
-        cart.add(CartItemModel(menuItem: item));
+  setState(() {
+    final existingIndex = cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
+    
+    if (existingIndex >= 0) {
+      // Item já existe no carrinho
+      cart[existingIndex].quantity += change;
+      if (cart[existingIndex].quantity <= 0) {
+        cart.removeAt(existingIndex);
       }
-    });
+    } else if (change > 0) {
+      // Adicionar novo item
+      cart.add(CartItemModel(menuItem: item));
+    }
+  });
 
-    // Mostrar feedback
+  // Feedback visual
+  if (change > 0) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${item.name} adicionado ao pedido'),
@@ -478,20 +471,8 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
       ),
     );
   }
+}
 
-  void _removeFromCart(MenuItemModel item) {
-    setState(() {
-      final existingIndex = cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
-      
-      if (existingIndex >= 0) {
-        if (cart[existingIndex].quantity > 1) {
-          cart[existingIndex].quantity--;
-        } else {
-          cart.removeAt(existingIndex);
-        }
-      }
-    });
-  }
 
   int _getItemQuantityInCart(String itemId) {
     try {
@@ -577,7 +558,8 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => Container(
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         padding: EdgeInsets.all(16),
         child: Column(
@@ -644,14 +626,27 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            onPressed: () => _updateCartItemQuantity(index, -1),
-                            icon: Icon(Icons.remove_circle_outline),
-                          ),
-                          Text('${cartItem.quantity}'),
-                          IconButton(
-                            onPressed: () => _updateCartItemQuantity(index, 1),
-                            icon: Icon(Icons.add_circle_outline),
-                          ),
+      onPressed: () {
+        setModalState(() {  // USAR setModalState ao invés de setState
+          cart[index].quantity--;
+          if (cart[index].quantity <= 0) {
+            cart.removeAt(index);
+          }
+        });
+        setState(() {}); // Atualizar tela principal também
+      },
+      icon: Icon(Icons.remove_circle_outline),
+    ),
+    Text('${cartItem.quantity}'),
+    IconButton(
+      onPressed: () {
+        setModalState(() {  // USAR setModalState ao invés de setState
+          cart[index].quantity++;
+        });
+        setState(() {}); // Atualizar tela principal também
+      },
+      icon: Icon(Icons.add_circle_outline),
+    ),
                         ],
                       ),
                     ),
@@ -699,29 +694,76 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
             
             SizedBox(height: 16),
             
-            // Botão finalizar pedido
+            // Botão finalizar pedido com ícone de impressão
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: _submitOrder,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: TColor.primary,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Text(
-                  'Finalizar Pedido',
+                icon: Icon(Icons.print, color: Colors.white),
+                label: Text(
+                  'Finalizar Pedido e Imprimir',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: TColor.primary,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+            
+            SizedBox(height: 8),
+            
+            // Botão adicional para apenas imprimir (sem enviar pedido)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  try {
+                    final prefs = await SharedPreferences.getInstance();
+                    String? waiterName = prefs.getString('user_name');
+                    
+                    // await MobilePrinterService.printWithPrinterSelection(
+                    //   context: context,
+                    //   tableNumber: selectedTable!,
+                    //   floor: selectedFloor,
+                    //   items: cart,
+                    //   guestCount: guestCount,
+                    //   notes: notesController.text.isNotEmpty ? notesController.text : null,
+                    //   waiterName: waiterName,
+                    // );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erro na impressão: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                icon: Icon(Icons.preview, color: TColor.primary),
+                label: Text(
+                  'Apenas Imprimir Preview',
+                  style: TextStyle(
+                    color: TColor.primary,
+                    fontSize: 14,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: TColor.primary),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                ),
               ),
             ),
           ],
         ),
       ),
+      )
     );
+    
   }
 
   void _updateCartItemQuantity(int index, int change) {
@@ -746,7 +788,17 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
       context: context,
       barrierDismissible: false,
       builder: (context) => Center(
-        child: CircularProgressIndicator(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text(
+              'Enviando pedido e imprimindo recibo...',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -757,6 +809,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
         items: cart,
         guestCount: guestCount,
         notes: notesController.text.isNotEmpty ? notesController.text : null,
+        context: context, // Passar contexto para impressão
       );
 
       Navigator.pop(context); // Fechar loading
@@ -770,15 +823,30 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
 
         Navigator.pop(context); // Fechar modal do carrinho
 
-        // Mostrar sucesso
+        // Adicionar botão para reimprimir se necessário
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Pedido enviado com sucesso!'),
+            content: Text('Pedido finalizado com sucesso!'),
             backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'Reimprimir',
+              textColor: Colors.white,
+              onPressed: () async {
+                // Função para reimprimir o recibo
+                await WaiterMenuService.reprintReceipt(
+                  context: context,
+                  tableNumber: selectedTable!,
+                  floor: selectedFloor,
+                  items: cart,
+                  guestCount: guestCount,
+                  notes: notesController.text.isNotEmpty ? notesController.text : null,
+                );
+              },
+            ),
           ),
         );
       } else {
-        throw Exception('Erro ao enviar pedido');
+        throw Exception('Falha no envio do pedido');
       }
     } catch (e) {
       Navigator.pop(context); // Fechar loading

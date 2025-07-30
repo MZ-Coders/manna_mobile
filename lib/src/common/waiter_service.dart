@@ -44,6 +44,10 @@ class WaiterMenuService {
         return _getMockMenu();
       }
       
+      print('Menu carregado com sucesso: ${menuByCategory.length} categorias');
+      print('Itens no menu: ${menuByCategory.values.expand((x) => x).length}');
+
+      
       return menuByCategory;
       
     } catch (e) {
