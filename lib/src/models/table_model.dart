@@ -198,7 +198,7 @@ class TableModel {
     double? orderValue,
     String? waiterId,
     bool? hasNotification,
-    int? id,
+    int? id ,
     String? uuid,
     String? name,
     int? capacity,

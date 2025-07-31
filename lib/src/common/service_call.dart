@@ -188,6 +188,72 @@ static Future<Map<String, dynamic>?> getCurrentUser() async {
   return null;
 }
 
+// SUBSTITUA o método purchase() em lib/src/common/service_call.dart
+
+static void purchaseOld(Map<String, dynamic> purchaseData,
+    {ResSuccess? withSuccess, ResFailure? failure}) {
+  Future(() async {
+    try {
+      var headers = {'Content-Type': 'application/json'};
+
+      // 🔥 ADICIONAR TOKEN DE AUTORIZAÇÃO (NOVO)
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      if (kDebugMode) {
+        print("=== ENVIANDO PEDIDO PARA API ===");
+        print("URL: ${SVKey.baseUrl}orders");
+        print("Headers: $headers");
+        print("Purchase Data: ${json.encode(purchaseData)}");
+        print("================================");
+      }
+
+      http
+          .post(Uri.parse(SVKey.baseUrl + "orders"), 
+               body: json.encode(purchaseData), 
+               headers: headers)
+          .then((value) {
+        if (kDebugMode) {
+          print("=== RESPOSTA DA API ===");
+          print("Status Code: ${value.statusCode}");
+          print("Response Body: ${value.body}");
+          print("=======================");
+        }
+        
+        try {
+          var jsonObj = json.decode(value.body) as Map<String, dynamic>? ?? {};
+
+          // Verificar se o pedido foi criado com sucesso
+          if (jsonObj['success'] == true || 
+              value.statusCode == 200 || 
+              value.statusCode == 201) {
+            
+            print('✅ Pedido enviado com sucesso!');
+            if (withSuccess != null) withSuccess(jsonObj);
+          } else {
+            String errorMessage = jsonObj['message'] ?? 
+                                 jsonObj['error'] ?? 
+                                 'Erro ao processar pedido';
+            print('❌ Erro no pedido: $errorMessage');
+            if (failure != null) failure(errorMessage);
+          }
+        } catch (err) {
+          print('❌ Erro ao processar resposta: $err');
+          if (failure != null) failure('Erro ao processar resposta: $err');
+        }
+      }).catchError((e) {
+        print('❌ Erro na requisição HTTP: $e');
+        if (failure != null) failure('Erro de conexão: $e');
+      });
+    } catch (err) {
+      print('❌ Erro geral: $err');
+      if (failure != null) failure('Erro interno: $err');
+    }
+  });
+}
   // Função para registar compra
 static void purchase(Map<String, dynamic> purchaseData,
     {ResSuccess? withSuccess, ResFailure? failure}) {
