@@ -1,4 +1,6 @@
+import 'package:dribbble_challenge/src/common/order_service.dart';
 import 'package:dribbble_challenge/src/common/waiter_service.dart';
+import 'package:dribbble_challenge/src/models/order_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import '../../models/table_model.dart';
@@ -814,8 +816,539 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
   void _viewOrder(TableModel table) {
     Navigator.pop(context);
     // TODO: Navegar para tela de detalhes do pedido
-    _showSuccessSnackBar('Abrindo pedido da mesa ${table.number}...');
+    // _showSuccessSnackBar('Abrindo pedido da mesa ${table.number}...');
+    _showTableOrdersModal(table);
   }
+
+  void _showTableOrdersModal(TableModel table) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _buildTableOrdersSheet(table),
+  );
+}
+
+Widget _buildTableOrdersSheet(TableModel table) {
+  return Container(
+    height: MediaQuery.of(context).size.height * 0.8,
+    decoration: BoxDecoration(
+      color: TColor.white,
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    child: Column(
+      children: [
+        // Handle
+        Container(
+          width: 40,
+          height: 4,
+          margin: EdgeInsets.only(top: 12),
+          decoration: BoxDecoration(
+            color: TColor.placeholder,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        
+        // Header
+        Padding(
+          padding: EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _getTableBorderColor(table.status).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.receipt_long,
+                  color: _getTableBorderColor(table.status),
+                  size: 24,
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pedidos - Mesa ${table.floor == "Take Away" ? "Take Away" : table.number}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: TColor.primaryText,
+                      ),
+                    ),
+                    Text(
+                      '${table.floor} • ${_getStatusText(table.status)}',
+                      style: TextStyle(
+                        color: TColor.secondaryText,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, color: TColor.secondaryText),
+              ),
+            ],
+          ),
+        ),
+        
+        // Lista de pedidos
+        Expanded(
+          child: FutureBuilder<List<OrderModel>>(
+            future: OrderService.getOrders(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: TColor.primary),
+                      SizedBox(height: 16),
+                      Text(
+                        'Carregando pedidos...',
+                        style: TextStyle(color: TColor.secondaryText),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      SizedBox(height: 16),
+                      Text(
+                        'Erro ao carregar pedidos',
+                        style: TextStyle(color: Colors.red, fontSize: 16),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        snapshot.error.toString(),
+                        style: TextStyle(color: TColor.secondaryText, fontSize: 12),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              
+              final allOrders = snapshot.data ?? [];
+              
+              // Filtrar pedidos da mesa específica
+              final tableOrders = allOrders.where((order) {
+                if (table.floor == "Take Away") {
+                  return order.floor == "Take Away" || order.tableNumber == 999;
+                }
+                return order.tableNumber == table.number && order.floor == table.floor;
+              }).toList();
+              
+              // Ordenar por tempo (mais recente primeiro)
+              tableOrders.sort((a, b) => b.orderTime.compareTo(a.orderTime));
+              
+              if (tableOrders.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.receipt_long_outlined,
+                        size: 64,
+                        color: TColor.placeholder,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Nenhum pedido encontrado',
+                        style: TextStyle(
+                          color: TColor.primaryText,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Esta mesa ainda não fez nenhum pedido',
+                        style: TextStyle(
+                          color: TColor.secondaryText,
+                          fontSize: 14,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              
+              return ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                itemCount: tableOrders.length,
+                itemBuilder: (context, index) {
+                  final order = tableOrders[index];
+                  return _buildOrderCard(order, index == 0);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildOrderCard(OrderModel order, bool isLatest) {
+  return Container(
+    margin: EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      color: TColor.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isLatest ? TColor.primary : TColor.placeholder.withOpacity(0.3),
+        width: isLatest ? 2 : 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 8,
+          offset: Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header do pedido
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getOrderStatusColor(order.status).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  _getOrderStatusText(order.status),
+                  style: TextStyle(
+                    color: _getOrderStatusColor(order.status),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Spacer(),
+              if (isLatest)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: TColor.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'ATUAL',
+                    style: TextStyle(
+                      color: TColor.primary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          
+          SizedBox(height: 12),
+          
+          // Informações do pedido
+          Row(
+            children: [
+              Expanded(
+                child: _buildOrderInfo(
+                  'Pedido',
+                  '#${order.id}',
+                  Icons.confirmation_number,
+                ),
+              ),
+              Expanded(
+                child: _buildOrderInfo(
+                  'Horário',
+                  order.formattedTime,
+                  Icons.access_time,
+                ),
+              ),
+              Expanded(
+                child: _buildOrderInfo(
+                  'Pessoas',
+                  '${order.guestCount}',
+                  Icons.people,
+                ),
+              ),
+            ],
+          ),
+          
+          SizedBox(height: 16),
+          
+          // Lista de itens
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.restaurant_menu, size: 16, color: TColor.primary),
+                    SizedBox(width: 6),
+                    Text(
+                      'Itens do Pedido',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: TColor.primaryText,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                ...order.items.map((item) => _buildOrderItem(item)).toList(),
+              ],
+            ),
+          ),
+          
+          SizedBox(height: 12),
+          
+          // Total e ações
+          Row(
+            children: [
+              Text(
+                'Total: ',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: TColor.secondaryText,
+                ),
+              ),
+              Text(
+                order.formattedTotal,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: TColor.primary,
+                ),
+              ),
+              Spacer(),
+              if (order.status != OrderStatus.completed)
+                ElevatedButton.icon(
+                  onPressed: () => _updateOrderStatus(order),
+                  icon: Icon(
+                    _getNextOrderActionIcon(order.status),
+                    size: 16,
+                    color: TColor.white,
+                  ),
+                  label: Text(
+                    _getNextOrderActionText(order.status),
+                    style: TextStyle(color: TColor.white, fontSize: 12),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _getOrderStatusColor(order.status),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: Size(0, 32),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildOrderInfo(String label, String value, IconData icon) {
+  return Column(
+    children: [
+      Icon(icon, color: TColor.primary, size: 16),
+      SizedBox(height: 4),
+      Text(
+        value,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: TColor.primaryText,
+        ),
+      ),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: TColor.secondaryText,
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildOrderItem(OrderItem item) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: item.isServed ? Colors.green : Colors.grey[300],
+            shape: BoxShape.circle,
+          ),
+          child: item.isServed
+              ? Icon(Icons.check, size: 12, color: Colors.white)
+              : null,
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '${item.quantity}x ${item.name}',
+            style: TextStyle(
+              fontSize: 13,
+              color: TColor.primaryText,
+              decoration: item.isServed ? TextDecoration.lineThrough : null,
+            ),
+          ),
+        ),
+        Text(
+          'MT ${(item.price * item.quantity).toStringAsFixed(2)}',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: TColor.primary,
+          ),
+        ),
+        SizedBox(width: 8),
+        GestureDetector(
+          onTap: () => _toggleItemServed(item),
+          child: Container(
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: item.isServed ? Colors.green[50] : Colors.orange[50],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              item.isServed ? Icons.undo : Icons.room_service,
+              size: 14,
+              color: item.isServed ? Colors.green : Colors.orange,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Funções auxiliares para pedidos
+Color _getOrderStatusColor(OrderStatus status) {
+  switch (status) {
+    case OrderStatus.pending:
+      return Colors.orange;
+    case OrderStatus.preparing:
+      return Colors.blue;
+    case OrderStatus.completed:
+      return Colors.green;
+    default:
+      return TColor.primary;
+  }
+}
+
+String _getOrderStatusText(OrderStatus status) {
+  switch (status) {
+    case OrderStatus.pending:
+      return 'PENDENTE';
+    case OrderStatus.preparing:
+      return 'PREPARANDO';
+    case OrderStatus.completed:
+      return 'CONCLUÍDO';
+    default:
+      return 'DESCONHECIDO';
+  }
+}
+
+IconData _getNextOrderActionIcon(OrderStatus status) {
+  switch (status) {
+    case OrderStatus.pending:
+      return Icons.restaurant;
+    case OrderStatus.preparing:
+      return Icons.check_circle;
+    default:
+      return Icons.arrow_forward;
+  }
+}
+
+String _getNextOrderActionText(OrderStatus status) {
+  switch (status) {
+    case OrderStatus.pending:
+      return 'Preparar';
+    case OrderStatus.preparing:
+      return 'Concluir';
+    default:
+      return 'Próximo';
+  }
+}
+
+void _updateOrderStatus(OrderModel order) async {
+  OrderStatus nextStatus;
+  switch (order.status) {
+    case OrderStatus.pending:
+      nextStatus = OrderStatus.preparing;
+      break;
+    case OrderStatus.preparing:
+      nextStatus = OrderStatus.completed;
+      break;
+    default:
+      return;
+  }
+  
+  try {
+    final success = await OrderService.updateOrderStatus(order.id, nextStatus);
+    if (success) {
+      _showSuccessSnackBar('Pedido ${order.id} atualizado para ${_getOrderStatusText(nextStatus)}');
+      // Recarregar a modal
+      Navigator.pop(context);
+      Future.delayed(Duration(milliseconds: 300), () {
+        // Buscar a mesa atualizada e reabrir modal
+        final tableIndex = filteredTables.indexWhere((t) => 
+          t.number == order.tableNumber && t.floor == order.floor);
+        if (tableIndex != -1) {
+          _showTableOrdersModal(filteredTables[tableIndex]);
+        }
+      });
+    } else {
+      _showErrorSnackBar('Erro ao atualizar pedido');
+    }
+  } catch (e) {
+    _showErrorSnackBar('Erro: $e');
+  }
+}
+
+void _toggleItemServed(OrderItem item) async {
+  try {
+    final success = await OrderService.markItemAsServed("", item.id);
+    if (success) {
+      _showSuccessSnackBar('Item ${item.name} marcado como ${item.isServed ? "não servido" : "servido"}');
+      // Recarregar dados
+      setState(() {});
+    } else {
+      _showErrorSnackBar('Erro ao atualizar item');
+    }
+  } catch (e) {
+    _showErrorSnackBar('Erro: $e');
+  }
+}
 
   void _nextAction(TableModel table) {
     Navigator.pop(context);

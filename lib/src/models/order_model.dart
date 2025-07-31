@@ -1,5 +1,7 @@
 // lib/src/models/order_model.dart
 
+import 'package:flutter/material.dart';
+
 class OrderModel {
   final String id;
   final int tableNumber;
@@ -288,6 +290,88 @@ class OrderModel {
   }
 }
 
+
+extension OrderModelExtensions on OrderModel {
+  
+  /// Formatação do tempo do pedido
+  String get formattedTime {
+    final now = DateTime.now();
+    final difference = now.difference(orderTime);
+    
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}min atrás';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h atrás';
+    } else {
+      return '${orderTime.day}/${orderTime.month} ${orderTime.hour}:${orderTime.minute.toString().padLeft(2, '0')}';
+    }
+  }
+  
+  /// Formatação do total
+  String get formattedTotal {
+    return 'MT ${totalValue.toStringAsFixed(2)}';
+  }
+  
+  /// Tempo decorrido desde o pedido
+  String get timeElapsed {
+    final now = DateTime.now();
+    final difference = now.difference(orderTime);
+    
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}min';
+    } else {
+      final hours = difference.inHours;
+      final minutes = difference.inMinutes % 60;
+      return '${hours}h ${minutes}min';
+    }
+  }
+  
+  /// Status do pedido em português
+  String get statusText {
+    switch (status) {
+      case OrderStatus.pending:
+        return 'Pendente';
+      case OrderStatus.preparing:
+        return 'Preparando';
+      case OrderStatus.completed:
+        return 'Concluído';
+      default:
+        return 'Desconhecido';
+    }
+  }
+  
+  /// Cor do status
+  Color get statusColor {
+    switch (status) {
+      case OrderStatus.pending:
+        return Colors.orange;
+      case OrderStatus.preparing:
+        return Colors.blue;
+      case OrderStatus.completed:
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+  
+  /// Verifica se todos os itens foram servidos
+  bool get allItemsServed {
+    return items.every((item) => item.isServed);
+  }
+  
+  /// Quantidade de itens servidos
+  int get servedItemsCount {
+    return items.where((item) => item.isServed).length;
+  }
+  
+  /// Progresso de servir itens (0.0 a 1.0)
+  double get servingProgress {
+    if (items.isEmpty) return 0.0;
+    return servedItemsCount / items.length;
+  }
+}
+
+
 class OrderItem {
   final String id;
   final String name;
@@ -433,3 +517,4 @@ enum OrderStatus {
   delivered,  // Entregue ao cliente
   cancelled   // Cancelado
 }
+
