@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/src/common/service_call.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -781,78 +782,178 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   }
 
   Future<void> _submitOrder() async {
-    if (cart.isEmpty || selectedTable == null) return;
+  if (cart.isEmpty || selectedTable == null) return;
 
-    // Mostrar loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Enviando pedido e imprimindo recibo...',
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
+  // Mostrar loading
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text(
+            'Enviando pedido para a API...',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
       ),
+    ),
+  );
+
+  try {
+    // Obter dados do restaurante
+    final prefs = await SharedPreferences.getInstance();
+    String? restaurantId = prefs.getString('user_restaurant_id') ?? 
+                          prefs.getString('restaurant_id');
+    
+    if (restaurantId == null || restaurantId.isEmpty) {
+      throw Exception('Restaurant ID não encontrado');
+    }
+
+    // Preparar itens do carrinho para a API
+    List<Map<String, dynamic>> apiItems = [];
+    for (var cartItem in cart) {
+      // Validar se o item tem ID válido
+      int? productId = int.tryParse(cartItem.menuItem.id ?? '');
+      if (productId == null) {
+        throw Exception('Item "${cartItem.menuItem.name}" não tem ID válido');
+      }
+      
+      apiItems.add({
+        "product_id": productId,
+        "quantity": cartItem.quantity
+      });
+    }
+    
+    // Preparar dados do pedido para a API
+    Map<String, dynamic> purchaseData = {
+      "restaurant_id": int.parse(restaurantId),
+      "table_id": selectedTable!,
+      "items": apiItems,
+    };
+    
+    // Adicionar notas se houver
+    if (notesController.text.isNotEmpty) {
+      purchaseData["notes"] = notesController.text.trim();
+    }
+    
+    print("=== ENVIANDO PEDIDO DO GARÇOM ===");
+    print("Restaurant ID: $restaurantId");
+    print("Mesa: $selectedTable");
+    print("Itens: ${apiItems.length}");
+    print("==================================");
+    
+    // Chamar a API usando ServiceCall.purchase
+    ServiceCall.purchase(
+      purchaseData,
+      withSuccess: (response) {
+        Navigator.pop(context); // Fechar loading
+        _onOrderSuccess(response);
+      },
+      failure: (error) {
+        Navigator.pop(context); // Fechar loading
+        _onOrderError(error);
+      },
     );
+    
+  } catch (e) {
+    Navigator.pop(context); // Fechar loading
+    _showErrorSnackBar('Erro ao preparar pedido: $e');
+  }
+}
 
-    try {
-      final success = await WaiterMenuService.submitOrder(
-        tableNumber: selectedTable!,
-        floor: selectedFloor,
-        items: cart,
-        guestCount: guestCount,
-        notes: notesController.text.isNotEmpty ? notesController.text : null,
-        context: context, // Passar contexto para impressão
-      );
+void _onOrderSuccess(Map<String, dynamic> response) {
+  print("✅ Pedido enviado com sucesso!");
+  print("Response: $response");
+  
+  // Limpar carrinho
+  setState(() {
+    cart.clear();
+    notesController.clear();
+  });
 
-      Navigator.pop(context); // Fechar loading
+  Navigator.pop(context); // Fechar modal do carrinho
 
-      if (success) {
-        // Limpar carrinho
-        setState(() {
-          cart.clear();
-          notesController.clear();
-        });
+  // Mostrar mensagem de sucesso
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('✅ Pedido enviado com sucesso para a mesa $selectedTable!'),
+      backgroundColor: Colors.green,
+      duration: Duration(seconds: 3),
+      action: SnackBarAction(
+        label: 'Ver Pedidos',
+        textColor: Colors.white,
+        onPressed: () {
+          // Navegar para lista de pedidos ou fazer algo
+        },
+      ),
+    ),
+  );
+}
 
-        Navigator.pop(context); // Fechar modal do carrinho
-
-        // Adicionar botão para reimprimir se necessário
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Pedido finalizado com sucesso!'),
-            backgroundColor: Colors.green,
-            action: SnackBarAction(
-              label: 'Reimprimir',
-              textColor: Colors.white,
-              onPressed: () async {
-                // Função para reimprimir o recibo
-                await WaiterMenuService.reprintReceipt(
-                  context: context,
-                  tableNumber: selectedTable!,
-                  floor: selectedFloor,
-                  items: cart,
-                  guestCount: guestCount,
-                  notes: notesController.text.isNotEmpty ? notesController.text : null,
-                );
-              },
+void _onOrderError(String error) {
+  print("❌ Erro ao enviar pedido: $error");
+  
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Row(
+        children: [
+          Icon(Icons.error, color: Colors.red),
+          SizedBox(width: 8),
+          Text('Erro no Pedido'),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Não foi possível enviar o pedido para a mesa $selectedTable:'),
+          SizedBox(height: 8),
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.red.shade200),
+            ),
+            child: Text(
+              error,
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 12,
+                color: Colors.red.shade800,
+              ),
             ),
           ),
-        );
-      } else {
-        throw Exception('Falha no envio do pedido');
-      }
-    } catch (e) {
-      Navigator.pop(context); // Fechar loading
-      _showErrorSnackBar('Erro ao enviar pedido: $e');
-    }
-  }
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('OK'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            // Tentar novamente
+            _submitOrder();
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: TColor.primary,
+            foregroundColor: Colors.white,
+          ),
+          child: Text('Tentar Novamente'),
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
