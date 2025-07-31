@@ -813,14 +813,13 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
     );
   }
 
-  void _viewOrder(TableModel table) {
-    Navigator.pop(context);
-    // TODO: Navegar para tela de detalhes do pedido
-    // _showSuccessSnackBar('Abrindo pedido da mesa ${table.number}...');
-    _showTableOrdersModal(table);
-  }
 
-  void _showTableOrdersModal(TableModel table) {
+  void _viewOrder(TableModel table) {
+  Navigator.pop(context);
+  _showTableOrdersModal(table);
+}
+
+void _showTableOrdersModal(TableModel table) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -828,6 +827,7 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
     builder: (context) => _buildTableOrdersSheet(table),
   );
 }
+
 
 Widget _buildTableOrdersSheet(TableModel table) {
   return Container(
@@ -897,7 +897,7 @@ Widget _buildTableOrdersSheet(TableModel table) {
           ),
         ),
         
-        // Lista de pedidos
+        // Lista de pedidos com debug info
         Expanded(
           child: FutureBuilder<List<OrderModel>>(
             future: OrderService.getOrders(),
@@ -942,19 +942,49 @@ Widget _buildTableOrdersSheet(TableModel table) {
               
               final allOrders = snapshot.data ?? [];
               
-              // Filtrar pedidos da mesa específica
+              // DEBUG: Mostrar informações sobre a mesa e pedidos
+              print('🔍 DEBUG - Mesa selecionada: ${table.number} (${table.floor})');
+              print('📋 Total de pedidos carregados: ${allOrders.length}');
+              for (var order in allOrders) {
+                print('   - Pedido ${order.id}: Mesa ${order.tableNumber} (${order.floor}) - ${order.tableName}');
+              }
+              
+              // FILTRO MELHORADO: Mais flexível para encontrar pedidos
               final tableOrders = allOrders.where((order) {
+                // Para Take Away
                 if (table.floor == "Take Away") {
                   return order.floor == "Take Away" || order.tableNumber == 999;
                 }
-                return order.tableNumber == table.number && order.floor == table.floor;
+                
+                // Para mesas normais - verificar múltiplas condições
+                bool matchByNumber = order.tableNumber == table.number;
+                bool matchByFloor = order.floor == table.floor;
+                
+                // Também verificar se o nome da mesa contém o número da mesa
+                bool matchByName = false;
+                if (order.tableName?.isNotEmpty == true) {
+                  String tableName = order.tableName!.toLowerCase();
+                  String searchNumber = table.number.toString();
+                  matchByName = tableName.contains(searchNumber) || 
+                               tableName.contains('mesa ${searchNumber}') ||
+                               tableName.contains('table ${searchNumber}');
+                }
+                
+                bool isMatch = matchByNumber && matchByFloor;
+                
+                print('   🔍 Pedido ${order.id}: Mesa ${order.tableNumber}(${order.floor}) vs ${table.number}(${table.floor}) -> number=$matchByNumber, floor=$matchByFloor, name=$matchByName, final=$isMatch');
+                
+                return isMatch;
               }).toList();
               
               // Ordenar por tempo (mais recente primeiro)
               tableOrders.sort((a, b) => b.orderTime.compareTo(a.orderTime));
               
+              print('✅ Pedidos filtrados para Mesa ${table.number}: ${tableOrders.length}');
+              
               if (tableOrders.isEmpty) {
-                return Center(
+                return Padding(
+                  padding: EdgeInsets.all(20),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -981,6 +1011,49 @@ Widget _buildTableOrdersSheet(TableModel table) {
                         ),
                         textAlign: TextAlign.center,
                       ),
+                      SizedBox(height: 16),
+                      // DEBUG INFO
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Debug Info:',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Mesa buscada: ${table.number} (${table.floor})',
+                              style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
+                            ),
+                            Text(
+                              'Total pedidos: ${allOrders.length}',
+                              style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
+                            ),
+                            if (allOrders.isNotEmpty) ...[
+                              SizedBox(height: 4),
+                              Text(
+                                'Pedidos disponíveis:',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                              ),
+                              ...allOrders.take(3).map((order) => Text(
+                                '• Mesa ${order.tableNumber} (${order.floor}) - "${order.tableName}"',
+                                style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
+                              )),
+                              if (allOrders.length > 3)
+                                Text(
+                                  '• ... e mais ${allOrders.length - 3} pedidos',
+                                  style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
+                                ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -1001,6 +1074,8 @@ Widget _buildTableOrdersSheet(TableModel table) {
     ),
   );
 }
+
+
 
 Widget _buildOrderCard(OrderModel order, bool isLatest) {
   return Container(
@@ -1350,6 +1425,7 @@ void _toggleItemServed(OrderItem item) async {
   }
 }
 
+  
   void _nextAction(TableModel table) {
     Navigator.pop(context);
     TableStatus nextStatus;
