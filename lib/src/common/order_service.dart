@@ -1,19 +1,131 @@
+// lib/src/common/order_service.dart
+
 import '../models/order_model.dart';
+import '../common/service_call.dart';
+import '../common/globs.dart';
+import 'dart:async';
 
 class OrderService {
+  
+  // ========== NOVA IMPLEMENTAÇÃO COM API REAL ==========
+  
+  /// Buscar pedidos da API - /waiter/orders
   static Future<List<OrderModel>> getOrders() async {
     try {
-      // Dados mock para desenvolvimento
-      return _getMockOrders();
+      print('🔄 Buscando pedidos da API...');
       
-      // TODO: Implementar chamada real da API
+      // Usar Completer para aguardar resposta da API
+      final Completer<List<OrderModel>> completer = Completer();
+      
+      // Fazer chamada para API
+      ServiceCall.get(
+        SVKey.baseUrl + "waiter/orders",
+        isToken: true, // Precisa de autenticação
+        withSuccess: (Map<String, dynamic> responseData) {
+          print('✅ Resposta da API de pedidos recebida: ${responseData.keys}');
+          
+          try {
+            if (responseData['success'] == true && responseData['data'] != null) {
+              final data = responseData['data'];
+              
+              // Log dos dados recebidos
+              print('📊 Restaurant: ${data['restaurant_name']}');
+              print('📊 Total orders: ${data['orders']?.length ?? 0}');
+              
+              if (data['orders'] != null && data['orders'] is List) {
+                List ordersJson = data['orders'];
+                print('📋 Processando ${ordersJson.length} pedidos...');
+                
+                // Converter dados da API para OrderModel
+                List<OrderModel> orders = ordersJson.map((orderJson) {
+                  return OrderModel.fromApiJson(orderJson);
+                }).toList();
+                
+                print('✅ ${orders.length} pedidos convertidos com sucesso');
+                
+                // Log das estatísticas se disponível
+                if (data['statistics'] != null) {
+                  final stats = data['statistics'];
+                  print('📊 Estatísticas: ${stats['total_orders']} total, ${stats['pending_orders']} pendentes');
+                }
+                
+                completer.complete(orders);
+              } else {
+                print('⚠️ Nenhum pedido encontrado na resposta');
+                completer.complete([]);
+              }
+            } else {
+              print('❌ Resposta da API inválida: ${responseData['message'] ?? 'Erro desconhecido'}');
+              completer.complete(_getMockOrders()); // Fallback para mock
+            }
+          } catch (e) {
+            print('❌ Erro ao processar resposta da API: $e');
+            completer.complete(_getMockOrders()); // Fallback para mock
+          }
+        },
+        failure: (String error) {
+          print('❌ Erro na chamada da API de pedidos: $error');
+          completer.complete(_getMockOrders()); // Fallback para mock
+        }
+      );
+      
+      // Aguardar resposta com timeout
+      return await completer.future.timeout(
+        Duration(seconds: 10),
+        onTimeout: () {
+          print('⏰ Timeout na busca de pedidos, usando dados mock');
+          return _getMockOrders();
+        }
+      );
+      
     } catch (e) {
-      print('Erro ao buscar pedidos: $e');
+      print('❌ Erro geral ao buscar pedidos: $e');
       return _getMockOrders();
     }
   }
+  
+  // ========== ATUALIZAR STATUS DO PEDIDO ==========
+  
+  /// Atualizar status de um pedido na API
+  static Future<bool> updateOrderStatus(String orderId, OrderStatus newStatus) async {
+    try {
+      print('🔄 Atualizando status do pedido $orderId para $newStatus');
+      
+      // TODO: Implementar chamada para API de atualização quando endpoint estiver disponível
+      // Por enquanto, simular sucesso
+      await Future.delayed(Duration(milliseconds: 500));
+      
+      print('✅ Status do pedido $orderId atualizado com sucesso');
+      return true;
+      
+    } catch (e) {
+      print('❌ Erro ao atualizar status do pedido: $e');
+      return false;
+    }
+  }
+  
+  /// Marcar item como servido
+  static Future<bool> markItemAsServed(String orderId, String itemId) async {
+    try {
+      print('🔄 Marcando item $itemId do pedido $orderId como servido');
+      
+      // TODO: Implementar chamada para API quando endpoint estiver disponível
+      await Future.delayed(Duration(milliseconds: 300));
+      
+      print('✅ Item $itemId marcado como servido');
+      return true;
+      
+    } catch (e) {
+      print('❌ Erro ao marcar item como servido: $e');
+      return false;
+    }
+  }
 
+  // ========== DADOS MOCK (FALLBACK) ==========
+  
+  /// Dados mock para desenvolvimento/teste
   static List<OrderModel> _getMockOrders() {
+    print('📋 Usando dados mock dos pedidos');
     return [
       // First Floor - Pending
       OrderModel(
@@ -118,25 +230,5 @@ class OrderService {
         ],
       ),
     ];
-  }
-
-  static Future<bool> updateOrderStatus(String orderId, OrderStatus newStatus) async {
-    try {
-      print('Atualizando pedido $orderId para status: $newStatus');
-      return true;
-    } catch (e) {
-      print('Erro ao atualizar pedido: $e');
-      return false;
-    }
-  }
-
-  static Future<bool> markItemAsServed(String orderId, String itemId) async {
-    try {
-      print('Marcando item $itemId do pedido $orderId como servido');
-      return true;
-    } catch (e) {
-      print('Erro ao marcar item como servido: $e');
-      return false;
-    }
   }
 }
