@@ -401,7 +401,7 @@ class WaiterMenuService {
       // TODO: Implementar envio real do pedido para a API
       // Exemplo de estrutura do pedido:
       Map<String, dynamic> orderData = {
-        'table_number': tableNumber,
+        'table_id': tableNumber,
         'floor': floor,
         'guest_count': guestCount,
         'notes': notes,

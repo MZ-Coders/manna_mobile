@@ -831,7 +831,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     // Preparar dados do pedido para a API
     Map<String, dynamic> purchaseData = {
       "restaurant_id": int.parse(restaurantId),
-      "table_number": selectedTable!,
+      "table_id": selectedTable!,
       "items": apiItems,
     };
     

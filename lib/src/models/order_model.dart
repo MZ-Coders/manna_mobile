@@ -154,7 +154,7 @@ class OrderModel {
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
       id: json['id'].toString(),
-      tableNumber: json['table_number'] ?? 0,
+      tableNumber: json['table_id'] ?? 0,
       floor: json['floor'] ?? 'Ground',
       status: _parseOrderStatus(json['status']),
       orderTime: DateTime.parse(json['order_time']),
@@ -269,7 +269,7 @@ class OrderModel {
     return {
       'id': id,
       'uuid': uuid,
-      'table_number': tableNumber,
+      'table_id': tableNumber,
       'table_name': tableName,
       'floor': floor,
       'status': status.toString().split('.').last,

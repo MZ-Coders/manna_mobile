@@ -436,7 +436,7 @@ void _processPurchase() async {
     // Adicionar dados específicos baseado na presença da mesa
     if (tableId.isNotEmpty) {
       // Com mesa
-      purchaseData["table_number"] = int.parse(tableId);
+      purchaseData["table_id"] = int.parse(tableId);
       if (_notesController.text.trim().isNotEmpty) {
         purchaseData["notes"] = _notesController.text.trim();
       }
@@ -444,7 +444,7 @@ void _processPurchase() async {
       // Sem mesa
       purchaseData["customer_name"] = _customerNameController.text.trim();
       purchaseData["customer_phone"] = _customerPhoneController.text.trim();
-      purchaseData["table_number"] = null;
+      purchaseData["table_id"] = null;
       if (_notesController.text.trim().isNotEmpty) {
         purchaseData["notes"] = _notesController.text.trim();
       }
