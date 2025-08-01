@@ -1,5 +1,7 @@
 // lib/src/models/order_model.dart
 
+import 'package:flutter/material.dart';
+
 class OrderModel {
   final String id;
   final int tableNumber;
@@ -43,113 +45,155 @@ class OrderModel {
     this.itemsCount,
     this.updatedAt,
   });
-
-  // Converter de JSON da API - baseado em OrdeResponse.json
-  factory OrderModel.fromApiJson(Map<String, dynamic> json) {
-    // Dados básicos do pedido
-    String orderId = json['id']?.toString() ?? '0';
-    String orderUuid = json['uuid'] ?? '';
-    String apiStatus = (json['status'] ?? 'PENDING').toString().toUpperCase();
-    double totalAmount = double.tryParse(json['total_amount']?.toString() ?? '0') ?? 0.0;
+  
+factory OrderModel.fromApiJson(Map<String, dynamic> json) {
+  // Dados básicos do pedido
+  String orderId = json['id']?.toString() ?? '0';
+  String orderUuid = json['uuid'] ?? '';
+  String apiStatus = (json['status'] ?? 'PENDING').toString().toUpperCase();
+  double totalAmount = double.tryParse(json['total_amount']?.toString() ?? '0') ?? 0.0;
+  
+  // Dados da mesa (pode ser null para Take Away)
+  int tableNumber = 0;
+  String tableName = '';
+  String tableUuid = '';
+  String floor = 'Take Away'; // Default para Take Away
+  
+  if (json['table'] != null && json['table'] is Map) {
+    final tableData = json['table'] as Map<String, dynamic>;
+    int tableId = tableData['id'] ?? 0;
+    tableName = tableData['name'] ?? 'Mesa $tableId';
+    tableUuid = tableData['uuid'] ?? '';
     
-    // Dados da mesa (pode ser null para Take Away)
-    int tableNumber = 0;
-    String tableName = '';
-    String tableUuid = '';
-    String floor = 'Take Away'; // Default para Take Away
+    // CORREÇÃO: Extrair número da mesa do nome ou mapear por nome conhecido
+    tableNumber = _extractTableNumberFromName(tableName, tableId);
     
-    if (json['table'] != null && json['table'] is Map) {
-      final tableData = json['table'] as Map<String, dynamic>;
-      tableNumber = tableData['id'] ?? 0;
-      tableName = tableData['name'] ?? 'Mesa $tableNumber';
-      tableUuid = tableData['uuid'] ?? '';
-      
-      // Extrair número da mesa se necessário
-      if (tableNumber == 0) {
-        try {
-          RegExp regExp = RegExp(r'\d+');
-          String? numberStr = regExp.firstMatch(tableName)?.group(0);
-          if (numberStr != null) {
-            tableNumber = int.parse(numberStr);
-          }
-        } catch (e) {
-          tableNumber = 999; // Fallback para Take Away
-        }
-      }
-      
-      // Determinar floor baseado no número da mesa ou outros critérios
-      floor = _determineFloor(tableNumber);
-    } else {
-      // Take Away order
-      tableNumber = 999;
-      tableName = 'Take Away';
-      floor = 'Take Away';
-    }
+    // Determinar floor baseado no número da mesa
+    floor = _determineFloorByNumber(tableNumber);
     
-    // Dados do usuário/garçom
-    String? waiterName;
-    if (json['user'] != null && json['user'] is Map) {
-      final userData = json['user'] as Map<String, dynamic>;
-      waiterName = userData['name'];
-    }
-    
-    // Converter status da API
-    OrderStatus status = _convertApiStatusToOrderStatus(apiStatus);
-    
-    // Dados de tempo
-    DateTime orderTime = DateTime.now();
-    DateTime? updatedTime;
-    
-    try {
-      if (json['created_at'] != null) {
-        orderTime = DateTime.parse(json['created_at']);
-      }
-      if (json['updated_at'] != null) {
-        updatedTime = DateTime.parse(json['updated_at']);
-      }
-    } catch (e) {
-      print('Erro ao parsear datas: $e');
-    }
-    
-    // Converter itens do pedido
-    List<OrderItem> orderItems = [];
-    if (json['order_items'] != null && json['order_items'] is List) {
-      List itemsJson = json['order_items'];
-      orderItems = itemsJson.map((itemJson) {
-        return OrderItem.fromApiJson(itemJson);
-      }).toList();
-    }
-    
-    // Calcular número de convidados (estimativa baseada na quantidade de itens)
-    int guestCount = 1;
-    if (orderItems.isNotEmpty) {
-      int totalQuantity = orderItems.fold(0, (sum, item) => sum + item.quantity);
-      guestCount = (totalQuantity / 2).ceil().clamp(1, 8); // Estimativa
-    }
-    
-    print('📋 Pedido convertido: #$orderId - $tableName ($apiStatus -> $status) - MT $totalAmount');
-    
-    return OrderModel(
-      id: orderId,
-      uuid: orderUuid,
-      tableNumber: tableNumber,
-      tableName: tableName,
-      tableUuid: tableUuid,
-      floor: floor,
-      status: status,
-      orderTime: orderTime,
-      updatedAt: updatedTime,
-      items: orderItems,
-      totalValue: totalAmount,
-      guestCount: guestCount,
-      waiterId: waiterName,
-      paymentMethod: json['payment_method'],
-      customerName: json['customer_name'],
-      customerPhone: json['customer_phone'],
-      itemsCount: json['items_count'],
-    );
+    print('🏷️ Mesa: ID=$tableId, Nome="$tableName", Número Extraído=$tableNumber, Floor=$floor');
+  } else {
+    // Take Away order
+    tableNumber = 999;
+    tableName = 'Take Away';
+    floor = 'Take Away';
   }
+  
+  // Dados do usuário/garçom
+  String? waiterName;
+  if (json['user'] != null && json['user'] is Map) {
+    final userData = json['user'] as Map<String, dynamic>;
+    waiterName = userData['name'];
+  }
+  
+  // Converter status da API
+  OrderStatus status = _convertApiStatusToOrderStatus(apiStatus);
+  
+  // Dados de tempo
+  DateTime orderTime = DateTime.now();
+  DateTime? updatedTime;
+  
+  try {
+    if (json['created_at'] != null) {
+      orderTime = DateTime.parse(json['created_at']);
+    }
+    if (json['updated_at'] != null) {
+      updatedTime = DateTime.parse(json['updated_at']);
+    }
+  } catch (e) {
+    print('Erro ao parsear datas: $e');
+  }
+  
+  // Converter itens do pedido
+  List<OrderItem> orderItems = [];
+  if (json['order_items'] != null && json['order_items'] is List) {
+    List itemsJson = json['order_items'];
+    orderItems = itemsJson.map((itemJson) {
+      return OrderItem.fromApiJson(itemJson);
+    }).toList();
+  }
+  
+  // Calcular número de convidados (estimativa baseada na quantidade de itens)
+  int guestCount = 1;
+  if (orderItems.isNotEmpty) {
+    int totalQuantity = orderItems.fold(0, (sum, item) => sum + item.quantity);
+    guestCount = (totalQuantity / 2).ceil().clamp(1, 8); // Estimativa
+  }
+  
+  print('📋 Pedido convertido: #$orderId - Mesa $tableNumber "$tableName" ($apiStatus -> $status) - MT $totalAmount');
+  
+  return OrderModel(
+    id: orderId,
+    uuid: orderUuid,
+    tableNumber: tableNumber,
+    tableName: tableName,
+    tableUuid: tableUuid,
+    floor: floor,
+    status: status,
+    orderTime: orderTime,
+    updatedAt: updatedTime,
+    items: orderItems,
+    totalValue: totalAmount,
+    guestCount: guestCount,
+    waiterId: waiterName,
+    paymentMethod: json['payment_method'],
+    customerName: json['customer_name'],
+    customerPhone: json['customer_phone'],
+    itemsCount: json['items_count'],
+  );
+}
 
+// NOVO MÉTODO: Extrair número da mesa do nome
+static int _extractTableNumberFromName(String tableName, int fallbackId) {
+  // Tentar extrair número do nome
+  RegExp numberRegex = RegExp(r'(\d+)');
+  Match? match = numberRegex.firstMatch(tableName);
+  
+  if (match != null) {
+    int extractedNumber = int.parse(match.group(1)!);
+    print('🔢 Número extraído do nome "$tableName": $extractedNumber');
+    return extractedNumber;
+  }
+  
+  // Mapeamento para nomes conhecidos sem números explícitos
+  Map<String, int> nameMapping = {
+    'Mesa da Entrada': 1,
+    'Mesa Principal': 2,
+    'Mesa do Canto': 3,
+    'Mesa da Janela': 4,
+    'Mesa Central': 5,
+    'Mesa VIP': 6,
+    'Mesa Família': 7,
+    'Mesa Privada': 8,
+    'Mesa Reservada': 9,
+    'Mesa Especial': 10,
+  };
+  
+  // Tentar mapear por nome
+  for (String knownName in nameMapping.keys) {
+    if (tableName.toLowerCase().contains(knownName.toLowerCase())) {
+      int mappedNumber = nameMapping[knownName]!;
+      print('🗺️ Mesa mapeada "$tableName" -> Mesa $mappedNumber');
+      return mappedNumber;
+    }
+  }
+  
+  // Se não conseguir extrair, usar uma lógica baseada no ID da API
+  // Para evitar números muito altos, usar módulo
+  int calculatedNumber = (fallbackId % 50) + 1; // Vai dar números de 1 a 50
+  print('⚙️ Número calculado para "$tableName" (ID $fallbackId): $calculatedNumber');
+  
+  return calculatedNumber;
+}
+
+// MÉTODO CORRIGIDO: Determinar floor baseado no número da mesa
+static String _determineFloorByNumber(int tableNumber) {
+  if (tableNumber >= 999) return 'Take Away';
+  if (tableNumber >= 11 && tableNumber <= 20) return 'Second';
+  if (tableNumber >= 21) return 'Third';
+  return 'First'; // Mesas 1-10 no primeiro andar
+}
+  // Converter de JSON da API - baseado em OrdeResponse.json
   // Método original para compatibilidade
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
@@ -287,6 +331,88 @@ class OrderModel {
     };
   }
 }
+
+
+extension OrderModelExtensions on OrderModel {
+  
+  /// Formatação do tempo do pedido
+  String get formattedTime {
+    final now = DateTime.now();
+    final difference = now.difference(orderTime);
+    
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}min atrás';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h atrás';
+    } else {
+      return '${orderTime.day}/${orderTime.month} ${orderTime.hour}:${orderTime.minute.toString().padLeft(2, '0')}';
+    }
+  }
+  
+  /// Formatação do total
+  String get formattedTotal {
+    return 'MT ${totalValue.toStringAsFixed(2)}';
+  }
+  
+  /// Tempo decorrido desde o pedido
+  String get timeElapsed {
+    final now = DateTime.now();
+    final difference = now.difference(orderTime);
+    
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}min';
+    } else {
+      final hours = difference.inHours;
+      final minutes = difference.inMinutes % 60;
+      return '${hours}h ${minutes}min';
+    }
+  }
+  
+  /// Status do pedido em português
+  String get statusText {
+    switch (status) {
+      case OrderStatus.pending:
+        return 'Pendente';
+      case OrderStatus.preparing:
+        return 'Preparando';
+      case OrderStatus.completed:
+        return 'Concluído';
+      default:
+        return 'Desconhecido';
+    }
+  }
+  
+  /// Cor do status
+  Color get statusColor {
+    switch (status) {
+      case OrderStatus.pending:
+        return Colors.orange;
+      case OrderStatus.preparing:
+        return Colors.blue;
+      case OrderStatus.completed:
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+  
+  /// Verifica se todos os itens foram servidos
+  bool get allItemsServed {
+    return items.every((item) => item.isServed);
+  }
+  
+  /// Quantidade de itens servidos
+  int get servedItemsCount {
+    return items.where((item) => item.isServed).length;
+  }
+  
+  /// Progresso de servir itens (0.0 a 1.0)
+  double get servingProgress {
+    if (items.isEmpty) return 0.0;
+    return servedItemsCount / items.length;
+  }
+}
+
 
 class OrderItem {
   final String id;
@@ -433,3 +559,4 @@ enum OrderStatus {
   delivered,  // Entregue ao cliente
   cancelled   // Cancelado
 }
+
