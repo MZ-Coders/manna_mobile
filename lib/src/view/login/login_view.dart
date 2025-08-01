@@ -114,11 +114,34 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Widget _getHomePageByRole(String? userRole) {
-  switch (userRole?.toLowerCase()) {
-    case 'waiter':
-    case 'garcon':
-    case 'garçom':
+  print("User Role: $userRole");
+  switch (userRole?.toUpperCase()) { // Mudar para toUpperCase()
+    case 'WAITER': 
       return const WaiterMainView();
+    case 'GARCON': 
+      return const WaiterMainView();
+    case 'GARÇOM': 
+      return const WaiterMainView();
+    case 'KITCHEN': 
+      return const WaiterMainView();
+    case 'ADMIN':
+    case 'MANAGER':
+      return const MainTabView(); 
+    case 'CUSTOMER':
+    case 'CLIENT':
+    default:
+      return const MainTabView();
+  }
+}
+
+  Widget _getHomePageByRoleOld(String? userRole) {
+    print("User Role: $userRole");
+  switch (userRole?.toLowerCase()) {
+    case 'waiter': return const WaiterMainView();
+    case 'garcon': return const WaiterMainView();
+    case 'garçom': return const WaiterMainView();
+    case 'WAITER': return const WaiterMainView();
+    case 'KITCHEN': return const WaiterMainView();
     case 'admin':
     case 'manager':
       return const MainTabView(); // Por enquanto, depois criaremos interface admin
