@@ -1201,17 +1201,17 @@ Widget _buildOrderCard(OrderModel order, bool isLatest) {
                     minimumSize: Size(0, 32),
                   ),
                 ),
-              if (order.status == OrderStatus.delivered)
-                ElevatedButton.icon(
-                  onPressed: () => _setOrderCompleted(order),
-                  icon: Icon(Icons.check, size: 16, color: TColor.white),
-                  label: Text('Finalizar', style: TextStyle(color: TColor.white, fontSize: 12)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    minimumSize: Size(0, 32),
-                  ),
-                ),
+              // if (order.status == OrderStatus.delivered)
+              //   ElevatedButton.icon(
+              //     onPressed: () => _setOrderCompleted(order),
+              //     icon: Icon(Icons.check, size: 16, color: TColor.white),
+              //     label: Text('Finalizar', style: TextStyle(color: TColor.white, fontSize: 12)),
+              //     style: ElevatedButton.styleFrom(
+              //       backgroundColor: Colors.purple,
+              //       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              //       minimumSize: Size(0, 32),
+              //     ),
+              //   ),
             ],
           ),
         ],
@@ -1554,7 +1554,7 @@ String _getOrderStatusText(OrderStatus status) {
     case OrderStatus.completed:
       return 'CONCLUÍDO';
     default:
-      return 'DESCONHECIDO';
+      return '';
   }
 }
 
