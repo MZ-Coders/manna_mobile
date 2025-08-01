@@ -17,6 +17,7 @@ class _WaiterMainViewState extends State<WaiterMainView> {
   int selectedTab = 0;
   String waiterName = '';
   String restaurantName = '';
+  String userRole = '';
 
   @override
   void initState() {
@@ -29,8 +30,20 @@ class _WaiterMainViewState extends State<WaiterMainView> {
     setState(() {
       waiterName = prefs.getString('user_name') ?? '';
       restaurantName = prefs.getString('restaurant_name') ?? '';
+      userRole = prefs.getString('user_role') ?? '';
+    });
+    _configureTabs();
+  }
+
+  void _configureTabs() {
+  if (userRole.toUpperCase() == 'KITCHEN') {
+    // Kitchen: apenas pedidos
+    setState(() {
+      selectedTab = 0; // Reset para primeira tab disponível
     });
   }
+  // WAITER mantém as 3 tabs como está
+}
 
  void navigateToMenuForTable(int tableNumber, String floor) {
   setState(() {
@@ -91,19 +104,37 @@ class _WaiterMainViewState extends State<WaiterMainView> {
   }
 
  Widget _buildTabContent() {
+  if (userRole.toUpperCase() == 'KITCHEN') {
+    return WaiterOrdersView(onNewOrder: navigateToMenuForTable);
+  }
+
   switch (selectedTab) {
     case 0:
       return WaiterTablesView(onTableAction: navigateToMenuForTable);
     case 1:
-      return WaiterOrdersView(onNewOrder: navigateToMenuForTable);
-    case 2:
-      return WaiterMenuView();;
+      return WaiterMenuView();
     default:
       return WaiterTablesView(onTableAction: navigateToMenuForTable);
-    }
+  }
+
+  // switch (selectedTab) {
+  //   case 0:
+  //     return WaiterTablesView(onTableAction: navigateToMenuForTable);
+  //   case 1:
+  //     return WaiterOrdersView(onNewOrder: navigateToMenuForTable);
+  //   case 2:
+  //     return WaiterMenuView();;
+  //   default:
+  //     return WaiterTablesView(onTableAction: navigateToMenuForTable);
+  //   }
   }
 
   Widget _buildBottomNavigation() {
+    if (userRole.toUpperCase() == 'KITCHEN') {
+      // Kitchen: sem bottom navigation, apenas pedidos
+      return SizedBox.shrink();
+    }
+
     return BottomNavigationBar(
       currentIndex: selectedTab,
       onTap: (index) {
@@ -119,10 +150,10 @@ class _WaiterMainViewState extends State<WaiterMainView> {
           icon: Icon(Icons.table_restaurant),
           label: 'Mesas',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.receipt_long),
-          label: 'Pedidos',
-        ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.receipt_long),
+        //   label: 'Pedidos',
+        // ),
         BottomNavigationBarItem(
           icon: Icon(Icons.restaurant_menu),
           label: 'Menu',
