@@ -47,19 +47,27 @@ class _WaiterMainViewState extends State<WaiterMainView> {
 
  void navigateToMenuForTable(int tableNumber, String floor) {
   setState(() {
-    selectedTab = 2; // Apenas muda para tab do menu
+    selectedTab = 1; // Apenas muda para tab do menu
   });
+
+  _setSelectedTableInPreferences(tableNumber, floor);
   
   // Se quiser abrir como nova tela (opcional):
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => WaiterMenuView(
-        preSelectedTable: tableNumber,
-        preSelectedFloor: floor,
-      ),
-    ),
-  );
+  // Navigator.push(
+  //   context,
+  //   MaterialPageRoute(
+  //     builder: (context) => WaiterMenuView(
+  //       preSelectedTable: tableNumber,
+  //       preSelectedFloor: floor,
+  //     ),
+  //   ),
+  // );
+}
+
+Future<void> _setSelectedTableInPreferences(int tableNumber, String floor) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setInt('selected_table', tableNumber);
+  await prefs.setString('selected_floor', floor);
 }
 
   @override

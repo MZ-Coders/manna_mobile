@@ -645,7 +645,7 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
               // Ações
               if (table.status == TableStatus.empty)
                 _buildActionButton(
-                 'Ocupar e Fazer Pedido',  // Novo texto
+                 'Ocupar Mesa',  // Novo texto
                   Icons.restaurant_menu,    // Novo ícone
                   TColor.primary,
                   () => _occupyTable(table),
@@ -747,72 +747,94 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
   _showGuestCountDialog(table);
 }
 
-  void _showGuestCountDialog(TableModel table) {
-    int guestCount = 1;
-    
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text('Ocupar Mesa ${table.number}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Quantos clientes?'),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: guestCount > 1 ? () {
-                      setDialogState(() => guestCount--);
-                    } : null,
-                    icon: Icon(Icons.remove),
+void _showGuestCountDialog(TableModel table) {
+  int guestCount = 1;
+  
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) => AlertDialog(
+        title: Text('Ocupar Mesa ${table.number}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Quantos clientes?'),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: guestCount > 1 ? () {
+                    setDialogState(() => guestCount--);
+                  } : null,
+                  icon: Icon(Icons.remove),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: TColor.placeholder),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: TColor.placeholder),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      guestCount.toString(),
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                  child: Text(
+                    guestCount.toString(),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  IconButton(
-                    onPressed: guestCount < 10 ? () {
-                      setDialogState(() => guestCount++);
-                    } : null,
-                    icon: Icon(Icons.add),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
+                ),
+                IconButton(
+                  onPressed: guestCount < 10 ? () {
+                    setDialogState(() => guestCount++);
+                  } : null,
+                  icon: Icon(Icons.add),
+                ),
+              ],
             ),
-            ElevatedButton(
-  onPressed: () {
-    Navigator.pop(context);
-    _updateTableStatus(table, TableStatus.pending, guestCount: guestCount);
-    
-    // Navegar automaticamente para o menu
-    if (widget.onTableAction != null) {
-      widget.onTableAction!(table.number, table.floor);
-    }
-  },
-  child: Text('Ocupar e Fazer Pedido'),
-),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          // NOVO: Botão apenas para ocupar a mesa
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _updateTableStatus(table, TableStatus.pending, guestCount: guestCount);
+              // Mostrar mensagem de sucesso
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Mesa ${table.number} ocupada com ${guestCount} cliente(s)'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+            ),
+            child: Text('Ocupar Mesa', style: TextStyle(color: Colors.white)),
+          ),
+          // Botão para ocupar E ir para o menu
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _updateTableStatus(table, TableStatus.pending, guestCount: guestCount);
+              
+              // Navegar automaticamente para o menu
+              if (widget.onTableAction != null) {
+                widget.onTableAction!(table.number, table.floor);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColor.primary,
+            ),
+            child: Text('Ocupar e Fazer Pedido', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
-    );
-  }
-
+    ),
+  );
+}
 
 void _viewOrder(TableModel table) {
   Navigator.pop(context);

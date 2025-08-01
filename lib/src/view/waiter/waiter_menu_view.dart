@@ -37,10 +37,26 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   @override
   void initState() {
     super.initState();
-    selectedTable = widget.preSelectedTable == 0 ? null : widget.preSelectedTable;
-    selectedFloor = widget.preSelectedFloor ?? 'First';
-    loadMenu();
+    // selectedTable = widget.preSelectedTable == 0 ? null : widget.preSelectedTable;
+    // selectedFloor = widget.preSelectedFloor ?? 'First';
+    // loadMenu();
+    _loadSelectedTable();
+  loadMenu();
   }
+
+  Future<void> _loadSelectedTable() async {
+  final prefs = await SharedPreferences.getInstance();
+  setState(() {
+    selectedTable = widget.preSelectedTable ?? prefs.getInt('selected_table');
+    selectedFloor = widget.preSelectedFloor ?? prefs.getString('selected_floor') ?? 'First';
+  });
+  
+  // Limpar as preferências após usar
+  if (selectedTable != null) {
+    prefs.remove('selected_table');
+    prefs.remove('selected_floor');
+  }
+}
 
   @override
   void dispose() {
