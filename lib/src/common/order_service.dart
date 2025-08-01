@@ -6,6 +6,197 @@ import '../common/globs.dart';
 import 'dart:async';
 
 class OrderService {
+
+
+  // Adicionar este método ao OrderService existente (lib/src/common/order_service.dart)
+
+/// Buscar pedidos de uma mesa específica
+static Future<List<OrderModel>> getOrdersByTable(int tableId) async {
+  try {
+    print('🔄 Buscando pedidos da mesa $tableId...');
+    
+    // Usar Completer para aguardar resposta da API
+    final Completer<List<OrderModel>> completer = Completer();
+    
+    // Fazer chamada para API específica da mesa
+    ServiceCall.get(
+      SVKey.baseUrl + "waiter/tables/$tableId/orders",
+      isToken: true, // Precisa de autenticação
+      withSuccess: (Map<String, dynamic> responseData) {
+        print('✅ Resposta da API de pedidos da mesa $tableId recebida: ${responseData.keys}');
+        
+        try {
+          if (responseData['success'] == true && responseData['orders'] != null) {
+            List ordersJson = responseData['orders'];
+            print('📋 Processando ${ordersJson.length} pedidos da mesa $tableId...');
+            
+            // Converter dados da API para OrderModel
+            List<OrderModel> orders = ordersJson.map((orderJson) {
+              return OrderModel.fromApiJson(orderJson);
+            }).toList();
+            
+            // Ordenar por tempo (mais recente primeiro)
+            orders.sort((a, b) => b.orderTime.compareTo(a.orderTime));
+            
+            print('✅ ${orders.length} pedidos da mesa $tableId convertidos com sucesso');
+            completer.complete(orders);
+          } else {
+            print('⚠️ Nenhum pedido encontrado para a mesa $tableId');
+            completer.complete([]);
+          }
+        } catch (e) {
+          print('❌ Erro ao processar resposta da API de pedidos da mesa: $e');
+          completer.complete([]);
+        }
+      },
+      failure: (String error) {
+        print('❌ Erro na chamada da API de pedidos da mesa $tableId: $error');
+        completer.complete([]);
+      }
+    );
+    
+    // Aguardar resposta com timeout
+    return await completer.future.timeout(
+      Duration(seconds: 10),
+      onTimeout: () {
+        print('⏰ Timeout na busca de pedidos da mesa $tableId');
+        return <OrderModel>[];
+      }
+    );
+    
+  } catch (e) {
+    print('❌ Erro geral ao buscar pedidos da mesa $tableId: $e');
+    return <OrderModel>[];
+  }
+}
+
+/// Aceitar um pedido (mudança para status PREPARING)
+static Future<bool> acceptOrder(String orderId) async {
+  try {
+    print('🔄 Aceitando pedido $orderId...');
+    
+    final Completer<bool> completer = Completer();
+    
+    ServiceCall.post(
+      {},
+      SVKey.baseUrl + "orders/$orderId/accept",
+      isToken: true,
+      withSuccess: (Map<String, dynamic> responseData) {
+        print('✅ Pedido $orderId aceito com sucesso');
+        completer.complete(true);
+      },
+      failure: (String error) {
+        print('❌ Erro ao aceitar pedido $orderId: $error');
+        completer.complete(false);
+      }
+    );
+    
+    return await completer.future.timeout(
+      Duration(seconds: 5),
+      onTimeout: () => false
+    );
+    
+  } catch (e) {
+    print('❌ Erro ao aceitar pedido: $e');
+    return false;
+  }
+}
+
+/// Marcar pedido como pronto
+static Future<bool> setOrderReady(String orderId) async {
+  try {
+    print('🔄 Marcando pedido $orderId como pronto...');
+    
+    final Completer<bool> completer = Completer();
+    
+    ServiceCall.post(
+      {},
+      SVKey.baseUrl + "orders/$orderId/ready",
+      isToken: true,
+      withSuccess: (Map<String, dynamic> responseData) {
+        print('✅ Pedido $orderId marcado como pronto');
+        completer.complete(true);
+      },
+      failure: (String error) {
+        print('❌ Erro ao marcar pedido como pronto: $error');
+        completer.complete(false);
+      }
+    );
+    
+    return await completer.future.timeout(
+      Duration(seconds: 5),
+      onTimeout: () => false
+    );
+    
+  } catch (e) {
+    print('❌ Erro ao marcar pedido como pronto: $e');
+    return false;
+  }
+}
+
+/// Marcar pedido como entregue
+static Future<bool> setOrderDelivered(String orderId) async {
+  try {
+    print('🔄 Marcando pedido $orderId como entregue...');
+    
+    final Completer<bool> completer = Completer();
+    
+    ServiceCall.post(
+      {},
+      SVKey.baseUrl + "orders/$orderId/delivered",
+      isToken: true,
+      withSuccess: (Map<String, dynamic> responseData) {
+        print('✅ Pedido $orderId marcado como entregue');
+        completer.complete(true);
+      },
+      failure: (String error) {
+        print('❌ Erro ao marcar pedido como entregue: $error');
+        completer.complete(false);
+      }
+    );
+    
+    return await completer.future.timeout(
+      Duration(seconds: 5),
+      onTimeout: () => false
+    );
+    
+  } catch (e) {
+    print('❌ Erro ao marcar pedido como entregue: $e');
+    return false;
+  }
+}
+
+/// Marcar pedido como completo
+static Future<bool> setOrderCompleted(String orderId) async {
+  try {
+    print('🔄 Marcando pedido $orderId como completo...');
+    
+    final Completer<bool> completer = Completer();
+    
+    ServiceCall.post(
+      {},
+      SVKey.baseUrl + "orders/$orderId/completed",
+      isToken: true,
+      withSuccess: (Map<String, dynamic> responseData) {
+        print('✅ Pedido $orderId marcado como completo');
+        completer.complete(true);
+      },
+      failure: (String error) {
+        print('❌ Erro ao marcar pedido como completo: $error');
+        completer.complete(false);
+      }
+    );
+    
+    return await completer.future.timeout(
+      Duration(seconds: 5),
+      onTimeout: () => false
+    );
+    
+  } catch (e) {
+    print('❌ Erro ao marcar pedido como completo: $e');
+    return false;
+  }
+}
   
   // ========== NOVA IMPLEMENTAÇÃO COM API REAL ==========
   

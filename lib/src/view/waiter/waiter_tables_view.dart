@@ -814,7 +814,7 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
   }
 
 
-  void _viewOrder(TableModel table) {
+void _viewOrder(TableModel table) {
   Navigator.pop(context);
   _showTableOrdersModal(table);
 }
@@ -827,7 +827,6 @@ void _showTableOrdersModal(TableModel table) {
     builder: (context) => _buildTableOrdersSheet(table),
   );
 }
-
 
 Widget _buildTableOrdersSheet(TableModel table) {
   return Container(
@@ -897,10 +896,10 @@ Widget _buildTableOrdersSheet(TableModel table) {
           ),
         ),
         
-        // Lista de pedidos com debug info
+        // Lista de pedidos usando o novo método
         Expanded(
           child: FutureBuilder<List<OrderModel>>(
-            future: OrderService.getOrders(),
+            future: OrderService.getOrdersByTable(table.id ?? 0), // Usar o novo método
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
@@ -910,7 +909,7 @@ Widget _buildTableOrdersSheet(TableModel table) {
                       CircularProgressIndicator(color: TColor.primary),
                       SizedBox(height: 16),
                       Text(
-                        'Carregando pedidos...',
+                        'Carregando pedidos da mesa ${table.number}...',
                         style: TextStyle(color: TColor.secondaryText),
                       ),
                     ],
@@ -935,52 +934,21 @@ Widget _buildTableOrdersSheet(TableModel table) {
                         style: TextStyle(color: TColor.secondaryText, fontSize: 12),
                         textAlign: TextAlign.center,
                       ),
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {}); // Forçar rebuild para tentar novamente
+                        },
+                        child: Text('Tentar Novamente'),
+                      ),
                     ],
                   ),
                 );
               }
               
-              final allOrders = snapshot.data ?? [];
+              final tableOrders = snapshot.data ?? [];
               
-              // DEBUG: Mostrar informações sobre a mesa e pedidos
-              print('🔍 DEBUG - Mesa selecionada: ${table.number} (${table.floor})');
-              print('📋 Total de pedidos carregados: ${allOrders.length}');
-              for (var order in allOrders) {
-                print('   - Pedido ${order.id}: Mesa ${order.tableNumber} (${order.floor}) - ${order.tableName}');
-              }
-              
-              // FILTRO MELHORADO: Mais flexível para encontrar pedidos
-              final tableOrders = allOrders.where((order) {
-                // Para Take Away
-                if (table.floor == "Take Away") {
-                  return order.floor == "Take Away" || order.tableNumber == 999;
-                }
-                
-                // Para mesas normais - verificar múltiplas condições
-                bool matchByNumber = order.tableNumber == table.number;
-                bool matchByFloor = order.floor == table.floor;
-                
-                // Também verificar se o nome da mesa contém o número da mesa
-                bool matchByName = false;
-                if (order.tableName?.isNotEmpty == true) {
-                  String tableName = order.tableName!.toLowerCase();
-                  String searchNumber = table.number.toString();
-                  matchByName = tableName.contains(searchNumber) || 
-                               tableName.contains('mesa ${searchNumber}') ||
-                               tableName.contains('table ${searchNumber}');
-                }
-                
-                bool isMatch = matchByNumber && matchByFloor;
-                
-                print('   🔍 Pedido ${order.id}: Mesa ${order.tableNumber}(${order.floor}) vs ${table.number}(${table.floor}) -> number=$matchByNumber, floor=$matchByFloor, name=$matchByName, final=$isMatch');
-                
-                return isMatch;
-              }).toList();
-              
-              // Ordenar por tempo (mais recente primeiro)
-              tableOrders.sort((a, b) => b.orderTime.compareTo(a.orderTime));
-              
-              print('✅ Pedidos filtrados para Mesa ${table.number}: ${tableOrders.length}');
+              print('✅ Pedidos carregados para Mesa ${table.number}: ${tableOrders.length}');
               
               if (tableOrders.isEmpty) {
                 return Padding(
@@ -1011,47 +979,22 @@ Widget _buildTableOrdersSheet(TableModel table) {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: 16),
-                      // DEBUG INFO
-                      Container(
-                        padding: EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
+                      SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          if (widget.onTableAction != null) {
+                            widget.onTableAction!(table.number, table.floor);
+                          }
+                        },
+                        icon: Icon(Icons.add_shopping_cart, color: TColor.white),
+                        label: Text(
+                          'Fazer Primeiro Pedido',
+                          style: TextStyle(color: TColor.white),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Debug Info:',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Mesa buscada: ${table.number} (${table.floor})',
-                              style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
-                            ),
-                            Text(
-                              'Total pedidos: ${allOrders.length}',
-                              style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
-                            ),
-                            if (allOrders.isNotEmpty) ...[
-                              SizedBox(height: 4),
-                              Text(
-                                'Pedidos disponíveis:',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-                              ),
-                              ...allOrders.take(3).map((order) => Text(
-                                '• Mesa ${order.tableNumber} (${order.floor}) - "${order.tableName}"',
-                                style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
-                              )),
-                              if (allOrders.length > 3)
-                                Text(
-                                  '• ... e mais ${allOrders.length - 3} pedidos',
-                                  style: TextStyle(fontSize: 10, fontFamily: 'monospace'),
-                                ),
-                            ],
-                          ],
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TColor.primary,
+                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         ),
                       ),
                     ],
@@ -1074,8 +1017,6 @@ Widget _buildTableOrdersSheet(TableModel table) {
     ),
   );
 }
-
-
 
 Widget _buildOrderCard(OrderModel order, bool isLatest) {
   return Container(
@@ -1159,9 +1100,9 @@ Widget _buildOrderCard(OrderModel order, bool isLatest) {
               ),
               Expanded(
                 child: _buildOrderInfo(
-                  'Pessoas',
-                  '${order.guestCount}',
-                  Icons.people,
+                  'Total',
+                  order.formattedTotal,
+                  Icons.attach_money,
                 ),
               ),
             ],
@@ -1184,7 +1125,7 @@ Widget _buildOrderCard(OrderModel order, bool isLatest) {
                     Icon(Icons.restaurant_menu, size: 16, color: TColor.primary),
                     SizedBox(width: 6),
                     Text(
-                      'Itens do Pedido',
+                      'Itens do Pedido (${order.items.length})',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1194,46 +1135,57 @@ Widget _buildOrderCard(OrderModel order, bool isLatest) {
                   ],
                 ),
                 SizedBox(height: 8),
-                ...order.items.map((item) => _buildOrderItem(item)).toList(),
+                ...order.items.map((item) => _buildOrderItem(item, order)).toList(),
               ],
             ),
           ),
           
           SizedBox(height: 12),
           
-          // Total e ações
+          // Ações do pedido
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                'Total: ',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: TColor.secondaryText,
-                ),
-              ),
-              Text(
-                order.formattedTotal,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: TColor.primary,
-                ),
-              ),
-              Spacer(),
-              if (order.status != OrderStatus.completed)
+              if (order.status == OrderStatus.pending)
                 ElevatedButton.icon(
-                  onPressed: () => _updateOrderStatus(order),
-                  icon: Icon(
-                    _getNextOrderActionIcon(order.status),
-                    size: 16,
-                    color: TColor.white,
-                  ),
-                  label: Text(
-                    _getNextOrderActionText(order.status),
-                    style: TextStyle(color: TColor.white, fontSize: 12),
-                  ),
+                  onPressed: () => _acceptOrder(order),
+                  icon: Icon(Icons.restaurant, size: 16, color: TColor.white),
+                  label: Text('Aceitar', style: TextStyle(color: TColor.white, fontSize: 12)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _getOrderStatusColor(order.status),
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: Size(0, 32),
+                  ),
+                ),
+              if (order.status == OrderStatus.preparing)
+                ElevatedButton.icon(
+                  onPressed: () => _setOrderReady(order),
+                  icon: Icon(Icons.check_circle, size: 16, color: TColor.white),
+                  label: Text('Pronto', style: TextStyle(color: TColor.white, fontSize: 12)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: Size(0, 32),
+                  ),
+                ),
+              if (order.status == OrderStatus.completed)
+                ElevatedButton.icon(
+                  onPressed: () => _setOrderDelivered(order),
+                  icon: Icon(Icons.room_service, size: 16, color: TColor.white),
+                  label: Text('Entregue', style: TextStyle(color: TColor.white, fontSize: 12)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: Size(0, 32),
+                  ),
+                ),
+              if (order.status == OrderStatus.delivered)
+                ElevatedButton.icon(
+                  onPressed: () => _setOrderCompleted(order),
+                  icon: Icon(Icons.check, size: 16, color: TColor.white),
+                  label: Text('Finalizar', style: TextStyle(color: TColor.white, fontSize: 12)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     minimumSize: Size(0, 32),
                   ),
@@ -1270,33 +1222,50 @@ Widget _buildOrderInfo(String label, String value, IconData icon) {
   );
 }
 
-Widget _buildOrderItem(OrderItem item) {
+Widget _buildOrderItem(OrderItem item, OrderModel order) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: 4),
     child: Row(
       children: [
+        // Status do item
         Container(
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: item.isServed ? Colors.green : Colors.grey[300],
+            color: _getItemStatusColor(item.status ?? 'PENDING'),
             shape: BoxShape.circle,
           ),
-          child: item.isServed
-              ? Icon(Icons.check, size: 12, color: Colors.white)
-              : null,
+          child: _getItemStatusIcon(item.status ?? 'PENDING'),
         ),
         SizedBox(width: 8),
+        
+        // Nome do item
         Expanded(
-          child: Text(
-            '${item.quantity}x ${item.name}',
-            style: TextStyle(
-              fontSize: 13,
-              color: TColor.primaryText,
-              decoration: item.isServed ? TextDecoration.lineThrough : null,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${item.quantity}x ${item.name}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: TColor.primaryText,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (item.notes?.isNotEmpty == true)
+                Text(
+                  'Obs: ${item.notes}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: TColor.secondaryText,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+            ],
           ),
         ),
+        
+        // Preço
         Text(
           'MT ${(item.price * item.quantity).toStringAsFixed(2)}',
           style: TextStyle(
@@ -1305,25 +1274,146 @@ Widget _buildOrderItem(OrderItem item) {
             color: TColor.primary,
           ),
         ),
+        
         SizedBox(width: 8),
-        GestureDetector(
-          onTap: () => _toggleItemServed(item),
-          child: Container(
-            padding: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: item.isServed ? Colors.green[50] : Colors.orange[50],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Icon(
-              item.isServed ? Icons.undo : Icons.room_service,
-              size: 14,
-              color: item.isServed ? Colors.green : Colors.orange,
+        
+        // Status badge
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: _getItemStatusColor(item.status ?? 'PENDING').withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            _getItemStatusText(item.status ?? 'PENDING'),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: _getItemStatusColor(item.status ?? 'PENDING'),
             ),
           ),
         ),
       ],
     ),
   );
+}
+
+// Métodos auxiliares para ações dos pedidos
+void _acceptOrder(OrderModel order) async {
+  try {
+    final success = await OrderService.acceptOrder(order.id);
+    if (success) {
+      _showSuccessSnackBar('Pedido #${order.id} aceito com sucesso');
+      Navigator.pop(context); // Fechar modal
+      // Reabrir modal atualizado
+      Future.delayed(Duration(milliseconds: 300), () {
+        final table = filteredTables.firstWhere((t) => t.id == order.tableNumber);
+        _showTableOrdersModal(table);
+      });
+    } else {
+      _showErrorSnackBar('Erro ao aceitar pedido');
+    }
+  } catch (e) {
+    _showErrorSnackBar('Erro: $e');
+  }
+}
+
+void _setOrderReady(OrderModel order) async {
+  try {
+    final success = await OrderService.setOrderReady(order.id);
+    if (success) {
+      _showSuccessSnackBar('Pedido #${order.id} marcado como pronto');
+      Navigator.pop(context);
+      Future.delayed(Duration(milliseconds: 300), () {
+        final table = filteredTables.firstWhere((t) => t.id == order.tableNumber);
+        _showTableOrdersModal(table);
+      });
+    } else {
+      _showErrorSnackBar('Erro ao marcar pedido como pronto');
+    }
+  } catch (e) {
+    _showErrorSnackBar('Erro: $e');
+  }
+}
+
+void _setOrderDelivered(OrderModel order) async {
+  try {
+    final success = await OrderService.setOrderDelivered(order.id);
+    if (success) {
+      _showSuccessSnackBar('Pedido #${order.id} marcado como entregue');
+      Navigator.pop(context);
+      Future.delayed(Duration(milliseconds: 300), () {
+        final table = filteredTables.firstWhere((t) => t.id == order.tableNumber);
+        _showTableOrdersModal(table);
+      });
+    } else {
+      _showErrorSnackBar('Erro ao marcar pedido como entregue');
+    }
+  } catch (e) {
+    _showErrorSnackBar('Erro: $e');
+  }
+}
+
+void _setOrderCompleted(OrderModel order) async {
+  try {
+    final success = await OrderService.setOrderCompleted(order.id);
+    if (success) {
+      _showSuccessSnackBar('Pedido #${order.id} finalizado com sucesso');
+      Navigator.pop(context);
+      // Recarregar a lista de mesas também
+      loadTables();
+    } else {
+      _showErrorSnackBar('Erro ao finalizar pedido');
+    }
+  } catch (e) {
+    _showErrorSnackBar('Erro: $e');
+  }
+}
+
+// Helpers para status dos itens
+Color _getItemStatusColor(String status) {
+  switch (status.toUpperCase()) {
+    case 'PENDING':
+      return Colors.orange;
+    case 'PREPARING':
+      return Colors.blue;
+    case 'READY':
+      return Colors.green;
+    case 'DELIVERED':
+      return Colors.grey;
+    default:
+      return Colors.orange;
+  }
+}
+
+Widget _getItemStatusIcon(String status) {
+  switch (status.toUpperCase()) {
+    case 'PENDING':
+      return Icon(Icons.schedule, size: 12, color: Colors.white);
+    case 'PREPARING':
+      return Icon(Icons.restaurant, size: 12, color: Colors.white);
+    case 'READY':
+      return Icon(Icons.check_circle, size: 12, color: Colors.white);
+    case 'DELIVERED':
+      return Icon(Icons.check, size: 12, color: Colors.white);
+    default:
+      return Icon(Icons.schedule, size: 12, color: Colors.white);
+  }
+}
+
+String _getItemStatusText(String status) {
+  switch (status.toUpperCase()) {
+    case 'PENDING':
+      return 'Pendente';
+    case 'PREPARING':
+      return 'Preparando';
+    case 'READY':
+      return 'Pronto';
+    case 'DELIVERED':
+      return 'Entregue';
+    default:
+      return 'Pendente';
+  }
 }
 
 // Funções auxiliares para pedidos
