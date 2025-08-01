@@ -53,15 +53,15 @@ class TableModel {
     
     // Extrair número da mesa do nome (ex: "Mesa 5" -> 5)
     int tableNumber = tableId;
-    try {
-      RegExp regExp = RegExp(r'\d+');
-      String? numberStr = regExp.firstMatch(tableName)?.group(0);
-      if (numberStr != null) {
-        tableNumber = int.parse(numberStr);
-      }
-    } catch (e) {
-      tableNumber = tableId; // Fallback para ID
-    }
+    // try {
+    //   RegExp regExp = RegExp(r'\d+');
+    //   String? numberStr = regExp.firstMatch(tableName)?.group(0);
+    //   if (numberStr != null) {
+    //     tableNumber = int.parse(numberStr);
+    //   }
+    // } catch (e) {
+    //   tableNumber = tableId; // Fallback para ID
+    // }
     
     // Por enquanto, usar 'First' como floor padrão
     // TODO: Implementar lógica de floors se necessário

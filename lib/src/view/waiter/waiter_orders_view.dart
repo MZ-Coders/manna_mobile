@@ -438,176 +438,233 @@ class _WaiterOrdersViewState extends State<WaiterOrdersView> with TickerProvider
     );
   }
 
-  Widget _buildOrderDetailsSheet(OrderModel order) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: BoxDecoration(
-        color: TColor.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          // Handle
-          Container(
-            margin: EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: TColor.placeholder,
-              borderRadius: BorderRadius.circular(2),
+Widget _buildOrderDetailsSheet(OrderModel order) {
+  return StatefulBuilder(
+    builder: (context, setModalState) {
+      OrderStatus currentStatus = order.status; // Estado local do modal
+      
+      return Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: TColor.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Container(
+              margin: EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: TColor.placeholder,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          
-          // Header
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(order.status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+            
+            // Header
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(currentStatus).withOpacity(0.1), // ✅ Usa currentStatus
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      order.floor == 'Take Away' ? Icons.takeout_dining : Icons.table_restaurant,
+                      color: _getStatusColor(currentStatus), // ✅ Usa currentStatus
+                      size: 24,
+                    ),
                   ),
-                  child: Icon(
-                    order.floor == 'Take Away' ? Icons.takeout_dining : Icons.table_restaurant,
-                    color: _getStatusColor(order.status),
-                    size: 24,
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mesa ${order.tableDisplay}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: TColor.primaryText,
+                          ),
+                        ),
+                        Text(
+                          '${order.floor} • ${order.guestCount} pessoas • ${order.timeElapsed}',
+                          style: TextStyle(
+                            color: TColor.secondaryText,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(currentStatus).withOpacity(0.1), // ✅ Usa currentStatus
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _getStatusText(currentStatus), // ✅ Usa currentStatus
+                      style: TextStyle(
+                        color: _getStatusColor(currentStatus), // ✅ Usa currentStatus
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Lista de itens
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                itemCount: order.items.length,
+                itemBuilder: (context, index) {
+                  final item = order.items[index];
+                  return _buildOrderItemTile(order, item);
+                },
+              ),
+            ),
+            
+            // Total e ações
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Mesa ${order.tableDisplay}',
+                        'TOTAL',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: TColor.primaryText,
                         ),
                       ),
                       Text(
-                        '${order.floor} • ${order.guestCount} pessoas • ${order.timeElapsed}',
+                        order.formattedValue,
                         style: TextStyle(
-                          color: TColor.secondaryText,
-                          fontSize: 14,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: TColor.primaryText,
                         ),
                       ),
                     ],
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(order.status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _getStatusText(order.status),
-                    style: TextStyle(
-                      color: _getStatusColor(order.status),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Lista de itens
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              itemCount: order.items.length,
-              itemBuilder: (context, index) {
-                final item = order.items[index];
-                return _buildOrderItemTile(order, item);
-              },
-            ),
-          ),
-          
-          // Total e ações
-          Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'TOTAL',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: TColor.primaryText,
+                  SizedBox(height: 16),
+                  Row(
+                    children: [
+                      // ✅ BOTÃO PRINCIPAL - Mudar Status
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final newStatus = _getNextStatus(currentStatus);
+                  
+                  try {
+                    final success = await OrderService.updateOrderStatus(order.id, newStatus);
+                    
+                    if (success) {
+                      // Atualizar APENAS o estado local do modal
+                      setModalState(() {
+                        currentStatus = newStatus;
+                      });
+                      
+                      // Atualizar ordem localmente em vez de recarregar tudo
+                      setState(() {
+                        // Encontrar e atualizar apenas este pedido específico
+                        final index = allOrders.indexWhere((o) => o.id == order.id);
+                        if (index >= 0) {
+                          // Cria uma cópia atualizada do pedido com o novo status
+                          final updatedOrder = OrderModel(
+                            id: order.id,
+                            tableNumber: order.tableNumber,
+                            floor: order.floor,
+                            status: newStatus,
+                            orderTime: order.orderTime,
+                            items: order.items,
+                            totalValue: order.totalValue,
+                            guestCount: order.guestCount,
+                            notes: order.notes,
+                            waiterId: order.waiterId,
+                            // Copiar outros campos relevantes...
+                          );
+                          allOrders[index] = updatedOrder;
+                        }
+                      });
+                      
+                      _showSuccessSnackBar('Pedido atualizado para ${_getStatusText(newStatus)}!');
+                      
+                      // Fechar modal apenas se pedido foi entregue
+                      if (newStatus == OrderStatus.delivered) {
+                        Navigator.pop(context);
+                      }
+                    } else {
+                      _showErrorSnackBar('Erro ao atualizar pedido');
+                    }
+                  } catch (e) {
+                    _showErrorSnackBar('Erro: $e');
+                  }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _getStatusColor(currentStatus), // ✅ Usa currentStatus
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            _getNextActionText(currentStatus), // ✅ Usa currentStatus
+                            style: TextStyle(
+                              color: TColor.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    Text(
-                      order.formattedValue,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: TColor.primaryText,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
+                      
+                      SizedBox(width: 12),
+                      
+                      // ✅ BOTÃO SECUNDÁRIO - Adicionar Itens
+                      ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
-                          _updateOrderStatus(order, _getNextStatus(order.status));
+                          // TODO: Navegar para tela de adicionar itens ao pedido
+                          // Exemplo: _addItemsToOrder(order);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _getStatusColor(order.status),
-                          padding: EdgeInsets.symmetric(vertical: 12),
+                          backgroundColor: Colors.grey[300],
+                          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text(
-                          _getNextActionText(order.status),
-                          style: TextStyle(
-                            color: TColor.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: Icon(Icons.add, color: TColor.primaryText),
                       ),
-                    ),
-                    SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // TODO: Adicionar itens ao pedido
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[300],
-                        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Icon(Icons.add, color: TColor.primaryText),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ]
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+       
+        ),
+      );
+    },
+  );
+}
+
 
   Widget _buildOrderItemTile(OrderModel order, OrderItem item) {
     return Container(
@@ -791,6 +848,7 @@ class _WaiterOrdersViewState extends State<WaiterOrdersView> with TickerProvider
       final success = await OrderService.updateOrderStatus(order.id, newStatus);
       
       if (success) {
+        // 
         _showSuccessSnackBar(
           'Pedido #${order.id} atualizado para ${_getStatusText(newStatus)}'
         );

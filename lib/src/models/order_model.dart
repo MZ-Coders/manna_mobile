@@ -66,7 +66,8 @@ factory OrderModel.fromApiJson(Map<String, dynamic> json) {
     tableUuid = tableData['uuid'] ?? '';
     
     // CORREÇÃO: Extrair número da mesa do nome ou mapear por nome conhecido
-    tableNumber = _extractTableNumberFromName(tableName, tableId);
+    // tableNumber = _extractTableNumberFromName(tableName, tableId);
+    tableNumber = tableId;
     
     // Determinar floor baseado no número da mesa
     floor = _determineFloorByNumber(tableNumber);

@@ -1326,11 +1326,45 @@ void _acceptOrder(OrderModel order) async {
     final success = await OrderService.acceptOrder(order.id);
     if (success) {
       _showSuccessSnackBar('Pedido #${order.id} aceito com sucesso');
-      Navigator.pop(context); // Fechar modal
-      // Reabrir modal atualizado
+      
+      // Fechar modal
+      Navigator.pop(context);
+      
+      // Recarregar dados e reabrir modal
+      await loadTables();
+      print('====ALL Tables');
+      print(allTables.toString());
+      print(allTables.toList());
+      print(allTables);
       Future.delayed(Duration(milliseconds: 300), () {
-        final table = filteredTables.firstWhere((t) => t.id == order.tableNumber);
-        _showTableOrdersModal(table);
+        print('==== T Number');
+        print(order.tableNumber);
+        print("===ORDER====");
+        print(order);
+        print(order.toString());
+        print(order.toJson());
+        // Procurar em todas as mesas (não apenas nas filtradas)
+        final tableIndex = allTables.indexWhere((t) => 
+          t.number == order.tableNumber);
+          
+        if (tableIndex != -1) {
+          final table = allTables[tableIndex];
+          print("My Table ");
+          print(table);
+          print("SHOW TABLES");
+          // Se mesa estiver em outro andar, mudar para esse andar
+          // if (table.floor != selectedFloor) {
+          //   setState(() {
+          //     selectedFloor = table.floor;
+          //     filterTablesByFloor();
+          //   });
+          // }
+          
+          _showTableOrdersModal(table);
+          print("TENTANDO ABRIR TABLE");
+        } else {
+          _showErrorSnackBar('Mesa não encontrada após atualização');
+        }
       });
     } else {
       _showErrorSnackBar('Erro ao aceitar pedido');
@@ -1340,15 +1374,33 @@ void _acceptOrder(OrderModel order) async {
   }
 }
 
+
 void _setOrderReady(OrderModel order) async {
   try {
     final success = await OrderService.setOrderReady(order.id);
     if (success) {
       _showSuccessSnackBar('Pedido #${order.id} marcado como pronto');
       Navigator.pop(context);
+       // Recarregar dados e reabrir modal
+      await loadTables();
+
       Future.delayed(Duration(milliseconds: 300), () {
-        final table = filteredTables.firstWhere((t) => t.id == order.tableNumber);
+        final tableIndex = allTables.indexWhere((t) => 
+          t.number == order.tableNumber );
+          
+        if (tableIndex != -1) {
+          final table = allTables[tableIndex];
+          
+          // Se mesa estiver em outro andar, mudar para esse andar
+          if (table.floor != selectedFloor) {
+            setState(() {
+              selectedFloor = table.floor;
+              filterTablesByFloor();
+            });
+          }
+
         _showTableOrdersModal(table);
+        }
       });
     } else {
       _showErrorSnackBar('Erro ao marcar pedido como pronto');
@@ -1364,9 +1416,30 @@ void _setOrderDelivered(OrderModel order) async {
     if (success) {
       _showSuccessSnackBar('Pedido #${order.id} marcado como entregue');
       Navigator.pop(context);
+
+        // Recarregar dados e reabrir modal
+      await loadTables();
+
       Future.delayed(Duration(milliseconds: 300), () {
-        final table = filteredTables.firstWhere((t) => t.id == order.tableNumber);
-        _showTableOrdersModal(table);
+          final tableIndex = allTables.indexWhere((t) => 
+          t.number == order.tableNumber );
+          
+        if (tableIndex != -1) {
+          final table = allTables[tableIndex];
+          
+          // Se mesa estiver em outro andar, mudar para esse andar
+          if (table.floor != selectedFloor) {
+            setState(() {
+              selectedFloor = table.floor;
+              filterTablesByFloor();
+            });
+          }
+          
+          _showTableOrdersModal(table);
+        } else {
+          _showErrorSnackBar('Mesa não encontrada após atualização');
+        }
+
       });
     } else {
       _showErrorSnackBar('Erro ao marcar pedido como entregue');
@@ -1384,6 +1457,26 @@ void _setOrderCompleted(OrderModel order) async {
       Navigator.pop(context);
       // Recarregar a lista de mesas também
       loadTables();
+
+      Future.delayed(Duration(milliseconds: 300), () {
+          final tableIndex = allTables.indexWhere((t) => 
+          t.number == order.tableNumber );
+          
+        if (tableIndex != -1) {
+          final table = allTables[tableIndex];
+          
+          // Se mesa estiver em outro andar, mudar para esse andar
+          if (table.floor != selectedFloor) {
+            setState(() {
+              selectedFloor = table.floor;
+              filterTablesByFloor();
+            });
+          }
+          
+          _showTableOrdersModal(table);
+        } else {
+          _showErrorSnackBar('Mesa não encontrada após atualização');
+        }});
     } else {
       _showErrorSnackBar('Erro ao finalizar pedido');
     }
@@ -1509,7 +1602,7 @@ void _updateOrderStatus(OrderModel order) async {
       Future.delayed(Duration(milliseconds: 300), () {
         // Buscar a mesa atualizada e reabrir modal
         final tableIndex = filteredTables.indexWhere((t) => 
-          t.number == order.tableNumber && t.floor == order.floor);
+          t.number == order.tableNumber );
         if (tableIndex != -1) {
           _showTableOrdersModal(filteredTables[tableIndex]);
         }
