@@ -663,18 +663,7 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                         () => _viewOrder(table),
                       ),
                     ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: _buildActionButton(
-                        _getNextActionText(table.status),
-                        _getNextActionIcon(table.status),
-                        _getNextActionColor(table.status),
-                        () => _nextAction(table),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
+                     SizedBox(height: 12),
                 _buildActionButton(
     'Adicionar Itens',
     Icons.add_shopping_cart,
@@ -693,7 +682,19 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                   Colors.red,
                   () => _clearTable(table),
                 ),
-              ],
+      
+                    // SizedBox(width: 12),
+                    // Expanded(
+                    //   child: _buildActionButton(
+                    //     _getNextActionText(table.status),
+                    //     _getNextActionIcon(table.status),
+                    //     _getNextActionColor(table.status),
+                    //     () => _nextAction(table),
+                    //   ),
+                    // ),
+                  ],
+                ),
+                       ],
             ],
           ),
         ),
@@ -725,24 +726,28 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
     );
   }
 
-  Widget _buildActionButton(String text, IconData icon, Color color, VoidCallback onPressed) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, color: TColor.white, size: 18),
-      label: Text(
-        text,
-        style: TextStyle(color: TColor.white, fontWeight: FontWeight.w600),
+Widget _buildActionButton(String text, IconData icon, Color color, VoidCallback onPressed) {
+  return ElevatedButton.icon(
+    onPressed: onPressed,
+    icon: Icon(icon, color: TColor.white, size: 16),
+    label: Text(
+      text,
+      style: TextStyle(
+        color: TColor.white, 
+        fontWeight: FontWeight.w600,
+        fontSize: 12, // TEXTO MENOR
       ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: EdgeInsets.symmetric(vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: color,
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 8), // PADDING MENOR
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
-
+      minimumSize: Size(0, 40), // ALTURA MENOR
+    ),
+  );
+}
   // Implementação das ações
  void _occupyTable(TableModel table) {
   Navigator.pop(context);
