@@ -1,3 +1,4 @@
+import 'package:dribbble_challenge/src/common/globs.dart';
 import 'package:dribbble_challenge/src/models/table_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -617,4 +618,37 @@ class WaiterMenuService {
       return false;
     }
   }
+
+  static Future<bool> closeTable(int tableId) async {
+  try {
+    print('🔄 Fechando mesa $tableId...');
+    
+    final Completer<bool> completer = Completer();
+    
+    ServiceCall.post(
+      {},
+      SVKey.baseUrl + "tables/$tableId/close",
+      isToken: true,
+      withSuccess: (Map<String, dynamic> responseData) {
+        print('✅ Mesa $tableId fechada com sucesso');
+        completer.complete(true);
+      },
+      failure: (String error) {
+        print('❌ Erro ao fechar mesa: $error');
+        completer.complete(false);
+      }
+    );
+    
+    return await completer.future.timeout(
+      Duration(seconds: 5),
+      onTimeout: () => false
+    );
+    
+  } catch (e) {
+    print('❌ Erro ao fechar mesa: $e');
+    return false;
+  }
+}
+
+
 }

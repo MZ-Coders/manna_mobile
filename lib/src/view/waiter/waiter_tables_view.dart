@@ -1655,30 +1655,38 @@ void _toggleItemServed(OrderItem item) async {
     _updateTableStatus(table, nextStatus);
   }
 
-  void _clearTable(TableModel table) {
-    Navigator.pop(context);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Liberar Mesa'),
-        content: Text('Tem certeza que deseja liberar a mesa ${table.number}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _updateTableStatus(table, TableStatus.empty);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('Liberar'),
-          ),
-        ],
-      ),
-    );
-  }
+void _clearTable(TableModel table) {
+  Navigator.pop(context);
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Liberar Mesa'),
+      content: Text('Tem certeza que deseja liberar a mesa ${table.number}?\n\nTodos os pedidos pendentes serão desalocados da mesa.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            
+            final success = await WaiterMenuService.closeTable(table.number);
+            
+            if (success) {
+              _showSuccessSnackBar('Mesa ${table.number} liberada com sucesso');
+              loadTables(); // Recarregar dados
+            } else {
+              _showErrorSnackBar('Erro ao liberar mesa');
+            }
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: Text('Liberar', style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+  );
+}
 
   void _showNewOrderDialog() {
   if (widget.onTableAction != null) {

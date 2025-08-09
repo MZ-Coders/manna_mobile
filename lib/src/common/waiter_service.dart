@@ -102,6 +102,39 @@ class WaiterMenuService {
     }
   }
   
+  
+  static Future<bool> closeTable(int tableId) async {
+  try {
+    print('🔄 Fechando mesa $tableId...');
+    
+    final Completer<bool> completer = Completer();
+    
+    ServiceCall.post(
+      {},
+      SVKey.baseUrl + "tables/$tableId/close",
+      isToken: true,
+      withSuccess: (Map<String, dynamic> responseData) {
+        print('✅ Mesa $tableId fechada com sucesso');
+        completer.complete(true);
+      },
+      failure: (String error) {
+        print('❌ Erro ao fechar mesa: $error');
+        completer.complete(false);
+      }
+    );
+    
+    return await completer.future.timeout(
+      Duration(seconds: 5),
+      onTimeout: () => false
+    );
+    
+  } catch (e) {
+    print('❌ Erro ao fechar mesa: $e');
+    return false;
+  }
+}
+
+
   // ========== BUSCAR MENU (MANTIDO IGUAL) ==========
   
   /// Buscar menu usando a mesma API que o cliente usa
@@ -311,6 +344,8 @@ class WaiterMenuService {
   static double _calculateTotal(List<CartItemModel> items) {
     return items.fold(0.0, (total, item) => total + item.totalPrice);
   }
+
+
 
   static Future<void> reprintReceipt(
     BuildContext context, {
