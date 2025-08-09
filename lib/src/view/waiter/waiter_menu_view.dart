@@ -1,9 +1,10 @@
 import 'package:dribbble_challenge/src/common/service_call.dart';
+import 'package:dribbble_challenge/src/models/table_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import '../../models/menu_item_model.dart';
-import '../../common/waiter_menu_service.dart';
+import '../../common/waiter_service.dart';
 // import '../../common/mobile_printer_service.dart';
 
 class WaiterMenuView extends StatefulWidget {
@@ -24,6 +25,7 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   Map<String, List<MenuItemModel>> menuByCategory = {};
   List<String> categories = [];
   List<CartItemModel> cart = [];
+  List<TableModel> availableTables = [];
   bool isLoading = true;
   String selectedCategory = '';
   late TabController _tabController;
@@ -42,7 +44,18 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     // loadMenu();
     _loadSelectedTable();
   loadMenu();
+  _preloadAvailableTables();
   }
+
+  Future<void> _preloadAvailableTables() async {
+  // Carregar mesas em background para ter lista pronta
+  try {
+    await _loadAvailableTables();
+    print('${availableTables.length} mesas disponíveis carregadas');
+  } catch (e) {
+    print('Erro ao pré-carregar mesas: $e');
+  }
+}
 
   Future<void> _loadSelectedTable() async {
   final prefs = await SharedPreferences.getInstance();
@@ -55,6 +68,36 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
   if (selectedTable != null) {
     prefs.remove('selected_table');
     prefs.remove('selected_floor');
+  }
+}
+
+Future<void> _loadAvailableTables() async {
+  try {
+    final allTables = await WaiterMenuService.getTables();
+    
+    print('Mesas carregadas: ${allTables.toString()}');
+    // Filtrar apenas mesas vazias ou livres
+    setState(() {
+      // availableTables = allTables.toList();
+      availableTables = allTables.where((table) => 
+        table.status == TableStatus.empty 
+        // || 
+        // table.status == TableStatus.empty
+      ).toList();
+      
+      // Ordenar por número da mesa
+      availableTables.sort((a, b) => a.number.compareTo(b.number));
+    });
+  } catch (e) {
+    print('Erro ao carregar mesas: $e');
+    // Fallback: criar algumas mesas padrão
+    availableTables = List.generate(10, (index) => 
+      TableModel(
+        number: index + 1,
+        floor: 'First',
+        status: TableStatus.empty,
+      )
+    );
   }
 }
 
@@ -153,6 +196,36 @@ Future<void> _refreshMenu() async {
         title: Text('Menu - ${selectedTable != null ? 'Mesa $selectedTable' : 'Selecionar Mesa'}'),
         
         actions: [
+          if (availableTables.isNotEmpty)
+      Container(
+        margin: EdgeInsets.only(right: 8),
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          '${availableTables.length}',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    
+    // Botão de refresh
+    IconButton(
+      icon: Icon(Icons.refresh),
+      onPressed: () async {
+        await _loadAvailableTables();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Mesas atualizadas: ${availableTables.length} disponíveis'),
+          ),
+        );
+      },
+    ),
         if (WaiterMenuService.isMenuCacheValid())
         Padding(
           padding: EdgeInsets.only(right: 8),
@@ -539,7 +612,179 @@ Future<void> _refreshMenu() async {
     }
   }
 
-  void _selectTable() {
+void _selectTable() async {
+  // Carregar mesas disponíveis antes de mostrar o modal
+  await _loadAvailableTables();
+  
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.table_restaurant, color: TColor.primary),
+            SizedBox(width: 8),
+            Text('Selecionar Mesa'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Mostrar número de mesas disponíveis
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.green.shade700, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    '${availableTables.length} mesas disponíveis',
+                    style: TextStyle(
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            SizedBox(height: 16),
+
+            // Dropdown de mesas disponíveis
+           // VERSÃO MAIS SIMPLES E SEGURA:
+
+DropdownButtonFormField<int>(
+  value: selectedTable,
+  decoration: InputDecoration(
+    labelText: 'Mesa Disponível',
+    border: OutlineInputBorder(),
+    prefixIcon: Icon(Icons.table_restaurant),
+    hintText: availableTables.isEmpty 
+      ? 'Nenhuma mesa disponível' 
+      : 'Escolha uma mesa',
+  ),
+  items: availableTables.map((table) {
+    return DropdownMenuItem<int>(
+      value: table.number,
+      child: Text('Mesa ${table.number} '), // VERSÃO SIMPLES
+    );
+  }).toList(),
+  onChanged: availableTables.isEmpty ? null : (value) {
+    setDialogState(() {
+      selectedTable = value;
+      // Auto-selecionar o andar da mesa escolhida
+      if (value != null) {
+        final selectedTableData = availableTables.firstWhere(
+          (table) => table.number == value
+        );
+        selectedFloor = selectedTableData.floor;
+      }
+    });
+  },
+),
+            SizedBox(height: 16),
+
+            // Campo de número de pessoas
+            TextFormField(
+              keyboardType: TextInputType.number,
+              initialValue: guestCount.toString(),
+              decoration: InputDecoration(
+                labelText: 'Número de Pessoas',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.people),
+                hintText: 'Ex: 2, 4, 6...',
+              ),
+              onChanged: (value) {
+                guestCount = int.tryParse(value) ?? 2;
+              },
+            ),
+
+            SizedBox(height: 16),
+
+            // Botão para atualizar lista de mesas
+            TextButton.icon(
+              onPressed: () async {
+                setDialogState(() {
+                  // Mostrar loading no botão
+                });
+                await _loadAvailableTables();
+                setDialogState(() {
+                  // Atualizar dialog
+                });
+              },
+              icon: Icon(Icons.refresh, size: 18),
+              label: Text('Atualizar Mesas'),
+              style: TextButton.styleFrom(
+                foregroundColor: TColor.primary,
+              ),
+            ),
+
+            // Aviso se não há mesas disponíveis
+            if (availableTables.isEmpty)
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber, color: Colors.orange.shade700, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Todas as mesas estão ocupadas ou indisponíveis',
+                        style: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: (selectedTable == null || availableTables.isEmpty) ? null : () {
+              Navigator.pop(context);
+              setState(() {
+                // Mesa já foi selecionada no dropdown
+              });
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Mesa ${selectedTable} selecionada'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TColor.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Confirmar'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+  void _selectTableOld() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
