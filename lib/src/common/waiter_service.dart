@@ -11,6 +11,12 @@ import 'dart:convert';
 // import 'mobile_printer_service.dart';
 
 class WaiterMenuService {
+
+  static Map<String, List<MenuItemModel>>? _cachedMenu;
+  static bool _menuLoaded = false;
+  static DateTime? _lastMenuUpdate;
+  static const Duration MENU_CACHE_DURATION = Duration(hours: 6);
+
   
   // ========== NOVA IMPLEMENTAÇÃO COM API REAL ==========
   
@@ -138,61 +144,132 @@ class WaiterMenuService {
   // ========== BUSCAR MENU (MANTIDO IGUAL) ==========
   
   /// Buscar menu usando a mesma API que o cliente usa
-  static Future<Map<String, List<MenuItemModel>>> getMenuByCategory() async {
+static Future<Map<String, List<MenuItemModel>>> getMenuByCategory() async {
+    // VERIFICAR SE JÁ TEM CACHE VÁLIDO
+    if (_menuLoaded && 
+        _cachedMenu != null && 
+        _lastMenuUpdate != null &&
+        DateTime.now().difference(_lastMenuUpdate!) < MENU_CACHE_DURATION) {
+      print("📦 Garçom: Usando menu do cache");
+      return _cachedMenu!;
+    }
+
     try {
+      print("🌐 Garçom: Buscando menu da API...");
+      
       final prefs = await SharedPreferences.getInstance();
       String? restaurantUUID = prefs.getString('restaurant_id') ?? 
-                               prefs.getString('user_restaurant_id') ?? 
-                               prefs.getString('user_restaurant_uuid');
-      
-      if (restaurantUUID == null || restaurantUUID.isEmpty) {
-        print('Erro: restaurant_id não encontrado');
-        return _getMockMenu(); // Fallback para dados mock
+                               prefs.getString('user_restaurant_id');
+
+      if (restaurantUUID == null) {
+        print("❌ UUID do restaurante não encontrado");
+        return _getMockMenu(); // Fallback
       }
 
-      // Usar Completer para aguardar a resposta da API
       final Completer<Map<String, List<MenuItemModel>>> completer = Completer();
-      
+
+      // USAR A MESMA API DO CLIENTE
       ServiceCall.getMenuItems(restaurantUUID,
-          withSuccess: (Map<String, dynamic> data) {
-            print('=== DADOS RECEBIDOS DA API ===');
-            print('Success: ${data['success']}');
-            
+        withSuccess: (Map<String, dynamic> data) {
+          try {
+            Map<String, List<MenuItemModel>> menuByCategory = {};
+
             if (data.containsKey('menu') && data['menu'] != null) {
-              if (data['menu'] is List && (data['menu'] as List).isNotEmpty) {
-                List allMenuItems = data['menu'];
-                print('Número de categorias na API: ${allMenuItems.length}');
-                
-                Map<String, List<MenuItemModel>> menuByCategory = _convertApiDataToMenuItems(allMenuItems);
-                completer.complete(menuByCategory);
-              } else {
-                print('Menu vazio na resposta da API');
-                completer.complete(_getMockMenu());
+              List categories = data['menu'];
+              
+              for (var category in categories) {
+                String categoryName = category['category_name'] ?? 'Sem Categoria';
+                List<MenuItemModel> categoryItems = [];
+
+                if (category['products'] != null) {
+                  List products = category['products'];
+                  
+                  for (var product in products) {
+                    MenuItemModel item = MenuItemModel(
+                      id: product['id']?.toString() ?? '',
+                      name: product['name'] ?? '',
+                      category: categoryName,
+                      price: double.tryParse(product['current_price']?.toString() ?? '0') ?? 0.0,
+                      description: product['description'] ?? '',
+                      preparationTime: 10, // Tempo padrão
+                      isPopular: product['is_popular'] ?? false,
+                    );
+                    categoryItems.add(item);
+                  }
+                }
+
+                if (categoryItems.isNotEmpty) {
+                  menuByCategory[categoryName] = categoryItems;
+                }
               }
+
+              // SALVAR NO CACHE
+              _cachedMenu = menuByCategory;
+              _menuLoaded = true;
+              _lastMenuUpdate = DateTime.now();
+
+              print("✅ Garçom: Menu carregado da API com ${menuByCategory.length} categorias");
+              completer.complete(menuByCategory);
+
             } else {
-              print('Campo menu não encontrado na resposta');
-              completer.complete(_getMockMenu());
+              print("⚠️ Garçom: Dados de menu não encontrados, usando mock");
+              final mockMenu = _getMockMenu();
+              _cachedMenu = mockMenu;
+              _menuLoaded = true;
+              _lastMenuUpdate = DateTime.now();
+              completer.complete(mockMenu);
             }
-          },
-          failure: (String error) {
-            print("Erro ao buscar menu para garçom: $error");
-            completer.complete(_getMockMenu());
-          });
-      
+
+          } catch (e) {
+            print("❌ Garçom: Erro ao processar dados: $e");
+            final mockMenu = _getMockMenu();
+            completer.complete(mockMenu);
+          }
+        },
+        failure: (String error) {
+          print("❌ Garçom: Falha na API: $error");
+          final mockMenu = _getMockMenu();
+          completer.complete(mockMenu);
+        }
+      );
+
       return await completer.future.timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          print('Timeout ao buscar menu, usando dados mock');
+          print("⏰ Garçom: Timeout, usando mock");
           return _getMockMenu();
         }
       );
-      
+
     } catch (e) {
-      print('Erro ao buscar menu: $e');
+      print("❌ Garçom: Erro geral: $e");
       return _getMockMenu();
     }
   }
 
+static Future<Map<String, List<MenuItemModel>>> forceRefreshMenu() async {
+    print("🔄 Garçom: Forçando atualização do menu...");
+    _menuLoaded = false;
+    _cachedMenu = null;
+    _lastMenuUpdate = null;
+    return await getMenuByCategory();
+  }
+
+  static bool isMenuCacheValid() {
+    return _menuLoaded && 
+           _cachedMenu != null && 
+           _lastMenuUpdate != null &&
+           DateTime.now().difference(_lastMenuUpdate!) < MENU_CACHE_DURATION;
+  }
+
+  static void clearMenuCache() {
+    _menuLoaded = false;
+    _cachedMenu = null;
+    _lastMenuUpdate = null;
+    print("🧹 Cache do menu do garçom limpo");
+  }
+
+  
   // ========== DADOS MOCK (FALLBACK) ==========
   
   /// Dados mock para desenvolvimento/teste

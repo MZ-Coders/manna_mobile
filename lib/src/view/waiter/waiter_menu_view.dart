@@ -94,6 +94,36 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
     }
   }
 
+
+Future<void> _refreshMenu() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final newMenu = await WaiterMenuService.forceRefreshMenu();
+      setState(() {
+        menuByCategory = newMenu;
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Menu atualizado!")),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erro ao atualizar: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -121,7 +151,17 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
         backgroundColor: TColor.primary,
         foregroundColor: Colors.white,
         title: Text('Menu - ${selectedTable != null ? 'Mesa $selectedTable' : 'Selecionar Mesa'}'),
+        
         actions: [
+        if (WaiterMenuService.isMenuCacheValid())
+        Padding(
+          padding: EdgeInsets.only(right: 8),
+          child: Icon(
+            Icons.cached,
+            color: Colors.green,
+            size: 16,
+          ),
+        ),
           if (cart.isNotEmpty)
             Stack(
               children: [
@@ -518,24 +558,24 @@ class _WaiterMenuViewState extends State<WaiterMenuView> with TickerProviderStat
               },
             ),
             SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedFloor,
-              decoration: InputDecoration(
-                labelText: 'Andar',
-                border: OutlineInputBorder(),
-              ),
-              items: ['First', 'Second', 'Third'].map((floor) {
-                return DropdownMenuItem(
-                  value: floor,
-                  child: Text(floor),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  selectedFloor = value;
-                }
-              },
-            ),
+            // DropdownButtonFormField<String>(
+            //   value: selectedFloor,
+            //   decoration: InputDecoration(
+            //     labelText: 'Andar',
+            //     border: OutlineInputBorder(),
+            //   ),
+            //   items: ['First', 'Second', 'Third'].map((floor) {
+            //     return DropdownMenuItem(
+            //       value: floor,
+            //       child: Text(floor),
+            //     );
+            //   }).toList(),
+            //   onChanged: (value) {
+            //     if (value != null) {
+            //       selectedFloor = value;
+            //     }
+            //   },
+            // ),
             SizedBox(height: 16),
             TextField(
               keyboardType: TextInputType.number,
