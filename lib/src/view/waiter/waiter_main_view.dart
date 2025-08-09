@@ -76,6 +76,7 @@ Future<void> _setSelectedTableInPreferences(int tableNumber, String floor) async
       backgroundColor: TColor.white,
       appBar: AppBar(
         backgroundColor: TColor.primary,
+        toolbarHeight: 100,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
