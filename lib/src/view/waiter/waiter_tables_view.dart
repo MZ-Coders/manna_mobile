@@ -68,9 +68,11 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
           ),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButton(),
+      // floatingActionButton: _buildFloatingActionButton(),
     );
   }
+
+  
 
   Widget _buildTopHeader() {
     int totalTables = filteredTables.length;
