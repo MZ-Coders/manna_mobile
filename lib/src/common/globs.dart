@@ -80,7 +80,7 @@ class Globs {
 }
 
 class SVKey {
-  static const mainUrl = "https://manna.software";
+  static const mainUrl = "https://test.manna.software";
   static const baseUrl = '$mainUrl/api/';
   static const nodeUrl = mainUrl;
 

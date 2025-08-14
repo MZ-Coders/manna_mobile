@@ -803,24 +803,24 @@ void _showGuestCountDialog(TableModel table) {
             child: Text('Cancelar'),
           ),
           // NOVO: Botão apenas para ocupar a mesa
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _updateTableStatus(table, TableStatus.pending, guestCount: guestCount);
-              // Mostrar mensagem de sucesso
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Mesa ${table.number} ocupada com ${guestCount} cliente(s)'),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-            ),
-            child: Text('Ocupar Mesa', style: TextStyle(color: Colors.white)),
-          ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     // Navigator.pop(context);
+          //     _updateTableStatus(table, TableStatus.pending, guestCount: 1);
+          //     // Mostrar mensagem de sucesso
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       SnackBar(
+          //         content: Text('Mesa ${table.number} ocupada com ${guestCount} cliente(s)'),
+          //         backgroundColor: Colors.green,
+          //         duration: Duration(seconds: 2),
+          //       ),
+          //     );
+          //   },
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: Colors.orange,
+          //   ),
+          //   child: Text('Ocupar Mesa', style: TextStyle(color: Colors.white)),
+          // ),
           // Botão para ocupar E ir para o menu
           ElevatedButton(
             onPressed: () {

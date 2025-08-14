@@ -113,6 +113,20 @@ factory OrderModel.fromApiJson(Map<String, dynamic> json) {
       return OrderItem.fromApiJson(itemJson);
     }).toList();
   }
+
+    if (json['items'] != null && json['items'] is List) {
+    List itemsJson = json['items'];
+    orderItems = itemsJson.map((itemJson) {
+      return OrderItem.fromApiJson(itemJson);
+    }).toList();
+  }
+  // Fallback para 'order_items' (estrutura alternativa)
+  else if (json['order_items'] != null && json['order_items'] is List) {
+    List itemsJson = json['order_items'];
+    orderItems = itemsJson.map((itemJson) {
+      return OrderItem.fromApiJson(itemJson);
+    }).toList();
+  }
   
   // Calcular número de convidados (estimativa baseada na quantidade de itens)
   int guestCount = 1;
@@ -120,6 +134,11 @@ factory OrderModel.fromApiJson(Map<String, dynamic> json) {
     int totalQuantity = orderItems.fold(0, (sum, item) => sum + item.quantity);
     guestCount = (totalQuantity / 2).ceil().clamp(1, 8); // Estimativa
   }
+
+  print('📦 Itens convertidos: ${orderItems.length}');
+for (var item in orderItems) {
+  print('   - ${item.name} (Qtd: ${item.quantity})');
+}
   
   print('📋 Pedido convertido: #$orderId - Mesa $tableNumber "$tableName" ($apiStatus -> $status) - MT $totalAmount');
   
