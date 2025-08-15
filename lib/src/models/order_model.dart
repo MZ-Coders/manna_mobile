@@ -466,6 +466,8 @@ class OrderItem {
 
   // Converter de JSON da API - baseado em order_items do OrdeResponse.json
   factory OrderItem.fromApiJson(Map<String, dynamic> json) {
+    print('📝 Convertendo item do pedido: ${json.toString()}');
+
     String itemId = json['id']?.toString() ?? '0';
     String itemUuid = json['uuid'] ?? '';
     String productName = json['product_name'] ?? 'Item';
@@ -474,7 +476,8 @@ class OrderItem {
     String? notes = json['notes'];
     String apiStatus = (json['status'] ?? 'PENDING').toString().toUpperCase();
     int? productId = json['product_id'];
-    
+    double newPrice = double.tryParse(json['price']?.toString() ?? '0') ?? 0.0;
+
     // Converter status para isServed
     bool isServed = _convertApiStatusToIsServed(apiStatus);
     
@@ -498,7 +501,7 @@ class OrderItem {
       uuid: itemUuid,
       name: productName,
       quantity: quantity,
-      price: priceSnapshot,
+      price: newPrice,
       isServed: isServed,
       notes: notes,
       productId: productId,
