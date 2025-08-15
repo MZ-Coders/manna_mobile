@@ -1296,7 +1296,7 @@ Widget _buildOrderItem(OrderItem item, OrderModel order) {
         
         // Preço
         Text(
-          'MT ${(item.price * item.quantity).toStringAsFixed(2)}',
+          'MT ${((item.price).toDouble() * item.quantity).toStringAsFixed(2)}',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -1304,24 +1304,24 @@ Widget _buildOrderItem(OrderItem item, OrderModel order) {
           ),
         ),
         
-        SizedBox(width: 8),
+        // SizedBox(width: 8),
         
-        // Status badge
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: _getItemStatusColor(item.status ?? 'PENDING').withOpacity(0.1),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            _getItemStatusText(item.status ?? 'PENDING'),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: _getItemStatusColor(item.status ?? 'PENDING'),
-            ),
-          ),
-        ),
+        // Status badge -> Mostrar Status de Cada Item do Pedido, por agora desabilitado.
+        // Container(
+        //   padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        //   decoration: BoxDecoration(
+        //     color: _getItemStatusColor(item.status ?? 'PENDING').withOpacity(0.1),
+        //     borderRadius: BorderRadius.circular(4),
+        //   ),
+        //   child: Text(
+        //     _getItemStatusText(item.status ?? 'PENDING'),
+        //     style: TextStyle(
+        //       fontSize: 10,
+        //       fontWeight: FontWeight.w600,
+        //       color: _getItemStatusColor(item.status ?? 'PENDING'),
+        //     ),
+        //   ),
+        // ),
       ],
     ),
   );
