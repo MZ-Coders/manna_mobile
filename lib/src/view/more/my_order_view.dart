@@ -429,7 +429,7 @@ void _processPurchase() async {
     
     // Preparar dados da compra
     Map<String, dynamic> purchaseData = {
-      "restaurant_id": int.parse(restaurantId),
+      "restaurant_id": restaurantId,
       "items": items,
     };
     
