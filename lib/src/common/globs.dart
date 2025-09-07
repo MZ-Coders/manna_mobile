@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -80,15 +81,28 @@ class Globs {
 }
 
 class SVKey {
-  static const mainUrl = "https://manna.software";
-  static const baseUrl = '$mainUrl/api/';
-  static const nodeUrl = mainUrl;
+  // Função para determinar a mainUrl baseada na URL atual
+  static String get mainUrl {
+    if (kIsWeb) {
+      final currentHost = Uri.base.host;
+      if (currentHost == 'test.manna.software') {
+        return 'https://test.app.manna.software';
+      } else if (currentHost == 'app.manna.software') {
+        return 'https://manna.software';
+      }
+    }
+    // URL padrão para desenvolvimento/mobile ou se não corresponder aos casos acima (ambiente de teste)
+    return 'https://test.app.manna.software';
+  }
+  
+  static String get baseUrl => '$mainUrl/api/';
+  static String get nodeUrl => mainUrl;
 
-  static const svLogin = '${baseUrl}login';
-  static const svSignUp = '${baseUrl}sign_up';
-  static const svForgotPasswordRequest = '${baseUrl}forgot_password_request';
-  static const svForgotPasswordVerify = '${baseUrl}forgot_password_verify';
-  static const svForgotPasswordSetNew = '${baseUrl}forgot_password_set_new';
+  static String get svLogin => '${baseUrl}login';
+  static String get svSignUp => '${baseUrl}sign_up';
+  static String get svForgotPasswordRequest => '${baseUrl}forgot_password_request';
+  static String get svForgotPasswordVerify => '${baseUrl}forgot_password_verify';
+  static String get svForgotPasswordSetNew => '${baseUrl}forgot_password_set_new';
 }
 
 class KKey {
