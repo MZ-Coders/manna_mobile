@@ -85,14 +85,14 @@ class SVKey {
   static String get mainUrl {
     if (kIsWeb) {
       final currentHost = Uri.base.host;
-      if (currentHost == 'test.manna.software') {
-        return 'https://test.app.manna.software';
+      if (currentHost == 'test.app.manna.software') {
+        return 'https://test.manna.software';
       } else if (currentHost == 'app.manna.software') {
         return 'https://manna.software';
       }
     }
     // URL padrão para desenvolvimento/mobile ou se não corresponder aos casos acima (ambiente de teste)
-    return 'https://test.app.manna.software';
+    return 'https://test.manna.software';
   }
   
   static String get baseUrl => '$mainUrl/api/';
