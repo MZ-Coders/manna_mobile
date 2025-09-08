@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common_widget/language_selector.dart';
-import 'package:dribbble_challenge/l10n/app_localizations.dart';
+import 'package:dribbble_challenge/src/common/globs.dart';
 
 class OnBoardingBodyWidget extends StatefulWidget {
   const OnBoardingBodyWidget({super.key});
@@ -284,6 +284,34 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
               .fadeOut(
                 begin: 1,
               ),
+          
+          // Versão do App - posição fixa no canto inferior direito
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                Globs.appVersion,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ),
               
           // Painel de seleção de app que aparece quando _showAppSelector é true
           if (_showAppSelector)

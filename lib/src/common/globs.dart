@@ -8,6 +8,7 @@ import 'package:dribbble_challenge/main.dart';
 
 class Globs {
   static const appName = "Food Delivery";
+  static const appVersion = "v3.1.0";
 
   static const userPayload = "user_payload";
   static const userLogin = "user_login";
