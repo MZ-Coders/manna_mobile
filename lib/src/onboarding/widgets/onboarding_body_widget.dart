@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common_widget/language_selector.dart';
 import 'package:dribbble_challenge/src/common/globs.dart';
 
@@ -232,7 +231,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       TextButton(
                         onPressed: _refreshData,
                         child: Text(
-                          AppLocalizations.of(context).reloadData,
+                          'Recarregar dados',
                           style: TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
@@ -254,7 +253,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              AppLocalizations.of(context).chooseApp,
+                              'Escolher aplicativo',
                               style: TextStyle(
                                 color: Colors.grey.shade700,
                                 fontSize: 12,
@@ -338,7 +337,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        AppLocalizations.of(context).selectApp,
+                        'Selecionar aplicativo',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -357,8 +356,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       // const Divider(height: 20),
                       
                        _buildAppOption(
-                        title: AppLocalizations.of(context).posApp,
-                        subtitle: AppLocalizations.of(context).posDescription,
+                        title: 'POS App',
+                        subtitle: 'Sistema de ponto de venda',
                         icon: Icons.point_of_sale,
                         value: 'garcon',
                       ),
@@ -367,8 +366,8 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       
                       // Opção Food Delivery App
                       _buildAppOption(
-                        title: AppLocalizations.of(context).restaurant,
-                        subtitle: AppLocalizations.of(context).restaurantAppDescription,
+                        title: 'Restaurante',
+                        subtitle: 'Aplicativo de delivery e cardápio digital',
                         icon: Icons.restaurant,
                         value: 'food_delivery',
                       ),
@@ -391,7 +390,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                        child: Text(AppLocalizations.of(context).confirm),
+                        child: Text('Confirmar'),
                       ),
                     ],
                   ),

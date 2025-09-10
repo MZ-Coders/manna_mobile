@@ -1,10 +1,8 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:dribbble_challenge/main.dart';
+import 'package:dribbble_challenge/src/common/api_config.dart';
 
 class Globs {
   static const appName = "Food Delivery";
@@ -74,26 +72,20 @@ class Globs {
 
   static Future<String> timeZone() async {
     try {
-      return await FlutterTimezone.getLocalTimezone();
-    } on PlatformException {
-        return "";
+      // Usar DateTime nativo para obter informações de timezone
+      final now = DateTime.now();
+      final timeZoneName = now.timeZoneName;
+      return timeZoneName.isNotEmpty ? timeZoneName : "UTC";
+    } catch (e) {
+      return "UTC";
     }
   }
 }
 
 class SVKey {
-  // Função para determinar a mainUrl baseada na URL atual
+  // Função para determinar a mainUrl baseada na URL atual ou configuração salva
   static String get mainUrl {
-    if (kIsWeb) {
-      final currentHost = Uri.base.host;
-      if (currentHost == 'test.app.manna.software') {
-        return 'https://test.manna.software';
-      } else if (currentHost == 'app.manna.software') {
-        return 'https://manna.software';
-      }
-    }
-    // URL padrão para desenvolvimento/mobile ou se não corresponder aos casos acima (ambiente de teste)
-    return 'https://test.manna.software';
+    return ApiConfig.mainUrl;
   }
   
   static String get baseUrl => '$mainUrl/api/';

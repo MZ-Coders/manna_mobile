@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common/menu_data_service.dart';
+import 'package:dribbble_challenge/src/common/api_config.dart';
 import 'package:dribbble_challenge/src/view/login/login_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ import 'package:dribbble_challenge/src/common/my_http_overrides.dart';
 import 'package:dribbble_challenge/src/common/service_call.dart';
 import 'package:dribbble_challenge/src/onboarding/onboarding_screen.dart';
 import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
-import 'package:dribbble_challenge/src/view/on_boarding/startup_view.dart';
+import 'package:dribbble_challenge/src/view/restaurant_setup/restaurant_setup_view.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
@@ -43,6 +44,9 @@ void main() async {
   final languageService = LanguageService();
   await languageService.loadSavedLanguage();
   
+  // Inicializar configuração da API (importante para mobile)
+  await ApiConfig.initialize();
+  
   // Inicializações específicas do Food Delivery app
   setUpLocator();
   HttpOverrides.global = MyHttpOverrides();
@@ -50,10 +54,61 @@ void main() async {
   // Configuração do EasyLoading primeiro
   configLoading();
   
-  // Obter parâmetros da URL
+  prefs = await SharedPreferences.getInstance();
+  
+  // NOVA LÓGICA: Verificar se é mobile e se a configuração foi feita
+  if (!kIsWeb) {
+    // Em mobile, verificar se o restaurante já foi configurado
+    bool setupCompleted = prefs!.getBool('restaurant_setup_completed') ?? false;
+    
+    if (!setupCompleted) {
+      // Primeira execução no mobile - mostrar tela de configuração
+      runApp(MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: languageService),
+        ],
+        child: const MaterialApp(
+          home: RestaurantSetupView(),
+          debugShowCheckedModeBanner: false,
+        ),
+      ));
+      return;
+    }
+    
+    // Se já foi configurado, pegar os dados salvos
+    final savedRestaurantId = prefs!.getString('restaurant_id');
+    final savedTableId = prefs!.getString('table_id');
+    
+    if (savedRestaurantId == null || savedRestaurantId.isEmpty) {
+      // Dados corrompidos, voltar para configuração
+      await prefs!.setBool('restaurant_setup_completed', false);
+      runApp(MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: languageService),
+        ],
+        child: const MaterialApp(
+          home: RestaurantSetupView(),
+          debugShowCheckedModeBanner: false,
+        ),
+      ));
+      return;
+    }
+    
+    print("Mobile - Restaurante já configurado: $savedRestaurantId");
+    if (savedTableId != null && savedTableId.isNotEmpty) {
+      print("Mobile - Mesa configurada: $savedTableId");
+    }
+    
+    // Prosseguir com o carregamento dos dados
+    _initializeAppWithRestaurant(savedRestaurantId, languageService);
+    return;
+  }
+  
+  // LÓGICA WEB ORIGINAL
+  // Obter parâmetros da URL (apenas web)
   final restaurantId = getUrlParameter("restaurant");
   final tableId = getUrlParameter("table");
-  prefs = await SharedPreferences.getInstance();
+  
   // Preservar pedidos anteriores antes de limpar
   String? preservedOrders = prefs!.getString('user_orders');
   await prefs!.clear();
@@ -63,7 +118,6 @@ void main() async {
   } else {
     print("Dados antigos limpos (nenhum pedido para preservar)");
   }
-  
   
   // Verificar se restaurantID existe
   if (restaurantId == null || restaurantId.isEmpty) {
@@ -86,6 +140,12 @@ void main() async {
     prefs!.setString('table_id', '');
   }
 
+  // Prosseguir com carregamento
+  _initializeAppWithRestaurant(restaurantId, languageService);
+}
+
+// Nova função para inicializar app com dados do restaurante
+Future<void> _initializeAppWithRestaurant(String restaurantId, LanguageService languageService) async {
   // Mostrar loading durante o carregamento
   runApp(const LoadingApp());
   
