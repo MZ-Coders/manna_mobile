@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dribbble_challenge/src/common/cart_service.dart';
+import 'package:dribbble_challenge/src/common/menu_data_service.dart';
 import 'package:dribbble_challenge/src/view/login/login_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +82,7 @@ void main() async {
   // Mostrar loading durante o carregamento
   runApp(const LoadingApp());
   
-  // Aguardar carregamento dos dados do restaurante
+  // Aguardar carregamento dos dados do restaurante e menu
   print("Carregando dados do restaurante...");
   final loadingSuccess = await loadBasicRestaurantDataSync(restaurantId);
   
@@ -93,6 +94,16 @@ void main() async {
     ));
     return;
   }
+  
+  // Inicializar o serviço de dados do menu em segundo plano
+  // Isso carrega o menu completo uma única vez
+  MenuDataService().initialize().then((success) {
+    if (success) {
+      print("Dados do menu carregados com sucesso");
+    } else {
+      print("Aviso: Falha ao carregar dados do menu, será tentado novamente mais tarde");
+    }
+  });
   
   print("Dados do restaurante carregados com sucesso");
 

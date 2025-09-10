@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
+import 'package:dribbble_challenge/src/common/menu_data_service.dart';
 import 'package:dribbble_challenge/src/common_widget/language_selector.dart';
 import 'package:dribbble_challenge/src/common_widget/menu_item_row.dart';
 import 'package:dribbble_challenge/src/common_widget/round_textfield.dart';
@@ -44,10 +45,10 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     loadTableId();
-    // Iniciar com itens da categoria Entradas/Starters
-    // updateMenuItems();
-    getDataFromApi();
-
+    
+    // Usar o serviço centralizado de dados do menu
+    loadMenuData();
+    
     txtSearch.addListener(_onSearchChanged);
   }
 
@@ -708,9 +709,69 @@ String _buildWelcomeMessage() {
   catArr = newCatArr;
 }
 
- // Give function to receive data from API
-Future<void> getDataFromApi() async {
+// Função para carregar dados do menu usando o serviço centralizado
+Future<void> loadMenuData() async {
+  setState(() {
+    isLoading = true;
+  });
+  
+  // Verificar se o MenuDataService já tem os dados carregados
+  if (MenuDataService().isInitialized) {
+    // Usar os dados já em cache
+    setState(() {
+      allMenuItems = MenuDataService().menuItems;
+      restaurantName = MenuDataService().restaurantName;
+      
+      // Criar categorias dinamicamente baseadas nos dados em cache
+      createCategoriesFromAPI();
+      
+      // Selecionar a primeira categoria automaticamente
+      if (catArr.isNotEmpty) {
+        selectedCategoryId = catArr[0]['id'];
+        updateMenuItems();
+      }
+      
+      // Criar itens populares dinamicamente
+      createMostPopularFromAPI();
+      
+      isLoading = false;
+    });
+    
+    print("Menu carregado do cache com ${allMenuItems.length} categorias");
+  } else {
+    // Inicializar o serviço se ainda não estiver inicializado
+    final success = await MenuDataService().initialize();
+    
+    if (success) {
+      setState(() {
+        allMenuItems = MenuDataService().menuItems;
+        restaurantName = MenuDataService().restaurantName;
+        
+        // Criar categorias dinamicamente baseadas nos dados
+        createCategoriesFromAPI();
+        
+        // Selecionar a primeira categoria automaticamente
+        if (catArr.isNotEmpty) {
+          selectedCategoryId = catArr[0]['id'];
+          updateMenuItems();
+        }
+        
+        // Criar itens populares dinamicamente
+        createMostPopularFromAPI();
+        
+        isLoading = false;
+      });
+      
+      print("Menu carregado da API com ${allMenuItems.length} categorias");
+    } else {
+      // Caso a inicialização falhe, tentar carregar diretamente
+      getDataFromApi();
+    }
+  }
+}
 
+// Método original mantido como fallback em caso de falha do serviço
+Future<void> getDataFromApi() async {
   final prefs = await SharedPreferences.getInstance();
   String? restaurantUUID = prefs.getString('restaurant_id');
   
@@ -744,15 +805,15 @@ Future<void> getDataFromApi() async {
         },
         failure: (String error) {
           setState(() {
-            isLoading = false; // ADICIONAR ESTA LINHA
+            isLoading = false;
           });
           print("Erro ao buscar dados: $error");
         });
   } catch (e) {
     print("Error fetching data: $e");
     setState(() {
-    isLoading = false; // ADICIONAR ESTA LINHA
-  });
+      isLoading = false;
+    });
   }
 }
 
