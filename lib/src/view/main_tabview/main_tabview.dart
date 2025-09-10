@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
+import 'package:dribbble_challenge/src/common/order_count_notifier.dart';
+import 'package:dribbble_challenge/src/common/order_tracking_service.dart';
 import 'package:dribbble_challenge/src/common_widget/tab_button.dart';
+import 'package:dribbble_challenge/src/common_widget/tab_button_with_badge.dart';
 import 'package:dribbble_challenge/src/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home/home_view.dart';
-import '../menu/menu_view.dart';
-import '../more/more_view.dart';
 import '../offer/offer_view.dart';
-import '../profile/profile_view.dart';
 
 class MainTabView extends StatefulWidget {
   const MainTabView({super.key});
@@ -29,11 +31,39 @@ class _MainTabViewState extends State<MainTabView> {
   PageStorageBucket storageBucket = PageStorageBucket();
   Widget selectPageView = const HomeView();
   String? tableId;
+  String restaurantId = '';
+  int activeOrdersCount = 0;
+  bool hasActiveOrders = false;
+  Timer? _orderCheckTimer;
+  StreamSubscription? _orderCountSubscription;
 
   @override
   void initState() {
     super.initState();
     loadTableId();
+    loadRestaurantData();
+    
+    // Configurar timer para verificar pedidos pendentes a cada 10 segundos
+    _orderCheckTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) {
+        checkActiveOrders();
+      }
+    });
+    
+    // Ouvir notificações de mudanças na contagem de pedidos
+    _orderCountSubscription = OrderCountNotifier().stream.listen((_) {
+      if (mounted) {
+        print("Notificação recebida: Atualizando contagem de pedidos na TabBar");
+        checkActiveOrders();
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _orderCheckTimer?.cancel();
+    _orderCountSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> loadTableId() async {
@@ -43,7 +73,50 @@ class _MainTabViewState extends State<MainTabView> {
     });
     print('Table ID: $tableId'); // Aqui o valor real será exibido
   }
+  
+  Future<void> loadRestaurantData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      restaurantId = prefs.getString('restaurant_id') ?? '';
+    });
+    
+    await checkActiveOrders();
+  }
+  
+  Future<void> checkActiveOrders() async {
+    if (restaurantId.isEmpty) return;
+    
+    try {
+      // Buscar pedidos do restaurante atual
+      List<Map<String, dynamic>> restaurantOrders = 
+        await OrderTrackingService.getOrdersByRestaurant(restaurantId);
+      
+      // Contar pedidos ativos (pendentes, em processamento ou prontos)
+      List<String> activeStatusList = ['PENDING', 'PROCESSING', 'READY'];
+      int count = restaurantOrders.where((order) => 
+        activeStatusList.contains(order['status'] ?? '')).length;
+      
+      setState(() {
+        hasActiveOrders = count > 0;
+        activeOrdersCount = count;
+      });
+      
+      print("Verificação de pedidos na TabBar: $count pedidos ativos encontrados");
+    } catch (e) {
+      print("Erro ao verificar pedidos ativos na TabBar: $e");
+    }
+  }
 
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Verificar pedidos ativos quando o widget está totalmente construído ou quando volta ao foco
+    if (mounted) {
+      checkActiveOrders();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,19 +202,25 @@ class _MainTabViewState extends State<MainTabView> {
               //       }
               //     },
               //     isSelected: selctTab == 3),
-              TabButton(
+              TabButtonWithBadge(
                   title: AppLocalizations.of(context).myOrders,
                   icon: "assets/img/shopping_cart.png",
                   onTap: () {
                     if (selctTab != 4) {
                       selctTab = 4;
-                      selectPageView = const  MyOrderView();
+                      selectPageView = const MyOrderView();
+                      
+                      // Atualizar contagem de pedidos quando navegar para a tela
+                      checkActiveOrders();
                     }
                     if (mounted) {
                       setState(() {});
                     }
                   },
-                  isSelected: selctTab == 4),
+                  isSelected: selctTab == 4,
+                  badgeCount: activeOrdersCount,
+                  showBadge: hasActiveOrders && activeOrdersCount > 0,
+                ),
             ],
           ),
         ),

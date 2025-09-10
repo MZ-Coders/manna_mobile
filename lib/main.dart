@@ -54,8 +54,15 @@ void main() async {
   final restaurantId = getUrlParameter("restaurant");
   final tableId = getUrlParameter("table");
   prefs = await SharedPreferences.getInstance();
+  // Preservar pedidos anteriores antes de limpar
+  String? preservedOrders = prefs!.getString('user_orders');
   await prefs!.clear();
-  print("Dados antigos limpos do SharedPreferences");
+  if (preservedOrders != null) {
+    await prefs!.setString('user_orders', preservedOrders);
+    print("Dados antigos limpos (pedidos preservados)");
+  } else {
+    print("Dados antigos limpos (nenhum pedido para preservar)");
+  }
   
   
   // Verificar se restaurantID existe
@@ -634,9 +641,13 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
 
   Future<void> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
+    String? preservedOrders = prefs.getString('user_orders');
     await prefs.clear();
+    if (preservedOrders != null) {
+      await prefs.setString('user_orders', preservedOrders);
+    }
     CartService.clearCart();
-    print("Todos os dados foram limpos!");
+    print("Dados limpos exceto pedidos (user_orders preservado)");
   }
 
   String _buildAppTitle() {

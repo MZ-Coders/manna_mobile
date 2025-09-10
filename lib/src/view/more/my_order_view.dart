@@ -1,10 +1,12 @@
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/cart_service.dart';
+import 'package:dribbble_challenge/src/common/order_count_notifier.dart';
+import 'package:dribbble_challenge/src/common/order_tracking_service.dart';
 import 'package:dribbble_challenge/src/common_widget/round_button.dart';
-import 'package:dribbble_challenge/src/view/home/home_view.dart';
-import 'package:dribbble_challenge/src/view/main_tabview/main_tabview.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -18,7 +20,7 @@ import 'package:http/http.dart' as http;
 // import 'web.dart' if (dart.library.io) 'mobile.dart' as platform;
 // import './../../pdf/web.dart';
 import './../../pdf/mobile.dart' if (dart.library.html) './../../pdf/web.dart' as platform;
-import 'checkout_view.dart';
+import 'order_tracking_view.dart';
 
 import 'package:dribbble_challenge/src/common/service_call.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -55,34 +57,105 @@ class _MyOrderViewState extends State<MyOrderView> {
   final TextEditingController _notesController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  @override
-void initState() {
-  super.initState();
-  loadRestaurantData();
-}
+  // Variáveis para rastreamento de pedidos
+  bool hasActiveOrders = false;
+  int activeOrdersCount = 0;
+  bool hasAnyOrders = false; // Indica se existem quaisquer pedidos salvos (mesmo que não ativos)
 
-@override
-void dispose() {
-  _customerNameController.dispose();
-  _customerPhoneController.dispose();
-  _notesController.dispose();
-  super.dispose();
-}
-
-Future<void> loadRestaurantData() async {
-  final prefs = await SharedPreferences.getInstance();
-  setState(() {
-    restaurantName = prefs.getString('restaurant_name') ?? 'Manna Restaurant';
-    restaurantLogo = prefs.getString('restaurant_logo') ?? '';
-    restaurantAddress = prefs.getString('restaurant_address') ?? '';
-    restaurantCity = prefs.getString('restaurant_city') ?? '';
-    isLoading = false;
-    restaurantId = prefs.getString('restaurant_id') ?? '';
-    tableId = prefs.getString('table_id') ?? '';
-  });
+  Timer? _refreshTimer;
   
-  print("Dados do restaurante carregados: $restaurantName");
-}
+  @override
+  void initState() {
+    super.initState();
+    // Carregar dados iniciais
+    loadRestaurantData().then((_) {
+      // Garantir que UI é atualizada após carregar os dados
+      if (mounted) setState(() {});
+    });
+    
+    // Configurar timer para atualizar a cada 10 segundos
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) loadRestaurantData();
+    });
+    
+    // Iniciar limpeza automática de pedidos antigos
+    OrderTrackingService.cleanupOldOrders();
+  }
+  
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    _customerNameController.dispose();
+    _customerPhoneController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+  
+  // Método para notificar a barra de navegação para atualizar o contador de pedidos
+  void _notifyOrderCountChanged() {
+    // Usando um evento de notificação para atualizar o contador na TabBar
+    // Isso não usa um Provider formal, mas é uma abordagem simples para comunicação entre telas
+    
+    // Publicar evento para qualquer ouvinte que possa estar interessado
+    OrderCountNotifier().notify();
+  }
+
+  Future<void> loadRestaurantData() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Carregar dados do restaurante
+    setState(() {
+      restaurantName = prefs.getString('restaurant_name') ?? 'Manna Restaurant';
+      restaurantLogo = prefs.getString('restaurant_logo') ?? '';
+      restaurantAddress = prefs.getString('restaurant_address') ?? '';
+      restaurantCity = prefs.getString('restaurant_city') ?? '';
+      restaurantId = prefs.getString('restaurant_id') ?? '';
+      tableId = prefs.getString('table_id') ?? '';
+    });
+    
+    print("Dados do restaurante carregados: $restaurantName");
+    
+    // Verificar se existem pedidos ativos para este restaurante
+    if (restaurantId.isNotEmpty) {
+      try {
+        // Buscar pedidos do restaurante atual
+        List<Map<String, dynamic>> restaurantOrders = 
+          await OrderTrackingService.getOrdersByRestaurant(restaurantId);
+        
+        // Contar pedidos ativos (pendentes, em processamento ou prontos)
+        List<String> activeStatusList = ['PENDING', 'PROCESSING', 'READY'];
+        int count = restaurantOrders.where((order) => 
+          activeStatusList.contains(order['status'] ?? '')).length;
+        
+        bool countChanged = count != activeOrdersCount;
+        
+        setState(() {
+          hasActiveOrders = count > 0;
+          activeOrdersCount = count;
+          hasAnyOrders = restaurantOrders.isNotEmpty;
+          isLoading = false;
+        });
+        
+        // Se a contagem mudou, notificar outros widgets
+        if (countChanged) {
+          _notifyOrderCountChanged();
+        }
+        
+        print("Verificação de pedidos: $count pedidos ativos encontrados");
+        print("Badge visível: ${hasActiveOrders && activeOrdersCount > 0}");
+        print("Status de pedidos: $hasActiveOrders, Count: $activeOrdersCount");
+      } catch (e) {
+        print("Erro ao verificar pedidos ativos: $e");
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
 String _buildAddressText() {
   List<String> addressParts = [];
@@ -102,11 +175,7 @@ String _buildAddressText() {
   return addressParts.join(", ");
 }
 
-void _updateCart() {
-  setState(() {
-    itemArr = CartService.getCartItems();
-  });
-}
+// Removida função _updateCart que não era utilizada
 
 void _removeItem(int index) {
   setState(() {
@@ -189,6 +258,30 @@ Widget _buildEmptyCartView() {
           ),
           
           const SizedBox(height: 20),
+
+          // Botão para ver pedidos ativos ou anteriores
+          if (restaurantId.isNotEmpty && (hasActiveOrders || hasAnyOrders)) ...[
+            SizedBox(
+              width: 220,
+              child: RoundButton(
+                title: hasActiveOrders
+                    ? "Ver ${activeOrdersCount} ${activeOrdersCount > 1 ? 'pedidos ativos' : 'pedido ativo'}"
+                    : 'Ver pedidos anteriores',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OrderTrackingView(
+                        restaurantId: restaurantId,
+                        restaurantName: restaurantName,
+                      ),
+                    ),
+                  ).then((_) => loadRestaurantData());
+                },
+              ),
+            ),
+            const SizedBox(height: 30),
+          ],
           
           // Informações do restaurante mesmo com carrinho vazio
           if (restaurantName.isNotEmpty) ...[
@@ -469,26 +562,58 @@ void _processPurchase() async {
   }
 }
 
-void _onPurchaseSuccess(Map<String, dynamic> response) {
+  void _onPurchaseSuccess(Map<String, dynamic> response) async {
   // Limpar formulário
   _customerNameController.clear();
   _customerPhoneController.clear();
   _notesController.clear();
   
-  // Gerar PDF e navegar
+  // Salvar informações do pedido para rastreamento
+  if (response.containsKey('order') && restaurantId.isNotEmpty) {
+    try {
+      // Preparar dados do pedido para salvar
+      Map<String, dynamic> orderToSave = {
+        ...response['order'],
+        'restaurant_id': restaurantId,
+        'restaurant_name': restaurantName,
+        'restaurant_logo': restaurantLogo,
+        'status': response['order']['status'] ?? 'PENDING',
+        'saved_at': DateTime.now().millisecondsSinceEpoch,
+      };
+  // Garantir cópia profunda dos itens
+  if (orderToSave['items'] is List) {
+    orderToSave['items'] = (orderToSave['items'] as List)
+    .map((e) => Map<String, dynamic>.from(e as Map))
+    .toList();
+  }
+      
+      // Salvar pedido no serviço de rastreamento
+      await OrderTrackingService.saveOrder(orderToSave);
+      
+      // Atualizar contagem de pedidos após salvar novo pedido
+      await loadRestaurantData();
+      
+      // Emitir notificação para atualizar contador na tabBar
+      _notifyOrderCountChanged();
+      
+      print('Pedido salvo para rastreamento: ID ${response['order']['id']}');
+    } catch (e) {
+      print('Erro ao salvar pedido para rastreamento: $e');
+    }
+  }  // Gerar PDF e navegar
   _createPDFv2().then((_) {
     CartService.clearCart();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HomeView(),
-      ),
+    // Usar navegação nomeada para manter TabBar
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      'home',
+      (route) => false,
     );
     
     // Mostrar mensagem de sucesso
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Pedido registrado com sucesso!'),
+        content: Text('Pedido registrado com sucesso! Você pode acompanhar o status na seção "Meus Pedidos"'),
+        duration: Duration(seconds: 5),
         backgroundColor: Colors.green,
       ),
     );
@@ -555,64 +680,177 @@ void _onPurchaseError(String error) {
       ),
     ],
   ),
-  child: Row(
+  child: Column(
     children: [
-      Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: TColor.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
+      Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: TColor.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(
+                Icons.arrow_back_ios,
+                color: TColor.primary,
+                size: 18,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).myOrder,
+                      style: TextStyle(
+                        color: TColor.primaryText,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (hasActiveOrders && activeOrdersCount > 0) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: TColor.primary,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          "$activeOrdersCount",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Text(
+                 "${itemArr.length} ${AppLocalizations.of(context).itemsInCart}",
+                  style: TextStyle(
+                      color: TColor.secondaryText,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+          // Badge com total de itens
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: TColor.primary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              "${CartService.getTotalItems()}",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      
+      // Botão para rastreamento de pedidos
+      if (restaurantId.isNotEmpty) ...[
+        const SizedBox(height: 10),
+        InkWell(
+          onTap: () {
+            // Abrir tela de rastreamento de pedidos
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OrderTrackingView(
+                  restaurantId: restaurantId,
+                  restaurantName: restaurantName,
+                ),
+              ),
+            ).then((_) {
+              // Recarregar dados ao voltar da tela de rastreamento
+              loadRestaurantData();
+            });
           },
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: TColor.primary,
-            size: 18,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: hasActiveOrders ? TColor.primary.withOpacity(0.2) : TColor.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: hasActiveOrders ? TColor.primary : TColor.primary.withOpacity(0.3),
+                width: hasActiveOrders ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  hasActiveOrders ? Icons.notifications_active : Icons.receipt_long,
+                  color: TColor.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    hasActiveOrders
+                        ? "Você tem ${activeOrdersCount} ${activeOrdersCount > 1 ? 'pedidos ativos' : 'pedido ativo'}"
+                        : "Acompanhar pedidos neste restaurante",
+                    style: TextStyle(
+                      color: TColor.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (hasActiveOrders)
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: TColor.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        "$activeOrdersCount",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: TColor.primary,
+                    size: 16,
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
-      const SizedBox(width: 16),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context).myOrder,
-              style: TextStyle(
-                  color: TColor.primaryText,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800),
-            ),
-            Text(
-             "${itemArr.length} ${AppLocalizations.of(context).itemsInCart}",
-              style: TextStyle(
-                  color: TColor.secondaryText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      ),
-      // Badge com total de itens
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: TColor.primary,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          "${CartService.getTotalItems()}",
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
+      ],
     ],
   ),
 ),

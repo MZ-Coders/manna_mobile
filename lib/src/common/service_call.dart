@@ -293,4 +293,47 @@ static void purchase(Map<String, dynamic> purchaseData,
     }
   });
 }
+
+// Função para verificar status de um pedido específico
+static void getOrderStatus(String orderId,
+    {ResSuccess? withSuccess, ResFailure? failure}) {
+  Future(() {
+    try {
+      var headers = {'Content-Type': 'application/json'};
+      
+      // Adicionar token de autorização se disponível
+      SharedPreferences.getInstance().then((prefs) {
+        String? token = prefs.getString('auth_token');
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+        }
+        
+        // Fazer a requisição GET para a API
+        http
+          .get(Uri.parse(SVKey.baseUrl + "orders/" + orderId + "/status"), 
+               headers: headers)
+          .then((value) {
+            if (kDebugMode) {
+              print("Order Status Response: ${value.body}");
+            }
+            try {
+              var jsonObj = json.decode(value.body) as Map<String, dynamic>? ?? {};
+
+              if (jsonObj['success'] == true || value.statusCode == 200) {
+                if (withSuccess != null) withSuccess(jsonObj);
+              } else {
+                if (failure != null) failure(jsonObj['message'] ?? 'Erro ao obter status do pedido');
+              }
+            } catch (err) {
+              if (failure != null) failure(err.toString());
+            }
+          }).catchError((e) {
+             if (failure != null) failure(e.toString());
+          });
+      });
+    } catch (err) {
+      if (failure != null) failure(err.toString());
+    }
+  });
+}
 }
