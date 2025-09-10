@@ -64,6 +64,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
     'PROCESSING': Colors.blue,
     'READY': Colors.green,
     'DELIVERED': Colors.purple,
+    'COMPLETED': Colors.green.shade800,
     'CANCELLED': Colors.red,
   };
   
@@ -72,6 +73,7 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
     'PROCESSING': 'Em preparo',
     'READY': 'Pronto para entrega',
     'DELIVERED': 'Entregue',
+    'COMPLETED': 'Finalizado',
     'CANCELLED': 'Cancelado',
   };
   
@@ -256,8 +258,6 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
         itemCount: orders.length,
         itemBuilder: (context, index) {
           final order = orders[index];
-          final status = order['status'] ?? 'PENDING';
-          
           return _buildOrderCard(order, index);
         },
       ),
@@ -425,64 +425,93 @@ class _OrderTrackingViewState extends State<OrderTrackingView> {
                   ],
                 ),
                 
-                // Botão para verificar status atual
+                // Botão para verificar status atual (não exibir quando status for COMPLETED ou DELIVERED)
                 const SizedBox(height: 16),
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      // Mostrar carregamento
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Verificando status atual..."),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                      
-                      // Verificar status atual
-                      try {
-                        Map<String, dynamic> updatedStatus = await OrderTrackingService.checkOrderStatus(uuid.isNotEmpty ? uuid : orderNumber.toString());
+                
+                // Verificar se o pedido está em um estado que permite atualização
+                if (status != 'COMPLETED' && status != 'DELIVERED') 
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        // Mostrar carregamento
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Verificando status atual..."),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
                         
-                        if (updatedStatus.isNotEmpty && updatedStatus['order'] != null) {
-                          // Atualizar lista
-                          setState(() {
-                            orders[index]['status'] = updatedStatus['order']['status'];
-                            orders[index]['items'] = updatedStatus['order']['items'];
-                          });
+                        // Verificar status atual
+                        try {
+                          Map<String, dynamic> updatedStatus = await OrderTrackingService.checkOrderStatus(uuid.isNotEmpty ? uuid : orderNumber.toString());
                           
-                          // Mostrar status atualizado
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Status atualizado: ${getStatusText(updatedStatus['order']['status'] ?? 'PENDING')}",
+                          if (updatedStatus.isNotEmpty && updatedStatus['order'] != null) {
+                            // Atualizar lista
+                            setState(() {
+                              orders[index]['status'] = updatedStatus['order']['status'];
+                              orders[index]['items'] = updatedStatus['order']['items'];
+                            });
+                            
+                            // Mostrar status atualizado
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  "Status atualizado: ${getStatusText(updatedStatus['order']['status'] ?? 'PENDING')}",
+                                ),
+                                backgroundColor: getStatusColor(updatedStatus['order']['status'] ?? 'PENDING'),
                               ),
-                              backgroundColor: getStatusColor(updatedStatus['order']['status'] ?? 'PENDING'),
-                            ),
-                          );
-                        } else {
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Não foi possível verificar o status atual"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Não foi possível verificar o status atual"),
+                              content: Text("Erro ao verificar status: $e"),
                               backgroundColor: Colors.red,
                             ),
                           );
                         }
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Erro ao verificar status: $e"),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
-                    icon: Icon(Icons.refresh),
-                    label: Text("Verificar Status"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: TColor.primary,
-                      foregroundColor: Colors.white,
+                      },
+                      icon: Icon(Icons.refresh),
+                      label: Text("Verificar Status"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: TColor.primary,
+                        foregroundColor: Colors.white,
+                      ),
                     ),
                   ),
-                ),
+                // Se o pedido estiver completo, mostrar uma mensagem
+                if (status == 'COMPLETED' || status == 'DELIVERED')
+                  Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text(
+                            "Pedido finalizado",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

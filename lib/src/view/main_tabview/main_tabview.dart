@@ -120,108 +120,127 @@ class _MainTabViewState extends State<MainTabView> {
 
   @override
   Widget build(BuildContext context) {
-    print('Table ID: $tableId'); // Aqui o valor real será exibido}');
-    return Scaffold(
-      body: PageStorage(bucket: storageBucket, child: selectPageView),
-      backgroundColor: const Color(0xfff5f5f5),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.miniCenterDocked,
-      floatingActionButton: SizedBox(
-        width: 60,
-        height: 60,
-        child: FloatingActionButton(
-          onPressed: () {
-            if (selctTab != 2) {
-              selctTab = 2;
-              selectPageView = const HomeView();
-            }
-            if (mounted) {
-              setState(() {});
-            }
-          },
-          shape: const CircleBorder(),
-          backgroundColor: selctTab == 2 ? TColor.primary : TColor.placeholder,
-          child: Image.asset(
-            "assets/img/tab_home.png",
-            width: 30,
-            height: 30,
+    print('Table ID: $tableId');
+    return WillPopScope(
+      onWillPop: () async {
+        // Se estiver na Home (aba central), impedir voltar
+        if (selctTab == 2) {
+          // Mostrar diálogo de confirmação para ir para onboarding
+          final shouldGoToOnboarding = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Deseja sair?'),
+              content: const Text('Você será redirecionado para a tela inicial (onboarding). Deseja continuar?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Ir para onboarding'),
+                ),
+              ],
+            ),
+          );
+          if (shouldGoToOnboarding == true) {
+            // Navegar para onboarding removendo todas as rotas anteriores
+            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            return false;
+          }
+          return false;
+        }
+        // Se não estiver na Home, voltar para Home
+        setState(() {
+          selctTab = 2;
+          selectPageView = const HomeView();
+        });
+        return false;
+      },
+      child: Scaffold(
+        body: PageStorage(bucket: storageBucket, child: selectPageView),
+        backgroundColor: const Color(0xfff5f5f5),
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.miniCenterDocked,
+        floatingActionButton: SizedBox(
+          width: 60,
+          height: 60,
+          child: FloatingActionButton(
+            onPressed: () {
+              if (selctTab != 2) {
+                selctTab = 2;
+                selectPageView = const HomeView();
+              }
+              if (mounted) {
+                setState(() {});
+              }
+            },
+            shape: const CircleBorder(),
+            backgroundColor: selctTab == 2 ? TColor.primary : TColor.placeholder,
+            child: Image.asset(
+              "assets/img/tab_home.png",
+              width: 30,
+              height: 30,
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        surfaceTintColor: TColor.white,
-        shadowColor: Colors.black,
-        elevation: 1,
-        notchMargin: 12,
-        height: 64,
-        shape: const CircularNotchedRectangle(),
-        child: SafeArea(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // TabButton(
-              //     title: "Menu",
-              //     icon: "assets/img/tab_menu.png",
-              //     onTap: () {
-              //       if (selctTab != 0) {
-              //         selctTab = 0;
-              //         selectPageView = const MenuView();
-              //       }
-              //       if (mounted) {
-              //         setState(() {});
-              //       }
-              //     },
-              //     isSelected: selctTab == 0),
-              TabButton(
-                  title: AppLocalizations.of(context).offers,
-                  icon: "assets/img/tab_offer.png",
-                  onTap: () {
-                    if (selctTab != 1) {
-                      selctTab = 1;
-                      selectPageView = const OfferView();
-                    }
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                  isSelected: selctTab == 1),
-        
-        
-                const  SizedBox(width: 40, height: 40, ),
-        
-              // TabButton(
-              //     title: "Profile",
-              //     icon: "assets/img/tab_profile.png",
-              //     onTap: () {
-              //       if (selctTab != 3) {
-              //         selctTab = 3;
-              //         selectPageView = const ProfileView();
-              //       }
-              //       if (mounted) {
-              //         setState(() {});
-              //       }
-              //     },
-              //     isSelected: selctTab == 3),
-              TabButtonWithBadge(
-                  title: AppLocalizations.of(context).myOrders,
-                  icon: "assets/img/shopping_cart.png",
-                  onTap: () {
-                    if (selctTab != 4) {
-                      selctTab = 4;
-                      selectPageView = const MyOrderView();
-                      
-                      // Atualizar contagem de pedidos quando navegar para a tela
-                      checkActiveOrders();
-                    }
-                    if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                  isSelected: selctTab == 4,
-                  badgeCount: activeOrdersCount,
-                  showBadge: hasActiveOrders && activeOrdersCount > 0,
-                ),
-            ],
+        bottomNavigationBar: BottomAppBar(
+          surfaceTintColor: TColor.white,
+          shadowColor: Colors.black,
+          elevation: 1,
+          notchMargin: 12,
+          height: 64,
+          shape: const CircularNotchedRectangle(),
+          child: SafeArea(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // TabButton(
+                //     title: "Menu",
+                //     icon: "assets/img/tab_menu.png",
+                //     onTap: () {
+                //       if (selctTab != 0) {
+                //         selctTab = 0;
+                //         selectPageView = const MenuView();
+                //       }
+                //       if (mounted) {
+                //         setState(() {});
+                //       }
+                //     },
+                //     isSelected: selctTab == 0),
+                TabButton(
+                    title: AppLocalizations.of(context).offers,
+                    icon: "assets/img/tab_offer.png",
+                    onTap: () {
+                      if (selctTab != 1) {
+                        selctTab = 1;
+                        selectPageView = const OfferView();
+                      }
+                      if (mounted) {
+                        setState(() {});
+                      }
+                    },
+                    isSelected: selctTab == 1),
+              const  SizedBox(width: 40, height: 40, ),
+                TabButtonWithBadge(
+                    title: AppLocalizations.of(context).myOrders,
+                    icon: "assets/img/shopping_cart.png",
+                    onTap: () {
+                      if (selctTab != 4) {
+                        selctTab = 4;
+                        selectPageView = const MyOrderView();
+                        checkActiveOrders();
+                      }
+                      if (mounted) {
+                        setState(() {});
+                      }
+                    },
+                    isSelected: selctTab == 4,
+                    badgeCount: activeOrdersCount,
+                    showBadge: hasActiveOrders && activeOrdersCount > 0,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
