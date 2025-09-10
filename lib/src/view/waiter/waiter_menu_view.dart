@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import '../../models/menu_item_model.dart';
 import '../../common/waiter_service.dart';
+import '../../utils/print_receipt_web.dart';
 // import '../../common/mobile_printer_service.dart';
 
 class WaiterMenuView extends StatefulWidget {
@@ -1169,6 +1170,92 @@ DropdownButtonFormField<int>(
 void _onOrderSuccess(Map<String, dynamic> response) {
   print("✅ Pedido enviado com sucesso!");
   print("Response: $response");
+
+  // Extrair dados do pedido da resposta da API
+  try {
+    // Verificar se a resposta contém as informações necessárias
+    if (response.containsKey('order')) {
+      final orderData = response['order'] as Map<String, dynamic>;
+      
+      // Extrair informações do pedido
+      final String mesaNumero = orderData['table'] != null ? 
+          (orderData['table']['name'] ?? 'Mesa ${orderData['table']['id']}') : 
+          'Mesa $selectedTable';
+      
+      // Extrair o valor total do pedido
+      final double totalPedido = double.tryParse(orderData['total_amount']?.toString() ?? '0') ?? 0.0;
+      
+      // Extrair o ID do pedido
+      final int? orderId = orderData['id'] != null ? 
+          (orderData['id'] is int ? orderData['id'] : int.tryParse(orderData['id'].toString())) : null;
+      
+      // Extrair itens do pedido
+      final List<dynamic> apiItems = orderData['items'] as List<dynamic>? ?? [];
+      
+      // Converter para o formato que nossa função de impressão espera
+      final itensParaRecibo = apiItems.map((item) => {
+        'nome': item['product_name'] as String,
+        'qtd': item['quantity'] as int,
+        'preco': double.tryParse(item['price']?.toString() ?? '0') ?? 0.0,
+      }).toList();
+      
+      print("Imprimindo recibo com ${itensParaRecibo.length} itens da API");
+      print("Dados de itens da API: $itensParaRecibo");
+      print("Total do pedido da API: $totalPedido");
+      print("ID do pedido: $orderId");
+
+      // Obter nome do restaurante e garçom das SharedPreferences
+      SharedPreferences.getInstance().then((prefs) {
+        final restaurantName = prefs.getString('restaurant_name') ?? 'Restaurante FoodWay';
+        final waiterName = prefs.getString('user_name');
+        
+        // Imprimir recibo com os dados da API
+        imprimirRecibo58mm(
+          mesa: mesaNumero.replaceAll('Mesa ', ''), // Remover a palavra "Mesa" para manter apenas o número
+          itens: itensParaRecibo,
+          total: totalPedido,
+          observacoes: notesController.text,
+          restaurantNome: restaurantName,
+          garcom: waiterName,
+          order_id: orderId, // Passar o ID do pedido para o recibo
+        );
+      });
+    } else {
+      print('Resposta da API não contém dados do pedido');
+    }
+  } catch (e) {
+    print('Erro ao processar dados da API para impressão: $e');
+    
+    // Fallback para usar os dados do carrinho local caso falhe o processamento da resposta API
+    try {
+      final observacoes = notesController.text;
+      
+      SharedPreferences.getInstance().then((prefs) {
+        final restaurantName = prefs.getString('restaurant_name') ?? 'Restaurante FoodWay';
+        final waiterName = prefs.getString('user_name');
+        
+        final itensParaRecibo = cart.map((item) => {
+          'nome': item.menuItem.name,
+          'qtd': item.quantity,
+          'preco': item.menuItem.price,
+        }).toList();
+        
+        final totalPedido = cart.fold(0.0, (sum, item) => sum + (item.menuItem.price * item.quantity));
+        
+        imprimirRecibo58mm(
+          mesa: selectedTable?.toString() ?? '',
+          itens: itensParaRecibo,
+          total: totalPedido,
+          observacoes: observacoes,
+          restaurantNome: restaurantName,
+          garcom: waiterName,
+          // Não passamos order_id aqui porque estamos usando dados locais como fallback
+        );
+      });
+    } catch (e) {
+      print('Erro ao imprimir recibo com dados locais: $e');
+    }
+  }
   
   // Limpar carrinho
   setState(() {
