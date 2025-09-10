@@ -701,13 +701,87 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
 
   Future<void> clearAllData() async {
     final prefs = await SharedPreferences.getInstance();
+    
+    // Preservar dados essenciais durante operações de impressão
     String? preservedOrders = prefs.getString('user_orders');
+    String? preservedRestaurantId = prefs.getString('restaurant_id');
+    String? preservedTableId = prefs.getString('table_id');
+    bool? preservedSetupCompleted = prefs.getBool('restaurant_setup_completed');
+    String? preservedRestaurantName = prefs.getString('restaurant_name');
+    String? preservedRestaurantLogo = prefs.getString('restaurant_logo');
+    String? preservedRestaurantAddress = prefs.getString('restaurant_address');
+    String? preservedRestaurantCity = prefs.getString('restaurant_city');
+    String? preservedUserPayload = prefs.getString('user_payload');
+    bool? preservedUserLogin = prefs.getBool('user_login');
+    String? preservedAuthToken = prefs.getString('auth_token');
+    String? preservedUserId = prefs.getString('user_id');
+    String? preservedUserName = prefs.getString('user_name');
+    String? preservedUserEmail = prefs.getString('user_email');
+    String? preservedUserRole = prefs.getString('user_role');
+    String? preservedTenantId = prefs.getString('tenant_id');
+    String? preservedUserRestaurantId = prefs.getString('user_restaurant_id');
+    String? preservedUserRestaurantUuid = prefs.getString('user_restaurant_uuid');
+    
     await prefs.clear();
+    
+    // Restaurar dados essenciais
     if (preservedOrders != null) {
       await prefs.setString('user_orders', preservedOrders);
     }
+    if (preservedRestaurantId != null) {
+      await prefs.setString('restaurant_id', preservedRestaurantId);
+    }
+    if (preservedTableId != null) {
+      await prefs.setString('table_id', preservedTableId);
+    }
+    if (preservedSetupCompleted != null) {
+      await prefs.setBool('restaurant_setup_completed', preservedSetupCompleted);
+    }
+    if (preservedRestaurantName != null) {
+      await prefs.setString('restaurant_name', preservedRestaurantName);
+    }
+    if (preservedRestaurantLogo != null) {
+      await prefs.setString('restaurant_logo', preservedRestaurantLogo);
+    }
+    if (preservedRestaurantAddress != null) {
+      await prefs.setString('restaurant_address', preservedRestaurantAddress);
+    }
+    if (preservedRestaurantCity != null) {
+      await prefs.setString('restaurant_city', preservedRestaurantCity);
+    }
+    if (preservedUserPayload != null) {
+      await prefs.setString('user_payload', preservedUserPayload);
+    }
+    if (preservedUserLogin != null) {
+      await prefs.setBool('user_login', preservedUserLogin);
+    }
+    if (preservedAuthToken != null) {
+      await prefs.setString('auth_token', preservedAuthToken);
+    }
+    if (preservedUserId != null) {
+      await prefs.setString('user_id', preservedUserId);
+    }
+    if (preservedUserName != null) {
+      await prefs.setString('user_name', preservedUserName);
+    }
+    if (preservedUserEmail != null) {
+      await prefs.setString('user_email', preservedUserEmail);
+    }
+    if (preservedUserRole != null) {
+      await prefs.setString('user_role', preservedUserRole);
+    }
+    if (preservedTenantId != null) {
+      await prefs.setString('tenant_id', preservedTenantId);
+    }
+    if (preservedUserRestaurantId != null) {
+      await prefs.setString('user_restaurant_id', preservedUserRestaurantId);
+    }
+    if (preservedUserRestaurantUuid != null) {
+      await prefs.setString('user_restaurant_uuid', preservedUserRestaurantUuid);
+    }
+    
     CartService.clearCart();
-    print("Dados limpos exceto pedidos (user_orders preservado)");
+    print("Dados temporários limpos (dados essenciais preservados)");
   }
 
   String _buildAppTitle() {

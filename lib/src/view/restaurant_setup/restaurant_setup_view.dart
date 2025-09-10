@@ -34,6 +34,40 @@ class _RestaurantSetupViewState extends State<RestaurantSetupView>
     _tabController = TabController(length: 3, vsync: this);
     _checkCameraPermission();
     _showCurrentEnvironment();
+    _loadExistingData(); // Carregar dados existentes se houver
+  }
+  
+  // Carregar dados existentes para permitir reconfiguração
+  Future<void> _loadExistingData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final existingRestaurantId = prefs.getString('restaurant_id');
+      final existingTableId = prefs.getString('table_id');
+      
+      if (existingRestaurantId != null && existingRestaurantId.isNotEmpty) {
+        setState(() {
+          _restaurantIdController.text = existingRestaurantId;
+          if (existingTableId != null && existingTableId.isNotEmpty) {
+            _tableIdController.text = existingTableId;
+          }
+        });
+        
+        print('📋 Dados existentes carregados: $existingRestaurantId');
+        
+        // Mostrar mensagem informativa
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Dados existentes carregados. Você pode modificar e salvar novamente.'),
+              backgroundColor: Colors.blue,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        });
+      }
+    } catch (e) {
+      print('⚠️ Erro ao carregar dados existentes: $e');
+    }
   }
   
   void _showCurrentEnvironment() {
@@ -201,19 +235,22 @@ class _RestaurantSetupViewState extends State<RestaurantSetupView>
       
       print('🚀 Dados salvos com sucesso, finalizando configuração...');
 
+      // Resetar loading ANTES do restart para evitar estado permanente
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+
       // Aguardar um pouco antes de finalizar
       await Future.delayed(const Duration(milliseconds: 500));
 
-      // Em vez de navegar, finalizar a aplicação para que o main.dart
-      // reinicie com os dados já configurados
+      // Reiniciar a aplicação - o main.dart detectará que
+      // restaurant_setup_completed = true e iniciará o AppSelector
       if (mounted && context.mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && context.mounted) {
             print('📱 Configuração concluída, reiniciando aplicação...');
-            
-            // Fechar a aplicação atual - o main.dart detectará que
-            // restaurant_setup_completed = true e iniciará o AppSelector
-            // SystemNavigator.pop();
             Restart.restartApp();
           } else {
             print('⚠️ Context não disponível no PostFrameCallback');
