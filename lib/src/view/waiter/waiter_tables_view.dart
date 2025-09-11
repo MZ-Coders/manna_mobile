@@ -146,16 +146,16 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                       Colors.orange[50]!,
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Preparando',
-                      preparingTables.toString(),
-                      Icons.restaurant,
-                      Colors.blue,
-                      Colors.blue[50]!,
-                    ),
-                  ),
+                  // SizedBox(width: 12),
+                  // Expanded(
+                  //   child: _buildStatCard(
+                  //     'Preparando',
+                  //     preparingTables.toString(),
+                  //     Icons.restaurant,
+                  //     Colors.blue,
+                  //     Colors.blue[50]!,
+                  //   ),
+                  // ),
                 ],
               ),
             ],

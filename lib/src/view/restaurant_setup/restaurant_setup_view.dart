@@ -373,8 +373,8 @@ class _RestaurantSetupViewState extends State<RestaurantSetupView>
                   children: [
                      Image.asset(
                       'assets/manna_software__.png',
-                      width: 80,
-                      height: 80,
+                      // width: 80,
+                      // height: 80,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) => Icon(
                         Icons.restaurant,
@@ -567,232 +567,210 @@ class _RestaurantSetupViewState extends State<RestaurantSetupView>
   }
 
   Widget _buildManualTab() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 32),
-          Text(
-            'Configuração Manual',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: TColor.primaryText,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Digite os dados fornecidos pelo restaurante',
-            style: TextStyle(
-              fontSize: 16,
-              color: TColor.secondaryText,
-            ),
-          ),
-          const SizedBox(height: 32),
-          
-          // Restaurant ID
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'ID do Restaurante *',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: TColor.primaryText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _restaurantIdController,
-                decoration: InputDecoration(
-                  hintText: 'Ex: abc123-def456-ghi789',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: TColor.primary),
-                  ),
-                  prefixIcon: Icon(Icons.store, color: TColor.primary),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Table ID (optional)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Mesa (Opcional)',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: TColor.primaryText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _tableIdController,
-                decoration: InputDecoration(
-                  hintText: 'Ex: Mesa 5, Table 12',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: TColor.primary),
-                  ),
-                  prefixIcon: Icon(Icons.table_restaurant, color: TColor.primary),
-                ),
-              ),
-            ],
-          ),
-          
-          const Spacer(),
-          
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: TColor.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: TColor.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'O ID do restaurante é obrigatório. A mesa pode ser configurada depois.',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 32),
+                  Text(
+                    'Configuração Manual',
                     style: TextStyle(
                       fontSize: 14,
-                      color: TColor.primary,
+                      fontWeight: FontWeight.bold,
+                      color: TColor.primaryText,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    'Digite os dados fornecidos pelo restaurante',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: TColor.secondaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Restaurant ID
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ID do Restaurante *',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: TColor.primaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      TextField(
+                        controller: _restaurantIdController,
+                        decoration: InputDecoration(
+                          hintText: 'Ex: abc123-def456-ghi789',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: TColor.primary),
+                          ),
+                          prefixIcon: Icon(Icons.store, color: TColor.primary),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Table ID (optional) - keep visible and editable
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mesa (Opcional)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: TColor.primaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _tableIdController,
+                        decoration: InputDecoration(
+                          hintText: 'Ex: Mesa 5, Table 12',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: TColor.primary),
+                          ),
+                          prefixIcon: Icon(Icons.table_restaurant, color: TColor.primary),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const Spacer(),
+
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: TColor.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: TColor.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'O ID do restaurante é obrigatório. A mesa pode ser configurada depois.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: TColor.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildUrlTab() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 32),
-          Text(
-            'Cole a URL',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: TColor.primaryText,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Cole o link fornecido pelo restaurante',
-            style: TextStyle(
-              fontSize: 16,
-              color: TColor.secondaryText,
-            ),
-          ),
-          const SizedBox(height: 32),
-          
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'URL do Restaurante',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: TColor.primaryText,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _urlController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'https://app.manna.software?restaurant_id=abc123&table_id=5',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: TColor.primary),
-                  ),
-                  prefixIcon: Icon(Icons.link, color: TColor.primary),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _processUrl,
-                  icon: const Icon(Icons.content_paste, color: Colors.white),
-                  label: const Text(
-                    'Processar URL',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: TColor.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 32),
+                  Text(
+                    'Cole a URL',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: TColor.primaryText,
                     ),
                   ),
-                ),
-              ),
-            ],
-          ),
-          
-          const Spacer(),
-          
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.lightbulb_outline, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Dica',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
+                  const SizedBox(height: 8),
+                  Text(
+                    'Cole o link fornecido pelo restaurante',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: TColor.secondaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  Text(
+                    'URL do Restaurante',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: TColor.primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _urlController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'https://app.manna.software?restaurant_id=abc123&table_id=5',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: TColor.primary),
+                      ),
+                      prefixIcon: Icon(Icons.link, color: TColor.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _processUrl,
+                      icon: const Icon(Icons.content_paste, color: Colors.white),
+                      label: const Text(
+                        'Processar URL',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: TColor.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Você pode copiar a URL diretamente do navegador ou do QR Code do restaurante.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.blue,
                   ),
-                ),
-              ],
+
+                  const Spacer(),
+                ],
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

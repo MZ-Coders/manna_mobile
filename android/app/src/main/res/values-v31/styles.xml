@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">@drawable/launch_background</item>
+        <!-- Define o ícone animado da tela de abertura (seu logotipo) -->
+        <!--        <item name="android:windowSplashScreenBrandingImage" tools:targetApi="31">@drawable/manna_software</item>-->
+
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@mipmap/ic_launcher_logo</item>
+
+        <!--        <item name="android:windowSplashScreenBackground">@color/splash_color</item>-->
+<!--        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>-->
+<!--        <item name="android:windowSplashScreenIconBackgroundColor">@color/icon_bg_color</item>-->
+    </style>
+
+</resources>
