@@ -371,10 +371,16 @@ class _RestaurantSetupViewState extends State<RestaurantSetupView>
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.restaurant,
-                      size: 80,
-                      color: TColor.primary,
+                     Image.asset(
+                      'assets/manna_software__.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.restaurant,
+                        size: 80,
+                        color: TColor.primary,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(

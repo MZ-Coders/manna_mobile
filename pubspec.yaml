@@ -78,6 +78,9 @@ flutter:
     - assets/images/rice.png
     - assets/icons/
     - assets/items/
+    - assets/manna_software.png
+    - assets/manna_software_.png
+    - assets/manna_software__.png
 
   fonts:
     - family: Metropolis
