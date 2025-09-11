@@ -571,7 +571,7 @@ Future<void> _refreshMenu() async {
     );
   }
 
-  void _updateItemQuantity(MenuItemModel item, int change) {
+  void _updateItemQuantityOld(MenuItemModel item, int change) {
   if (selectedTable == null && change > 0) {
     _selectTable();
     return;
@@ -593,7 +593,7 @@ Future<void> _refreshMenu() async {
   });
 
   // Feedback visual
-  if (change > 0) {
+  if (change > 0 ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${item.name} adicionado ao pedido'),
@@ -604,6 +604,41 @@ Future<void> _refreshMenu() async {
   }
 }
 
+// ...existing code...
+void _updateItemQuantity(MenuItemModel item, int change) {
+  if (selectedTable == null && change > 0) {
+    _selectTable();
+    return;
+  }
+
+  // Determinar se este é um novo item no carrinho (mostrar snack apenas nesse caso)
+  final existingIndex = cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
+  final bool isNewAdd = existingIndex < 0 && change > 0;
+
+  setState(() {
+    if (existingIndex >= 0) {
+      // Item já existe no carrinho
+      cart[existingIndex].quantity += change;
+      if (cart[existingIndex].quantity <= 0) {
+        cart.removeAt(existingIndex);
+      }
+    } else if (change > 0) {
+      // Adicionar novo item
+      cart.add(CartItemModel(menuItem: item));
+    }
+  });
+
+  // Feedback visual — mostrar apenas se foi adicionado agora
+  if (isNewAdd) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${item.name} adicionado ao pedido'),
+        duration: Duration(seconds: 1),
+        backgroundColor: TColor.primary,
+      ),
+    );
+  }
+}
 
   int _getItemQuantityInCart(String itemId) {
     try {
@@ -1176,7 +1211,7 @@ void _onOrderSuccess(Map<String, dynamic> response) {
     // Verificar se a resposta contém as informações necessárias
     if (response.containsKey('order')) {
       final orderData = response['order'] as Map<String, dynamic>;
-      
+      print("***** Dados do pedido da API: $orderData");
       // Extrair informações do pedido
       final String mesaNumero = orderData['table'] != null ? 
           (orderData['table']['name'] ?? 'Mesa ${orderData['table']['id']}') : 
@@ -1211,7 +1246,7 @@ void _onOrderSuccess(Map<String, dynamic> response) {
         
         // Imprimir recibo com os dados da API
         imprimirRecibo58mm(
-          mesa: mesaNumero.replaceAll('Mesa ', ''), // Remover a palavra "Mesa" para manter apenas o número
+          mesa: orderData['table']['name'], // Remover a palavra "Mesa" para manter apenas o número
           itens: itensParaRecibo,
           total: totalPedido,
           observacoes: notesController.text,
@@ -1227,34 +1262,36 @@ void _onOrderSuccess(Map<String, dynamic> response) {
     print('Erro ao processar dados da API para impressão: $e');
     
     // Fallback para usar os dados do carrinho local caso falhe o processamento da resposta API
-    try {
-      final observacoes = notesController.text;
+    //Mostrar mensagem de erro
+
+    // try {
+    //   final observacoes = notesController.text;
       
-      SharedPreferences.getInstance().then((prefs) {
-        final restaurantName = prefs.getString('restaurant_name') ?? 'Restaurante FoodWay';
-        final waiterName = prefs.getString('user_name');
+    //   SharedPreferences.getInstance().then((prefs) {
+    //     final restaurantName = prefs.getString('restaurant_name') ?? 'Restaurante FoodWay';
+    //     final waiterName = prefs.getString('user_name');
         
-        final itensParaRecibo = cart.map((item) => {
-          'nome': item.menuItem.name,
-          'qtd': item.quantity,
-          'preco': item.menuItem.price,
-        }).toList();
+    //     final itensParaRecibo = cart.map((item) => {
+    //       'nome': item.menuItem.name,
+    //       'qtd': item.quantity,
+    //       'preco': item.menuItem.price,
+    //     }).toList();
         
-        final totalPedido = cart.fold(0.0, (sum, item) => sum + (item.menuItem.price * item.quantity));
+    //     final totalPedido = cart.fold(0.0, (sum, item) => sum + (item.menuItem.price * item.quantity));
         
-        imprimirRecibo58mm(
-          mesa: selectedTable?.toString() ?? '',
-          itens: itensParaRecibo,
-          total: totalPedido,
-          observacoes: observacoes,
-          restaurantNome: restaurantName,
-          garcom: waiterName,
-          // Não passamos order_id aqui porque estamos usando dados locais como fallback
-        );
-      });
-    } catch (e) {
-      print('Erro ao imprimir recibo com dados locais: $e');
-    }
+    //     imprimirRecibo58mm(
+    //       mesa: selectedTable?.toString() ?? '',
+    //       itens: itensParaRecibo,
+    //       total: totalPedido,
+    //       observacoes: observacoes,
+    //       restaurantNome: restaurantName,
+    //       garcom: waiterName,
+    //       // Não passamos order_id aqui porque estamos usando dados locais como fallback
+    //     );
+    //   });
+    // } catch (e) {
+    //   print('Erro ao imprimir recibo com dados locais: $e');
+    // }
   }
   
   // Limpar carrinho

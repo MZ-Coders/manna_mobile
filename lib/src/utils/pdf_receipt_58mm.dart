@@ -49,7 +49,7 @@ Future<Uint8List> gerarReciboPDF58mm({
 
   // Título do pedido
   page.graphics.drawString(
-    'Pedido - Mesa $mesa',
+    'Pedido - $mesa',
     PdfStandardFont(PdfFontFamily.helvetica, 14, style: PdfFontStyle.bold),
     bounds: Rect.fromLTWH(0, y, largura, 20),
   );

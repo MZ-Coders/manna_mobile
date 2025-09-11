@@ -3,6 +3,7 @@ import 'package:dribbble_challenge/src/utils/pdf_receipt_58mm.dart';
 import 'package:flutter/foundation.dart';
 import 'package:printing/printing.dart';
 import 'dart:typed_data';
+import './../pdf/mobile.dart' if (dart.library.html) './../pdf/web.dart' as platform;
 
 Future<void> imprimirRecibo58mm({
   required String mesa,
@@ -33,7 +34,8 @@ Future<void> imprimirRecibo58mm({
       );
     } else {
       // Em plataformas móveis/desktop, compartilhar o PDF
-      await Printing.sharePdf(bytes: pdfBytes, filename: 'recibo_mesa_$mesa.pdf');
+      // await Printing.sharePdf(bytes: pdfBytes, filename: 'recibo_mesa_$mesa.pdf');
+      platform.saveAndLaunchFile(pdfBytes, 'recibo_mesa_$mesa.pdf');
     }
   } catch (e) {
     print('Erro ao processar recibo: $e');
