@@ -27,9 +27,10 @@ class _OfferViewState extends State<OfferView> {
   List allMenuItems = [];
   List promotionItems = []; // Itens em promoção
   List eventItems = []; // Eventos do restaurante
+  List dailySpecialsItems = []; // Ofertas do dia
   bool isLoading = true;
   
-  // Estado para controlar qual visualização está ativa: 'offers' ou 'events'
+  // Estado para controlar qual visualização está ativa: 'offers', 'events' ou 'daily'
   String currentView = 'offers';
 
   List offerArr = [
@@ -72,6 +73,7 @@ class _OfferViewState extends State<OfferView> {
       setState(() {
         allMenuItems = MenuDataService().menuItems;
         eventItems = MenuDataService().events;
+        dailySpecialsItems = MenuDataService().dailySpecials;
         
         // Filtrar itens em promoção
         filterPromotionItems();
@@ -82,6 +84,7 @@ class _OfferViewState extends State<OfferView> {
       print("Dados carregados do cache:");
       print("- Menu: ${allMenuItems.length} categorias");
       print("- Eventos: ${eventItems.length}");
+      print("- Ofertas do dia: ${dailySpecialsItems.length}");
       print("- Itens em promoção: ${promotionItems.length}");
     } else {
       // Inicializar o serviço se ainda não estiver inicializado
@@ -91,16 +94,18 @@ class _OfferViewState extends State<OfferView> {
         setState(() {
           allMenuItems = MenuDataService().menuItems;
           eventItems = MenuDataService().events;
+          dailySpecialsItems = MenuDataService().dailySpecials;
           
           // Filtrar itens em promoção
           filterPromotionItems();
           
           isLoading = false;
         });
-        
+
         print("Dados carregados da API:");
         print("- Menu: ${allMenuItems.length} categorias");
         print("- Eventos: ${eventItems.length}");
+        print("- Ofertas do dia: ${dailySpecialsItems.length}");
         print("- Itens em promoção: ${promotionItems.length}");
       } else {
         // Caso a inicialização falhe, tentar carregar diretamente
@@ -125,9 +130,37 @@ class _OfferViewState extends State<OfferView> {
                   filterPromotionItems();
                   isLoading = false;
                 });
-                
+
                 print("Menu carregado com ${allMenuItems.length} categorias");
                 print("Itens em promoção encontrados: ${promotionItems.length}");
+              }
+            }
+            
+            // Processar daily_specials
+            if (data.containsKey('daily_specials') && data['daily_specials'] != null) {
+              if (data['daily_specials'] is List) {
+                setState(() {
+                  List rawDailySpecials = data['daily_specials'];
+                  List formattedDailySpecials = [];
+
+                  for (var special in rawDailySpecials) {
+                    formattedDailySpecials.add({
+                      "id": special['id'],
+                      "image": special['image_url'] ?? "assets/img/offer_3.png",
+                      "name": special['name'],
+                      "description": special['description'],
+                      "price": double.tryParse(special['price'].toString()) ?? 0.0,
+                      "type": "daily_special",
+                      "food_type": "Ofertas do Dia",
+                      "rate": "4.9",
+                      "rating": "124",
+                    });
+                  }
+                  
+                  dailySpecialsItems = formattedDailySpecials;
+                });
+                
+                print("Ofertas do dia carregadas: ${dailySpecialsItems.length}");
               }
             }
           },
@@ -283,7 +316,9 @@ class _OfferViewState extends State<OfferView> {
                     Text(
                       currentView == 'offers' ?
                         AppLocalizations.of(context).findDiscounts :
-                        "Confira os próximos eventos e promoções",
+                        currentView == 'events' ?
+                        "Confira os próximos eventos e promoções" :
+                        "Confira as ofertas especiais de hoje",
                       style: TextStyle(
                           color: TColor.secondaryText,
                           fontSize: 14,
@@ -300,40 +335,63 @@ class _OfferViewState extends State<OfferView> {
                 child: Row(
                   children: [
                     // Botão para alternar para Ofertas
-                    SizedBox(
-                      width: 140,
-                      height: 30,
-                      child: RoundButton(
-                        title: AppLocalizations.of(context).checkOffers, 
-                        fontSize: 12,
-                        onPressed: () {
-                          setState(() {
-                            currentView = 'offers';
-                          });
-                        },
-                        type: currentView == 'offers' 
-                            ? RoundButtonType.bgPrimary 
-                            : RoundButtonType.textPrimary,
+                    Expanded(
+                      child: SizedBox(
+                        height: 30,
+                        child: RoundButton(
+                          title: AppLocalizations.of(context).checkOffers, 
+                          fontSize: 12,
+                          onPressed: () {
+                            setState(() {
+                              currentView = 'offers';
+                            });
+                          },
+                          type: currentView == 'offers' 
+                              ? RoundButtonType.bgPrimary 
+                              : RoundButtonType.textPrimary,
+                        ),
                       ),
                     ),
                     
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
+                    
+                    // Botão para alternar para Do Dia
+                    Expanded(
+                      child: SizedBox(
+                        height: 30,
+                        child: RoundButton(
+                          title: "Do Dia",
+                          fontSize: 12,
+                          onPressed: () {
+                            setState(() {
+                              currentView = 'daily';
+                            });
+                          },
+                          type: currentView == 'daily' 
+                              ? RoundButtonType.bgPrimary 
+                              : RoundButtonType.textPrimary,
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(width: 8),
                     
                     // Botão para alternar para Eventos
-                    SizedBox(
-                      width: 140,
-                      height: 30,
-                      child: RoundButton(
-                        title: "Eventos",  // Seria bom adicionar este texto no AppLocalizations
-                        fontSize: 12,
-                        onPressed: () {
-                          setState(() {
-                            currentView = 'events';
-                          });
-                        },
-                        type: currentView == 'events' 
-                            ? RoundButtonType.bgPrimary 
-                            : RoundButtonType.textPrimary,
+                    Expanded(
+                      child: SizedBox(
+                        height: 30,
+                        child: RoundButton(
+                          title: "Eventos",
+                          fontSize: 12,
+                          onPressed: () {
+                            setState(() {
+                              currentView = 'events';
+                            });
+                          },
+                          type: currentView == 'events' 
+                              ? RoundButtonType.bgPrimary 
+                              : RoundButtonType.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -382,38 +440,71 @@ class _OfferViewState extends State<OfferView> {
                         ),
                       )
                     : buildMenuItems(context, promotionItems))
-                  : (eventItems.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(50.0),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.event_outlined,
-                                size: 60,
-                                color: TColor.secondaryText,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "Sem eventos disponíveis",
-                                style: TextStyle(
+                  : currentView == 'daily'
+                    ? (dailySpecialsItems.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(50.0),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.today_outlined,
+                                  size: 60,
                                   color: TColor.secondaryText,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
                                 ),
-                              ),
-                              Text(
-                                "Volte mais tarde para conferir novos eventos",
-                                style: TextStyle(
-                                  color: TColor.secondaryText,
-                                  fontSize: 14,
+                                const SizedBox(height: 16),
+                                Text(
+                                  "Sem ofertas do dia",
+                                  style: TextStyle(
+                                    color: TColor.secondaryText,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  "Volte amanhã para conferir as ofertas especiais",
+                                  style: TextStyle(
+                                    color: TColor.secondaryText,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      )
-                    : buildEventsList(context, eventItems)),
+                        )
+                      : buildMenuItems(context, dailySpecialsItems))
+                    : (eventItems.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(50.0),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.event_outlined,
+                                  size: 60,
+                                  color: TColor.secondaryText,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "Sem eventos disponíveis",
+                                  style: TextStyle(
+                                    color: TColor.secondaryText,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  "Volte mais tarde para conferir novos eventos",
+                                  style: TextStyle(
+                                    color: TColor.secondaryText,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : buildEventsList(context, eventItems)),
             ],
           ),
         ),

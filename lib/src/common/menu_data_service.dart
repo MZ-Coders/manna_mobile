@@ -21,6 +21,7 @@ class MenuDataService {
   // Dados em cache
   List _menuItems = [];
   List _events = [];
+  List _dailySpecials = [];
   String _restaurantName = '';
 
   // Getters
@@ -29,6 +30,7 @@ class MenuDataService {
   String? get error => _error;
   List get menuItems => _menuItems;
   List get events => _events;
+  List get dailySpecials => _dailySpecials;
   String get restaurantName => _restaurantName;
 
   /// Inicializa o serviço carregando os dados do restaurante
@@ -97,6 +99,27 @@ class MenuDataService {
                 }
                 _events = formattedEvents;
                 debugPrint("Eventos carregados: ${_events.length}");
+              }
+            }
+
+            // Processar daily_specials
+            if (data.containsKey('daily_specials') && data['daily_specials'] != null) {
+              if (data['daily_specials'] is List) {
+                List rawDailySpecials = data['daily_specials'];
+                List formattedDailySpecials = [];
+
+                for (var special in rawDailySpecials) {
+                  formattedDailySpecials.add({
+                    "id": special['id'],
+                    "image": special['image_url'] ?? "assets/img/offer_3.png",
+                    "name": special['name'],
+                    "description": special['description'],
+                    "price": double.tryParse(special['price'].toString()) ?? 0.0,
+                    "type": "daily_special",
+                  });
+                }
+                _dailySpecials = formattedDailySpecials;
+                debugPrint("Ofertas do dia carregadas: ${_dailySpecials.length}");
               }
             }
 
