@@ -578,208 +578,544 @@ class _OfferViewState extends State<OfferView> {
     }
   }
   
-  // Widget para construir a lista de eventos
+  // Widget para construir a lista de eventos como carrossel horizontal
   Widget buildEventsList(BuildContext context, List eventsList) {
     // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
     bool isWideScreen = MediaQuery.of(context).size.width >= 1000;
+    double screenWidth = MediaQuery.of(context).size.width;
     
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 16 : 0),
-      itemCount: eventsList.length,
-      itemBuilder: ((context, index) {
-        var event = eventsList[index] as Map? ?? {};
-        return buildEventCard(context, event);
-      }),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Título da seção
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Próximos Eventos",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: TColor.primaryText,
+                ),
+              ),
+              if (eventsList.length > 2)
+                Text(
+                  "Ver todos",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: TColor.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        
+        // Carrossel horizontal de eventos
+        SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: eventsList.length,
+            itemBuilder: (context, index) {
+              var event = eventsList[index] as Map? ?? {};
+              return Container(
+                width: isWideScreen ? 350 : screenWidth * 0.85,
+                margin: const EdgeInsets.only(right: 16),
+                child: buildEventCardHorizontal(context, event),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
   
-  // Widget para construir um card de evento
-  Widget buildEventCard(BuildContext context, Map event) {
+  // Widget para construir um card de evento no formato horizontal/carrossel
+  Widget buildEventCardHorizontal(BuildContext context, Map event) {
     // Formatação da data do evento
     String formattedDate = "";
+    String dayMonth = "";
     if (event['event_date'] != null) {
       try {
         DateTime eventDate = DateTime.parse(event['event_date']);
-        formattedDate = "${eventDate.day}/${eventDate.month}/${eventDate.year} às ${eventDate.hour}:${eventDate.minute.toString().padLeft(2, '0')}";
+        formattedDate = "${eventDate.day}/${eventDate.month}/${eventDate.year}";
+        dayMonth = "${eventDate.day}\n${_getMonthName(eventDate.month)}";
       } catch (e) {
         formattedDate = event['event_date'];
+        dayMonth = "00\nJAN";
       }
     }
     
     // Cor do tipo de evento
     Color typeColor = Colors.blue;
+    Color gradientStart = Colors.blue.shade400;
+    Color gradientEnd = Colors.blue.shade600;
     IconData typeIcon = Icons.event;
     
     if (event['type'] == 'PROMOTION') {
       typeColor = Colors.orange;
+      gradientStart = Colors.orange.shade400;
+      gradientEnd = Colors.orange.shade600;
       typeIcon = Icons.local_offer;
     } else if (event['type'] == 'ANNOUNCEMENT') {
       typeColor = Colors.green;
+      gradientStart = Colors.green.shade400;
+      gradientEnd = Colors.green.shade600;
       typeIcon = Icons.campaign;
     }
     
-    // Verificar se há uma imagem para mostrar
-    bool hasImage = event['image'] != null && event['image'].toString().isNotEmpty;
-    
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [gradientStart, gradientEnd],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: typeColor.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Stack(
         children: [
-          // Cabeçalho com título e tipo
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: typeColor.withOpacity(0.1),
-              borderRadius: hasImage 
-                ? const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  )
-                : BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  typeIcon,
-                  color: typeColor,
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    event['name'] ?? "Evento",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: TColor.primaryText,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: typeColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    event['type'] ?? "",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: typeColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+          // Padrão decorativo de fundo
+          Positioned(
+            top: -30,
+            right: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
             ),
           ),
           
-          // Imagem do evento (se existir)
-          if (hasImage)
-            Container(
-              height: 200,
+          Positioned(
+            bottom: -20,
+            left: -20,
+            child: Container(
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: Colors.grey.shade300),
-                  bottom: BorderSide(color: Colors.grey.shade300),
-                ),
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
               ),
-              child: event['image'].toString().startsWith('http') || event['image'].toString().startsWith('https')
-                // Imagem remota
-                ? Image.network(
-                    event['image'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            size: 50,
-                            color: Colors.grey.shade400,
-                          ),
-                        ),
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                  )
-                // Imagem local
-                : Image.asset(
-                    event['image'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            size: 50,
-                            color: Colors.grey.shade400,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
             ),
+          ),
           
-          // Conteúdo
+          // Conteúdo principal
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Descrição
-                Text(
-                  event['description'] ?? "",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: TColor.primaryText,
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Data do evento
+                // Header com tipo e data
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: TColor.secondaryText,
+                    // Tipo do evento
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            typeIcon,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            event['type'] == 'PROMOTION' 
+                                ? 'PROMOÇÃO'
+                                : event['type'] == 'ANNOUNCEMENT'
+                                    ? 'ANÚNCIO'
+                                    : 'EVENTO',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      formattedDate,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: TColor.secondaryText,
+                    
+                    // Data em formato compacto
+                    Container(
+                      width: 50,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            dayMonth.split('\n')[0],
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: typeColor,
+                            ),
+                          ),
+                          Text(
+                            dayMonth.split('\n')[1],
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: typeColor.withOpacity(0.8),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
+                
+                const SizedBox(height: 16),
+                
+                // Título do evento
+                Text(
+                  event['name'] ?? "Evento",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // Descrição
+                Expanded(
+                  child: Text(
+                    event['description'] ?? "",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.9),
+                      height: 1.3,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Data formatada na parte inferior
+                if (formattedDate.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time_rounded,
+                        color: Colors.white.withOpacity(0.8),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        formattedDate,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+  
+  // Widget para construir um card de evento
+  // Widget para construir um card de evento (versão vertical - backup)
+  Widget buildEventCardVertical(BuildContext context, Map event) {
+    // Formatação da data do evento
+    String formattedDate = "";
+    String dayMonth = "";
+    if (event['event_date'] != null) {
+      try {
+        DateTime eventDate = DateTime.parse(event['event_date']);
+        formattedDate = "${eventDate.day}/${eventDate.month}/${eventDate.year} às ${eventDate.hour}:${eventDate.minute.toString().padLeft(2, '0')}";
+        dayMonth = "${eventDate.day}\n${_getMonthName(eventDate.month)}";
+      } catch (e) {
+        formattedDate = event['event_date'];
+        dayMonth = "00\nJAN";
+      }
+    }
+    
+    // Cor do tipo de evento
+    Color typeColor = Colors.blue;
+    Color gradientStart = Colors.blue.shade400;
+    Color gradientEnd = Colors.blue.shade600;
+    IconData typeIcon = Icons.event;
+    
+    if (event['type'] == 'PROMOTION') {
+      typeColor = Colors.orange;
+      gradientStart = Colors.orange.shade400;
+      gradientEnd = Colors.orange.shade600;
+      typeIcon = Icons.local_offer;
+    } else if (event['type'] == 'ANNOUNCEMENT') {
+      typeColor = Colors.green;
+      gradientStart = Colors.green.shade400;
+      gradientEnd = Colors.green.shade600;
+      typeIcon = Icons.campaign;
+    }
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Stack(
+        children: [
+          // Card principal com gradient
+          Container(
+            height: 180,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [gradientStart, gradientEnd],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: typeColor.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+          ),
+          
+          // Padrão de fundo decorativo
+          Container(
+            height: 180,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Colors.white.withOpacity(0.1),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          
+          // Conteúdo do card
+          Container(
+            height: 180,
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                // Seção da data
+                Container(
+                  width: 60,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        dayMonth.split('\n')[0],
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: typeColor,
+                        ),
+                      ),
+                      Text(
+                        dayMonth.split('\n')[1],
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: typeColor.withOpacity(0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(width: 16),
+                
+                // Conteúdo principal
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Tipo do evento
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              typeIcon,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              event['type'] == 'PROMOTION' 
+                                  ? 'PROMOÇÃO'
+                                  : event['type'] == 'ANNOUNCEMENT'
+                                      ? 'ANÚNCIO'
+                                      : 'EVENTO',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      // Título do evento
+                      Text(
+                        event['name'] ?? "Evento",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      const SizedBox(height: 4),
+                      
+                      // Descrição
+                      Text(
+                        event['description'] ?? "",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      const SizedBox(height: 8),
+                      
+                      // Data formatada
+                      if (formattedDate.isNotEmpty)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              color: Colors.white.withOpacity(0.8),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.8),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Padrão decorativo no canto superior direito
+          Positioned(
+            top: -20,
+            right: -20,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+          ),
+          
+          // Padrão decorativo no canto inferior esquerdo
+          Positioned(
+            bottom: -15,
+            left: -15,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Helper para obter nome do mês
+  String _getMonthName(int month) {
+    const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN',
+                    'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+    return months[month - 1];
   }
 }
