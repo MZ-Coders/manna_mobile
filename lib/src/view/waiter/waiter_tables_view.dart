@@ -85,6 +85,9 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
     int preparingTables = filteredTables
         .where((table) => table.status == TableStatus.preparing)
         .length;
+    int emptyTables = filteredTables
+        .where((table) => table.status == TableStatus.empty)
+        .length;
 
     return Container(
       decoration: BoxDecoration(
@@ -124,7 +127,7 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
               
               SizedBox(height: 16),
               
-              // Cards de estatísticas
+              // Cards de estatísticas - Primeira linha
               Row(
                 children: [
                   Expanded(
@@ -146,16 +149,33 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                       Colors.orange[50]!,
                     ),
                   ),
-                  // SizedBox(width: 12),
-                  // Expanded(
-                  //   child: _buildStatCard(
-                  //     'Preparando',
-                  //     preparingTables.toString(),
-                  //     Icons.restaurant,
-                  //     Colors.blue,
-                  //     Colors.blue[50]!,
-                  //   ),
-                  // ),
+                ],
+              ),
+              
+              SizedBox(height: 12),
+              
+              // Cards de estatísticas - Segunda linha
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      'Preparando',
+                      preparingTables.toString(),
+                      Icons.restaurant,
+                      Colors.blue,
+                      Colors.blue[50]!,
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Livres',
+                      emptyTables.toString(),
+                      Icons.event_seat,
+                      Colors.green,
+                      Colors.green[50]!,
+                    ),
+                  ),
                 ],
               ),
             ],

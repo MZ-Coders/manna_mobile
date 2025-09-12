@@ -578,10 +578,10 @@ class _OfferViewState extends State<OfferView> {
       );
     }
   }
-  // Widget para construir a lista de eventos como carrossel horizontal com efeito de escala
+  // Widget para construir a lista de eventos como carrossel overlapped
   Widget buildEventsList(BuildContext context, List eventsList) {
     PageController pageController = PageController(
-      viewportFraction: 0.8,
+      viewportFraction: 0.75, // Reduzido de 0.85 para mostrar mais dos cards laterais
       initialPage: 0,
     );
     
@@ -615,9 +615,9 @@ class _OfferViewState extends State<OfferView> {
           ),
         ),
         
-        // Carrossel horizontal de eventos com efeito de escala
+        // Carrossel horizontal overlapped
         SizedBox(
-          height: 340, // Aumentei de 240 para 280
+          height: 340,
           child: PageView.builder(
             controller: pageController,
             physics: const BouncingScrollPhysics(),
@@ -628,22 +628,41 @@ class _OfferViewState extends State<OfferView> {
                 animation: pageController,
                 builder: (context, child) {
                   double value = 1.0;
+                  double distortionValue = 0.0;
+                  
                   if (pageController.position.haveDimensions) {
                     value = pageController.page! - index;
-                    value = (1 - (value.abs() * 0.3)).clamp(0.7, 1.0);
+                    
+                    // Calcula a escala baseada na posição - mais conservadora
+                    double scale = 1.0;
+                    
+                    if (value.abs() <= 1.0) {
+                      // Card atual ou adjacente - redução mais sutil
+                      scale = 1.0 - (value.abs() * 0.12); // Reduzido de 0.15 para 0.12
+                    } else {
+                      // Cards distantes - mantém mais visibilidade
+                      scale = 0.88; // Aumentado de 0.85 para 0.88
+                    }
+                    
+                    distortionValue = scale;
                   }
                   
-                  return Center(
-                    child: SizedBox(
-                      height: Curves.easeInOut.transform(value) * 240, // Aumentei de 200 para 240
-                      child: Transform.scale(
-                        scale: Curves.easeInOut.transform(value),
-                        child: Opacity(
-                          opacity: value < 0.8 ? 0.6 : 1.0,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
-                            child: buildEventCardScaled(context, event, index),
-                          ),
+                  return Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001) // Perspectiva
+                      ..rotateY(pageController.position.haveDimensions ? 
+                        (pageController.page! - index) * 0.2 : 0) // Reduzido de 0.3 para 0.2
+                      ..translate(pageController.position.haveDimensions ? 
+                        (pageController.page! - index) * -40 : 0), // Reduzido de -60 para -40
+                    child: Transform.scale(
+                      scale: distortionValue.clamp(0.88, 1.0), // Aumentado range mínimo
+                      child: Opacity(
+                        opacity: (1.0 - (pageController.position.haveDimensions ? 
+                          (pageController.page! - index).abs() * 0.2 : 0)).clamp(0.8, 1.0), // Aumentado de 0.7 para 0.8
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 6), // Aumentado de 4 para 6
+                          child: buildOverlappedEventCard(context, event, index),
                         ),
                       ),
                     ),
@@ -654,7 +673,7 @@ class _OfferViewState extends State<OfferView> {
           ),
         ),
         
-        // Indicador de pontos
+        // Indicador de pontos melhorado
         if (eventsList.length > 1)
           Container(
             margin: const EdgeInsets.only(top: 16),
@@ -671,13 +690,12 @@ class _OfferViewState extends State<OfferView> {
                         1.0 - ((pageController.page ?? 0.0) - index).abs(),
                       ),
                     );
-                    double zoom = 1.0 + (selectedness * 0.5);
                     return Container(
-                      width: 8.0 * zoom,
-                      height: 8.0 * zoom,
+                      width: selectedness > 0.5 ? 24.0 : 8.0,
+                      height: 8.0,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(8),
                         color: TColor.primary.withOpacity(0.3 + (selectedness * 0.7)),
                       ),
                     );
@@ -690,8 +708,8 @@ class _OfferViewState extends State<OfferView> {
     );
   }
   
-  // Widget para construir um card de evento com efeito de escala otimizado
-  Widget buildEventCardScaled(BuildContext context, Map event, int index) {
+  // Widget para construir um card de evento com efeito overlapped otimizado
+  Widget buildOverlappedEventCard(BuildContext context, Map event, int index) {
     // Formatação da data do evento
     String formattedDate = "";
     String dayMonth = "";
@@ -706,122 +724,177 @@ class _OfferViewState extends State<OfferView> {
       }
     }
     
-    // Cor do tipo de evento com variações baseadas no índice
+    // Gradientes mais dramáticos para o efeito overlapped
     List<List<Color>> gradientSets = [
-      [Colors.blue.shade400, Colors.blue.shade600],
-      [Colors.purple.shade400, Colors.purple.shade600],
-      [Colors.orange.shade400, Colors.orange.shade600],
-      [Colors.green.shade400, Colors.green.shade600],
-      [Colors.red.shade400, Colors.red.shade600],
-      [Colors.teal.shade400, Colors.teal.shade600],
+      [Colors.deepPurple.shade400, Colors.deepPurple.shade700, Colors.black87],
+      [Colors.indigo.shade400, Colors.indigo.shade700, Colors.black87],
+      [Colors.teal.shade400, Colors.teal.shade700, Colors.black87],
+      [Colors.orange.shade400, Colors.red.shade600, Colors.black87],
+      [Colors.pink.shade400, Colors.purple.shade700, Colors.black87],
+      [Colors.green.shade400, Colors.green.shade700, Colors.black87],
     ];
     
-    Color typeColor = Colors.blue;
     List<Color> gradientColors = gradientSets[index % gradientSets.length];
     IconData typeIcon = Icons.event;
     
     if (event['type'] == 'PROMOTION') {
-      typeColor = Colors.orange;
-      gradientColors = [Colors.orange.shade400, Colors.orange.shade600];
+      gradientColors = [Colors.orange.shade400, Colors.red.shade600, Colors.black87];
       typeIcon = Icons.local_offer;
     } else if (event['type'] == 'ANNOUNCEMENT') {
-      typeColor = Colors.green;
-      gradientColors = [Colors.green.shade400, Colors.green.shade600];
+      gradientColors = [Colors.green.shade400, Colors.green.shade700, Colors.black87];
       typeIcon = Icons.campaign;
-    } else {
-      typeColor = gradientColors[0];
     }
     
     return Container(
+      height: 280,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: gradientColors,
+          stops: const [0.0, 0.7, 1.0],
         ),
         boxShadow: [
+          // Sombra principal mais intensa
           BoxShadow(
-            color: typeColor.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
+            color: gradientColors[1].withOpacity(0.6),
+            blurRadius: 25,
+            offset: const Offset(0, 12),
+            spreadRadius: 0,
+          ),
+          // Sombra secundária para profundidade
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 40,
+            offset: const Offset(0, 20),
+            spreadRadius: -5,
           ),
         ],
       ),
       child: Stack(
         children: [
-          // Padrões decorativos animados
+          // Padrões decorativos mais elaborados
           Positioned(
-            top: -40,
-            right: -40,
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 160,
+              height: 160,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.15),
+                    Colors.white.withOpacity(0.05),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          Positioned(
+            bottom: -40,
+            left: -40,
             child: Container(
               width: 120,
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.1),
+                    Colors.white.withOpacity(0.03),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          // Elementos decorativos com formas geométricas
+          Positioned(
+            top: 30,
+            left: -20,
+            child: Transform.rotate(
+              angle: 0.5,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: Colors.white.withOpacity(0.08),
+                ),
               ),
             ),
           ),
           
           Positioned(
-            bottom: -30,
-            left: -30,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
-              ),
-            ),
-          ),
-          
-          // Elementos decorativos adicionais
-          Positioned(
-            top: 20,
-            left: -10,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
+            bottom: 40,
+            right: -15,
+            child: Transform.rotate(
+              angle: -0.3,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white.withOpacity(0.06),
+                ),
               ),
             ),
           ),
           
           // Conteúdo principal
           Padding(
-            padding: const EdgeInsets.all(28), // Aumentei de 24 para 28
+            padding: const EdgeInsets.all(32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header com tipo e data
+                // Header com tipo e data mais elaborado
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Tipo do evento
+                    // Tipo do evento com design premium
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.25),
-                        borderRadius: BorderRadius.circular(25),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.white.withOpacity(0.3),
+                            Colors.white.withOpacity(0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(30),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
+                          color: Colors.white.withOpacity(0.5),
                           width: 1.5,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            typeIcon,
-                            color: Colors.white,
-                            size: 18,
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              typeIcon,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Text(
                             event['type'] == 'PROMOTION' 
                                 ? 'PROMOÇÃO'
@@ -832,25 +905,32 @@ class _OfferViewState extends State<OfferView> {
                               fontSize: 12,
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                              letterSpacing: 1.2,
                             ),
                           ),
                         ],
                       ),
                     ),
                     
-                    // Data em formato compacto com design melhorado
+                    // Data em formato premium
                     Container(
-                      width: 60,
-                      height: 70,
+                      width: 70,
+                      height: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.95),
-                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withOpacity(0.95),
+                            Colors.white.withOpacity(0.9),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
@@ -860,18 +940,27 @@ class _OfferViewState extends State<OfferView> {
                           Text(
                             dayMonth.split('\n')[0],
                             style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: typeColor,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: gradientColors[1],
+                            ),
+                          ),
+                          Container(
+                            width: 30,
+                            height: 2,
+                            margin: const EdgeInsets.symmetric(vertical: 2),
+                            decoration: BoxDecoration(
+                              color: gradientColors[1].withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(1),
                             ),
                           ),
                           Text(
                             dayMonth.split('\n')[1],
                             style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: typeColor.withOpacity(0.8),
-                              letterSpacing: 0.5,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: gradientColors[1].withOpacity(0.8),
+                              letterSpacing: 1,
                             ),
                           ),
                         ],
@@ -880,67 +969,109 @@ class _OfferViewState extends State<OfferView> {
                   ],
                 ),
                 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 
-                // Título do evento
-                Text(
-                  event['name'] ?? "Evento",
-                  style: const TextStyle(
-                    fontSize: 24, // Aumentei de 22 para 24
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Descrição
-                Expanded(
+                // Título do evento mais impactante
+                Container(
                   child: Text(
-                    event['description'] ?? "",
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white.withOpacity(0.9),
-                      height: 1.4,
+                    event['name'] ?? "Evento",
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      height: 1.1,
+                      letterSpacing: -0.5,
                     ),
-                    maxLines: 3,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 
                 const SizedBox(height: 16),
                 
-                // Data formatada na parte inferior com ícone melhorado
-                if (formattedDate.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.schedule_rounded,
-                          color: Colors.white.withOpacity(0.9),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          formattedDate,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                // Descrição estilizada
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      event['description'] ?? "",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.95),
+                        height: 1.5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Footer com data e call-to-action
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Data formatada com design premium
+                    if (formattedDate.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.schedule_rounded,
+                                color: Colors.white.withOpacity(0.9),
+                                size: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withOpacity(0.95),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    
+                    // Botão de ação sutil
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white.withOpacity(0.9),
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
