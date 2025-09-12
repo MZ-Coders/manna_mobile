@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/menu_data_service.dart';
 import 'package:dribbble_challenge/src/common_widget/menu_item_row.dart';
@@ -577,12 +578,12 @@ class _OfferViewState extends State<OfferView> {
       );
     }
   }
-  
-  // Widget para construir a lista de eventos como carrossel horizontal
+  // Widget para construir a lista de eventos como carrossel horizontal com efeito de escala
   Widget buildEventsList(BuildContext context, List eventsList) {
-    // Detectar se a tela é larga (web/tablet) ou estreita (mobile)
-    bool isWideScreen = MediaQuery.of(context).size.width >= 1000;
-    double screenWidth = MediaQuery.of(context).size.width;
+    PageController pageController = PageController(
+      viewportFraction: 0.8,
+      initialPage: 0,
+    );
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -614,25 +615,337 @@ class _OfferViewState extends State<OfferView> {
           ),
         ),
         
-        // Carrossel horizontal de eventos
+        // Carrossel horizontal de eventos com efeito de escala
         SizedBox(
-          height: 200,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
+          height: 340, // Aumentei de 240 para 280
+          child: PageView.builder(
+            controller: pageController,
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: eventsList.length,
             itemBuilder: (context, index) {
               var event = eventsList[index] as Map? ?? {};
-              return Container(
-                width: isWideScreen ? 350 : screenWidth * 0.85,
-                margin: const EdgeInsets.only(right: 16),
-                child: buildEventCardHorizontal(context, event),
+              return AnimatedBuilder(
+                animation: pageController,
+                builder: (context, child) {
+                  double value = 1.0;
+                  if (pageController.position.haveDimensions) {
+                    value = pageController.page! - index;
+                    value = (1 - (value.abs() * 0.3)).clamp(0.7, 1.0);
+                  }
+                  
+                  return Center(
+                    child: SizedBox(
+                      height: Curves.easeInOut.transform(value) * 240, // Aumentei de 200 para 240
+                      child: Transform.scale(
+                        scale: Curves.easeInOut.transform(value),
+                        child: Opacity(
+                          opacity: value < 0.8 ? 0.6 : 1.0,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            child: buildEventCardScaled(context, event, index),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
         ),
+        
+        // Indicador de pontos
+        if (eventsList.length > 1)
+          Container(
+            margin: const EdgeInsets.only(top: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                eventsList.length,
+                (index) => AnimatedBuilder(
+                  animation: pageController,
+                  builder: (context, child) {
+                    double selectedness = Curves.easeOut.transform(
+                      math.max(
+                        0.0,
+                        1.0 - ((pageController.page ?? 0.0) - index).abs(),
+                      ),
+                    );
+                    double zoom = 1.0 + (selectedness * 0.5);
+                    return Container(
+                      width: 8.0 * zoom,
+                      height: 8.0 * zoom,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: TColor.primary.withOpacity(0.3 + (selectedness * 0.7)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
       ],
+    );
+  }
+  
+  // Widget para construir um card de evento com efeito de escala otimizado
+  Widget buildEventCardScaled(BuildContext context, Map event, int index) {
+    // Formatação da data do evento
+    String formattedDate = "";
+    String dayMonth = "";
+    if (event['event_date'] != null) {
+      try {
+        DateTime eventDate = DateTime.parse(event['event_date']);
+        formattedDate = "${eventDate.day}/${eventDate.month}/${eventDate.year}";
+        dayMonth = "${eventDate.day}\n${_getMonthName(eventDate.month)}";
+      } catch (e) {
+        formattedDate = event['event_date'];
+        dayMonth = "00\nJAN";
+      }
+    }
+    
+    // Cor do tipo de evento com variações baseadas no índice
+    List<List<Color>> gradientSets = [
+      [Colors.blue.shade400, Colors.blue.shade600],
+      [Colors.purple.shade400, Colors.purple.shade600],
+      [Colors.orange.shade400, Colors.orange.shade600],
+      [Colors.green.shade400, Colors.green.shade600],
+      [Colors.red.shade400, Colors.red.shade600],
+      [Colors.teal.shade400, Colors.teal.shade600],
+    ];
+    
+    Color typeColor = Colors.blue;
+    List<Color> gradientColors = gradientSets[index % gradientSets.length];
+    IconData typeIcon = Icons.event;
+    
+    if (event['type'] == 'PROMOTION') {
+      typeColor = Colors.orange;
+      gradientColors = [Colors.orange.shade400, Colors.orange.shade600];
+      typeIcon = Icons.local_offer;
+    } else if (event['type'] == 'ANNOUNCEMENT') {
+      typeColor = Colors.green;
+      gradientColors = [Colors.green.shade400, Colors.green.shade600];
+      typeIcon = Icons.campaign;
+    } else {
+      typeColor = gradientColors[0];
+    }
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: typeColor.withOpacity(0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Padrões decorativos animados
+          Positioned(
+            top: -40,
+            right: -40,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+          ),
+          
+          Positioned(
+            bottom: -30,
+            left: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
+              ),
+            ),
+          ),
+          
+          // Elementos decorativos adicionais
+          Positioned(
+            top: 20,
+            left: -10,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
+              ),
+            ),
+          ),
+          
+          // Conteúdo principal
+          Padding(
+            padding: const EdgeInsets.all(28), // Aumentei de 24 para 28
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header com tipo e data
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Tipo do evento
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            typeIcon,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            event['type'] == 'PROMOTION' 
+                                ? 'PROMOÇÃO'
+                                : event['type'] == 'ANNOUNCEMENT'
+                                    ? 'ANÚNCIO'
+                                    : 'EVENTO',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Data em formato compacto com design melhorado
+                    Container(
+                      width: 60,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            dayMonth.split('\n')[0],
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: typeColor,
+                            ),
+                          ),
+                          Text(
+                            dayMonth.split('\n')[1],
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: typeColor.withOpacity(0.8),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Título do evento
+                Text(
+                  event['name'] ?? "Evento",
+                  style: const TextStyle(
+                    fontSize: 24, // Aumentei de 22 para 24
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Descrição
+                Expanded(
+                  child: Text(
+                    event['description'] ?? "",
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white.withOpacity(0.9),
+                      height: 1.4,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Data formatada na parte inferior com ícone melhorado
+                if (formattedDate.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.schedule_rounded,
+                          color: Colors.white.withOpacity(0.9),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          formattedDate,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.9),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
   
