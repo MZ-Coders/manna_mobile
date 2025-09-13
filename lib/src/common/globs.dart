@@ -5,8 +5,8 @@ import 'package:dribbble_challenge/main.dart';
 import 'package:dribbble_challenge/src/common/api_config.dart';
 
 class Globs {
-  static const appName = "Food Delivery";
-  static const appVersion = "v3.1.0";
+  static const appName = "MannaSoftware";
+  static const appVersion = "v3.2.1";
 
   static const userPayload = "user_payload";
   static const userLogin = "user_login";
