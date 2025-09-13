@@ -591,7 +591,7 @@ class _OfferViewState extends State<OfferView> {
   Widget buildEventsList(BuildContext context, List eventsList) {
     PageController pageController = PageController(
       viewportFraction: 0.8,
-      initialPage: 0,
+      initialPage: 1,
     );
     
     return Column(
@@ -626,7 +626,7 @@ class _OfferViewState extends State<OfferView> {
         
         // Carrossel horizontal de eventos com efeito de escala
         SizedBox(
-          height: 340, // Aumentei de 240 para 280
+          height: 420, // Aumentado para deixar os cards mais altos
           child: PageView.builder(
             controller: pageController,
             physics: const BouncingScrollPhysics(),
@@ -644,13 +644,13 @@ class _OfferViewState extends State<OfferView> {
                   
                   return Center(
                     child: SizedBox(
-                      height: Curves.easeInOut.transform(value) * 240, // Aumentei de 200 para 240
+                      height: Curves.easeInOut.transform(value) * 320, // Aumentado para cards maiores
                       child: Transform.scale(
                         scale: Curves.easeInOut.transform(value),
                         child: Opacity(
                           opacity: value < 0.8 ? 0.6 : 1.0,
                           child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 0),
+                            margin: const EdgeInsets.symmetric(horizontal: 8),
                             child: buildEventCardScaled(context, event, index),
                           ),
                         ),
@@ -803,7 +803,7 @@ class _OfferViewState extends State<OfferView> {
           
           // Conteúdo principal
           Padding(
-            padding: const EdgeInsets.all(28), // Aumentei de 24 para 28
+            padding: const EdgeInsets.all(4), // Aumentei de 24 para 28
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -813,7 +813,7 @@ class _OfferViewState extends State<OfferView> {
                   children: [
                     // Tipo do evento
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.25),
                         borderRadius: BorderRadius.circular(25),
