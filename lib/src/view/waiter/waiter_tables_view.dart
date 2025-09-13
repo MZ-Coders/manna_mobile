@@ -85,6 +85,8 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
     int preparingTables = filteredTables
         .where((table) => table.status == TableStatus.preparing)
         .length;
+    int availableTables = totalTables - occupiedTables;
+    
 
     return Container(
       decoration: BoxDecoration(
@@ -146,16 +148,16 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                       Colors.orange[50]!,
                     ),
                   ),
-                  // SizedBox(width: 12),
-                  // Expanded(
-                  //   child: _buildStatCard(
-                  //     'Preparando',
-                  //     preparingTables.toString(),
-                  //     Icons.restaurant,
-                  //     Colors.blue,
-                  //     Colors.blue[50]!,
-                  //   ),
-                  // ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Disponíveis',
+                      availableTables.toString(),
+                      Icons.restaurant,
+                      Colors.blue,
+                      Colors.blue[50]!,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -429,36 +431,36 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (table.status != TableStatus.empty) ...[
-                    // Ícone de pessoas + contagem
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: TColor.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.people,
-                            size: 14,
-                            color: TColor.primaryText,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            '${table.guestCount ?? 0}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: TColor.primaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                  ],
+                  // if (table.status != TableStatus.empty) ...[
+                  //   // Ícone de pessoas + contagem
+                  //   Container(
+                  //     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  //     decoration: BoxDecoration(
+                  //       color: TColor.white.withOpacity(0.8),
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //     child: Row(
+                  //       mainAxisSize: MainAxisSize.min,
+                  //       children: [
+                  //         Icon(
+                  //           Icons.people,
+                  //           size: 14,
+                  //           color: TColor.primaryText,
+                  //         ),
+                  //         SizedBox(width: 4),
+                  //         Text(
+                  //           '${table.guestCount ?? 0}',
+                  //           style: TextStyle(
+                  //             fontSize: 12,
+                  //             fontWeight: FontWeight.w600,
+                  //             color: TColor.primaryText,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  //   SizedBox(height: 8),
+                  // ],
                   
                   // Status com cor de fundo
                   Container(
@@ -479,25 +481,25 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                   ),
                   
                   // Tempo e valor
-                  if (table.status != TableStatus.empty) ...[
-                    SizedBox(height: 6),
-                    Text(
-                      table.timeElapsed,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: TColor.secondaryText,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      table.formattedValue,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: TColor.primaryText,
-                      ),
-                    ),
-                  ],
+                  // if (table.status != TableStatus.empty) ...[
+                  //   SizedBox(height: 6),
+                  //   Text(
+                  //     table.timeElapsed,
+                  //     style: TextStyle(
+                  //       fontSize: 11,
+                  //       color: TColor.secondaryText,
+                  //       fontWeight: FontWeight.w500,
+                  //     ),
+                  //   ),
+                  //   Text(
+                  //     table.formattedValue,
+                  //     style: TextStyle(
+                  //       fontSize: 12,
+                  //       fontWeight: FontWeight.bold,
+                  //       color: TColor.primaryText,
+                  //     ),
+                  //   ),
+                  // ],
                 ],
               ),
             ),
@@ -613,33 +615,33 @@ class _WaiterTablesViewState extends State<WaiterTablesView> {
                 SizedBox(height: 20),
                 
                 // Informações da mesa
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildInfoItem(
-                        'Clientes',
-                        '${table.guestCount ?? 0}',
-                        Icons.people,
-                      ),
-                      _buildInfoItem(
-                        'Tempo',
-                        table.timeElapsed,
-                        Icons.access_time,
-                      ),
-                      _buildInfoItem(
-                        'Valor',
-                        table.formattedValue,
-                        Icons.attach_money,
-                      ),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   padding: EdgeInsets.all(16),
+                //   decoration: BoxDecoration(
+                //     color: Colors.grey[50],
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                //     children: [
+                //       _buildInfoItem(
+                //         'Clientes',
+                //         '${table.guestCount ?? 0}',
+                //         Icons.people,
+                //       ),
+                //       _buildInfoItem(
+                //         'Tempo',
+                //         table.timeElapsed,
+                //         Icons.access_time,
+                //       ),
+                //       _buildInfoItem(
+                //         'Valor',
+                //         table.formattedValue,
+                //         Icons.attach_money,
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
               
               SizedBox(height: 20),
@@ -908,7 +910,8 @@ Widget _buildTableOrdersSheet(TableModel table) {
                       ),
                     ),
                     Text(
-                      '${table.floor} • ${_getStatusText(table.status)}',
+                      // '${table.floor} • ${_getStatusText(table.status)}',
+                      '${_getStatusText(table.status)}',
                       style: TextStyle(
                         color: TColor.secondaryText,
                         fontSize: 14,

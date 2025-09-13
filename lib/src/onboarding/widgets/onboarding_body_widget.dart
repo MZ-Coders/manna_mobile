@@ -240,7 +240,7 @@ class _OnBoardingBodyWidgetState extends State<OnBoardingBodyWidget>
                       ),
                     
                     // Botão para mostrar o seletor de apps (comentado conforme original)
-                    const SizedBox(height: 10),
+                    // const SizedBox(height: 10),
                     InkWell(
                       onTap: _toggleAppSelector,
                       child: Container(

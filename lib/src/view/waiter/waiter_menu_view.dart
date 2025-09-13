@@ -347,11 +347,11 @@ Future<void> _refreshMenu() async {
               color: TColor.primaryText,
             ),
           ),
-          Spacer(),
-          Text(
-            'Andar: $selectedFloor',
-            style: TextStyle(color: TColor.secondaryText),
-          ),
+          // Spacer(),
+          // Text(
+          //   'Andar: $selectedFloor',
+          //   style: TextStyle(color: TColor.secondaryText),
+          // ),
         ],
       ),
     );
@@ -530,11 +530,11 @@ Future<void> _refreshMenu() async {
             IconButton(
               onPressed: () => _updateItemQuantity(item, -1),
               icon: Icon(Icons.remove, size: 18),
-              padding: EdgeInsets.all(4),
+              padding: EdgeInsets.all(0),
               constraints: BoxConstraints(minWidth: 32, minHeight: 32),
             ),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: 0),
               child: Text(
                 '${_getItemQuantityInCart(item.id)}',
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -543,7 +543,7 @@ Future<void> _refreshMenu() async {
             IconButton(
               onPressed: () => _updateItemQuantity(item, 1),
               icon: Icon(Icons.add, size: 18),
-              padding: EdgeInsets.all(4),
+              padding: EdgeInsets.all(0),
               constraints: BoxConstraints(minWidth: 32, minHeight: 32),
             ),
           ],
@@ -1056,46 +1056,46 @@ DropdownButtonFormField<int>(
             SizedBox(height: 8),
             
             // Botão adicional para apenas imprimir (sem enviar pedido)
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  try {
-                    final prefs = await SharedPreferences.getInstance();
-                    String? waiterName = prefs.getString('user_name');
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: OutlinedButton.icon(
+            //     onPressed: () async {
+            //       try {
+            //         final prefs = await SharedPreferences.getInstance();
+            //         String? waiterName = prefs.getString('user_name');
                     
-                    // await MobilePrinterService.printWithPrinterSelection(
-                    //   context: context,
-                    //   tableNumber: selectedTable!,
-                    //   floor: selectedFloor,
-                    //   items: cart,
-                    //   guestCount: guestCount,
-                    //   notes: notesController.text.isNotEmpty ? notesController.text : null,
-                    //   waiterName: waiterName,
-                    // );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Erro na impressão: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                icon: Icon(Icons.preview, color: TColor.primary),
-                label: Text(
-                  'Apenas Imprimir Preview',
-                  style: TextStyle(
-                    color: TColor.primary,
-                    fontSize: 14,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: TColor.primary),
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
+            //         // await MobilePrinterService.printWithPrinterSelection(
+            //         //   context: context,
+            //         //   tableNumber: selectedTable!,
+            //         //   floor: selectedFloor,
+            //         //   items: cart,
+            //         //   guestCount: guestCount,
+            //         //   notes: notesController.text.isNotEmpty ? notesController.text : null,
+            //         //   waiterName: waiterName,
+            //         // );
+            //       } catch (e) {
+            //         ScaffoldMessenger.of(context).showSnackBar(
+            //           SnackBar(
+            //             content: Text('Erro na impressão: $e'),
+            //             backgroundColor: Colors.red,
+            //           ),
+            //         );
+            //       }
+            //     },
+            //     icon: Icon(Icons.preview, color: TColor.primary),
+            //     label: Text(
+            //       'Apenas Imprimir Preview',
+            //       style: TextStyle(
+            //         color: TColor.primary,
+            //         fontSize: 14,
+            //       ),
+            //     ),
+            //     style: OutlinedButton.styleFrom(
+            //       side: BorderSide(color: TColor.primary),
+            //       padding: EdgeInsets.symmetric(vertical: 12),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
