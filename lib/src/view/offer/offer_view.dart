@@ -590,7 +590,7 @@ class _OfferViewState extends State<OfferView> {
   // Widget para construir a lista de eventos como carrossel horizontal com efeito de escala
   Widget buildEventsList(BuildContext context, List eventsList) {
     PageController pageController = PageController(
-      viewportFraction: 0.8,
+      viewportFraction: 0.70,
       initialPage: 1,
     );
     
@@ -650,7 +650,7 @@ class _OfferViewState extends State<OfferView> {
                         child: Opacity(
                           opacity: value < 0.8 ? 0.6 : 1.0,
                           child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
                             child: buildEventCardScaled(context, event, index),
                           ),
                         ),
