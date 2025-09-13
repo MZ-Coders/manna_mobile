@@ -276,23 +276,32 @@ class _OfferViewState extends State<OfferView> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
-                    // Texto com Expanded para evitar overflow
-                    Flexible(
-                      child: Expanded(
-                        child: Text(
-                          (currentView == 'offers' ? 
-                            AppLocalizations.of(context).latestOffers : 
-                            "Eventos") + " - $restaurantName",
-                          style: TextStyle(
-                              color: TColor.primaryText,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800),
-                          // overflow: TextOverflow.ellipsis, // Adiciona "..." se muito longo
-                          // maxLines: 1, // Limita a uma linha
-                        ),
+                    // Solução simples: dividir o título em duas partes
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currentView == 'offers' ? 
+                              AppLocalizations.of(context).latestOffers : 
+                              "Eventos",
+                            style: TextStyle(
+                                color: TColor.primaryText,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800),
+                          ),
+                          Text(
+                            restaurantName,
+                            style: TextStyle(
+                                color: TColor.primaryText,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8), // Espaçamento entre texto e ícone
+                    const SizedBox(width: 8),
                     IconButton(
                       onPressed: () {
                         Navigator.push(
@@ -641,7 +650,7 @@ class _OfferViewState extends State<OfferView> {
                         child: Opacity(
                           opacity: value < 0.8 ? 0.6 : 1.0,
                           child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8),
+                            margin: const EdgeInsets.symmetric(horizontal: 0),
                             child: buildEventCardScaled(context, event, index),
                           ),
                         ),
