@@ -13,11 +13,11 @@ class ViewAllTitleRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          title,
+          title.length > 25 ? title.substring(0, 25) + '...' : title,
           style: TextStyle(
               color: TColor.primaryText,
-              fontSize: 20,
-              fontWeight: FontWeight.w800),
+              fontSize: 14,
+              fontWeight: FontWeight.w900),
         ),
         TextButton(
           onPressed: onView,
