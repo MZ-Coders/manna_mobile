@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/order_count_notifier.dart';
@@ -7,8 +8,12 @@ import 'package:dribbble_challenge/src/common_widget/tab_button.dart';
 import 'package:dribbble_challenge/src/common_widget/tab_button_with_badge.dart';
 import 'package:dribbble_challenge/src/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dribbble_challenge/src/common/web_utils.dart';
+
+import 'package:dribbble_challenge/src/view/restaurant_setup/restaurant_setup_view.dart';
 
 import '../home/home_view.dart';
 import '../offer/offer_view.dart';
@@ -158,7 +163,36 @@ class _MainTabViewState extends State<MainTabView> {
         return false;
       },
       child: Scaffold(
-        body: PageStorage(bucket: storageBucket, child: selectPageView),
+        body: Stack(
+          children: [
+            PageStorage(bucket: storageBucket, child: selectPageView),
+            // Top-right overflow menu for global actions
+            Positioned(
+              top: 16,
+              right: 16,
+              child: PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'setup') {
+                    _confirmGoToSetup();
+                  }
+                },
+                icon: Icon(Icons.more_vert, color: TColor.primary),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'setup',
+                    child: Row(
+                      children: [
+                        Icon(Icons.settings, color: TColor.primary),
+                        const SizedBox(width: 8),
+                        Text('Ir para Configuração', style: TextStyle(color: TColor.primaryText)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         backgroundColor: const Color(0xfff5f5f5),
         floatingActionButtonLocation:
             FloatingActionButtonLocation.miniCenterDocked,
@@ -245,5 +279,48 @@ class _MainTabViewState extends State<MainTabView> {
         ),
       ),
     );
+  }
+
+  void _confirmGoToSetup() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ir para Configuração'),
+        content: const Text('Deseja sair do aplicativo e ir para a tela de configuração?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _goToSetup();
+            },
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _goToSetup() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Clear all prefs so the app starts on setup. Change to selective clear if needed.
+    await prefs.clear();
+
+    if (mounted) {
+      if (kIsWeb) {
+        // On web, go back to onboarding (root)
+  // Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  // Force a page reload to ensure onboarding reads the URL/params fresh
+  reloadPage();
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const RestaurantSetupView()),
+          (route) => false,
+        );
+      }
+    }
   }
 }

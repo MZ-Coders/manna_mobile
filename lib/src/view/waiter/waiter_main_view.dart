@@ -4,6 +4,7 @@ import 'package:dribbble_challenge/src/view/waiter/waiter_menu_view.dart';
 import 'package:dribbble_challenge/src/view/waiter/waiter_orders_view.dart';
 import 'package:dribbble_challenge/src/view/waiter/waiter_tables_view.dart';
 import 'package:flutter/material.dart';
+import 'package:dribbble_challenge/src/view/restaurant_setup/restaurant_setup_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WaiterMainView extends StatefulWidget {
@@ -99,17 +100,60 @@ Future<void> _setSelectedTableInPreferences(int tableNumber, String floor) async
           ],
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              // TODO: Menu de configurações
-            },
-            icon: Icon(Icons.more_vert, color: TColor.white),
-          ),
+            // Settings / Overflow menu with logout
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'logout') {
+                  _logout();
+                }
+              },
+              color: TColor.white,
+              icon: Icon(Icons.more_vert, color: TColor.white),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout, color: TColor.primary),
+                      const SizedBox(width: 8),
+                      Text('Logout', style: TextStyle(color: TColor.primaryText)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
       body: _buildTabContent(),
       bottomNavigationBar: _buildBottomNavigation(),
     );
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Clear only user/auth related prefs but keep restaurant config
+    // await prefs.remove('auth_token');
+    // await prefs.remove('user_id');
+    // await prefs.remove('user_name');
+    // await prefs.remove('user_email');
+    // await prefs.remove('user_role');
+    // await prefs.remove('user_payload');
+    // // await prefs.remove('user_restaurant_id');
+    // // await prefs.remove('user_restaurant_uuid');
+    // await prefs.remove('selected_table');
+    // await prefs.remove('selected_floor');
+    // await prefs.setBool('user_login', false);
+    // await prefs.remove('restaurant_id');
+    await prefs.clear();
+
+    // Navigate to login and remove all previous routes
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const RestaurantSetupView()),
+        (route) => false,
+      );
+    }
   }
 
  Widget _buildTabContent() {

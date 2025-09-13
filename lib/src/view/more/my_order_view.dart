@@ -172,7 +172,10 @@ String _buildAddressText() {
     return " ... "; // Fallback
   }
   
-  return addressParts.join(", ");
+  String joined = addressParts.join(', ');
+  // const int maxLen = 40;
+  // if (joined.length <= maxLen) return joined;
+  return '${joined.substring(0,  37).trim()}...';
 }
 
 // Removida função _updateCart que não era utilizada
