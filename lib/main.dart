@@ -280,6 +280,7 @@ supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         fontFamily: "Metropolis",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       ),
       home: ErrorScreen(
         errorType: errorType,
@@ -478,6 +479,7 @@ supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         fontFamily: "Metropolis",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       ),
       home: const LoadingScreen(),
     );
@@ -812,6 +814,7 @@ class _AppSelectorState extends State<AppSelector> with WidgetsBindingObserver {
       theme: ThemeData(
         fontFamily: "Metropolis",
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       ),
       home: const OnBoardingScreen(), // Inicia sempre com a tela de onboarding
       navigatorKey: locator<NavigationService>().navigatorKey,
