@@ -1,5 +1,14 @@
+import 'package:flutter/material.dart';
+
 class CartService {
   static List<Map<String, dynamic>> itemArr = [];
+  
+  // Notificador para mudanças no carrinho
+  static final ValueNotifier<int> cartUpdateNotifier = ValueNotifier<int>(0);
+  
+  static void _notifyCartChanged() {
+    cartUpdateNotifier.value++;
+  }
 
  static void addToCart(String name, int qty, double price, [int? id]) {
   // Verifica se o item já existe baseado no ID (se disponível) ou nome
@@ -26,12 +35,15 @@ class CartService {
     itemArr.add(newItem);
     print("Item adicionado ao carrinho: $newItem");
   }
+  
+  _notifyCartChanged();
 }
 
    static void removeFromCart(int index) {
     if (index >= 0 && index < itemArr.length) {
       itemArr.removeAt(index);
       print("Item removido do carrinho. Total de itens: ${itemArr.length}");
+      _notifyCartChanged();
     }
   }
 
@@ -39,6 +51,7 @@ class CartService {
     if (index >= 0 && index < itemArr.length && newQty > 0) {
       itemArr[index]["qty"] = newQty.toString();
       print("Quantidade atualizada para: $newQty");
+      _notifyCartChanged();
     }
   }
 
@@ -46,6 +59,7 @@ class CartService {
   static void removeItemByName(String name) {
     itemArr.removeWhere((item) => item["name"] == name);
     print("Item '$name' removido do carrinho");
+    _notifyCartChanged();
   }
 
   // Função extra útil: verificar se item existe
@@ -68,6 +82,7 @@ class CartService {
 
   static void clearCart() {
     itemArr.clear();
+    _notifyCartChanged();
   }
 
   static List<Map<String, dynamic>> getCartItems() {

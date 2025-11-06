@@ -12,11 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
-import '../../common_widget/category_cell.dart';
-import '../../common_widget/most_popular_cell.dart';
-import '../../common_widget/popular_resutaurant_row.dart';
-import '../../common_widget/recent_item_row.dart';
-import '../../common_widget/view_all_title_row.dart';
+import 'package:dribbble_challenge/src/common_widget/category_cell.dart';
+import 'package:dribbble_challenge/src/common_widget/view_all_title_row.dart';
 import '../more/my_order_view.dart';
 
 
@@ -121,6 +118,7 @@ void _performSearch() {
 
   // Categoria selecionada (padrão: Entradas/Starters - ID: 1)
   int selectedCategoryId = 1;
+  bool showAllCategories = false; // Flag para mostrar todos os pratos agrupados por categoria
 
   // Lista de itens filtrados pela categoria
   List filteredMenuItems = [];
@@ -304,26 +302,67 @@ if (searchText.isNotEmpty)
 
 const SizedBox(height: 10),
 
-              // Lista de categorias
-             // Lista de categorias (esconder durante pesquisa)
-if (searchText.isEmpty)
+              // Lista de categorias (esconder durante pesquisa)
+if (searchText.isEmpty) ...[
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Categories',
+          style: TextStyle(
+            color: TColor.primaryText,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        InkWell(
+          onTap: () {
+            setState(() {
+              showAllCategories = !showAllCategories;
+            });
+          },
+          child: Row(
+            children: [
+              Text(
+                showAllCategories ? 'Hide All' : 'View all',
+                style: TextStyle(
+                  color: TColor.primary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: TColor.primary,
+                size: 12,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+  const SizedBox(height: 12),
   SizedBox(
-    height: 120,
+    height: 45,
     child: ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: catArr.length,
       itemBuilder: ((context, index) {
         var cObj = catArr[index] as Map? ?? {};
-        bool isSelected = cObj["id"] == selectedCategoryId;
 
         return CategoryCell(
           cObj: cObj,
+          isSelected: cObj["id"] == selectedCategoryId && !showAllCategories,
           onTap: () {
-            // Limpar pesquisa ao selecionar categoria
             txtSearch.clear();
             searchText = '';
             setState(() {
+              showAllCategories = false;
               selectedCategoryId = cObj["id"];
               updateMenuItems();
             });
@@ -332,56 +371,66 @@ if (searchText.isEmpty)
       }),
     ),
   ),
+  const SizedBox(height: 12),
+],
               // Seção de itens populares
               // Seção de itens populares (esconder durante pesquisa)
 if (searchText.isEmpty) ...[
-  Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: ViewAllTitleRow(
-      title: AppLocalizations.of(context).mostPopular,
-      onView: () {},
-    ),
-  ),
-  SizedBox(
-    height: 200,
-    child: ListView.builder(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      itemCount: mostPopArr.length,
-      itemBuilder: ((context, index) {
-        var mObj = mostPopArr[index] as Map? ?? {};
-        return MostPopularCell(
-          mObj: mObj,
-          onTap: () {
-             Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => FoodItemDetailsView(
-                  foodDetails: mObj.cast<String, dynamic>()
-                )
-              ),
-            );
-          },
-        );
-      }),
-    ),
-  ),
+  // Padding(
+  //   padding: const EdgeInsets.symmetric(horizontal: 20),
+  //   child: ViewAllTitleRow(
+  //     title: AppLocalizations.of(context).mostPopular,
+  //     onView: () {},
+  //   ),
+  // ),
+  // SizedBox(
+  //   height: 200,
+  //   child: ListView.builder(
+  //     scrollDirection: Axis.horizontal,
+  //     padding: const EdgeInsets.symmetric(horizontal: 15),
+  //     itemCount: mostPopArr.length,
+  //     itemBuilder: ((context, index) {
+  //       var mObj = mostPopArr[index] as Map? ?? {};
+  //       return MostPopularCell(
+  //         mObj: mObj,
+  //         onTap: () {
+  //            Navigator.push(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (context) => FoodItemDetailsView(
+  //                 foodDetails: mObj.cast<String, dynamic>()
+  //               )
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     }),
+  //   ),
+  // ),
+
 ],
 
              
               // Seção do menu da categoria selecionada
-              // Seção do menu da categoria selecionada
-Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  child: ViewAllTitleRow(
-    title: searchText.isEmpty 
-    ? "${AppLocalizations.of(context).menu}: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {"name": "Loading..."})["name"]}"
-    : AppLocalizations.of(context).searchResults,
-  onView: () {},
+if (showAllCategories)
+  // Mostrar todos os pratos agrupados por categoria
+  buildAllCategoriesMenu(context)
+else
+  // Mostrar apenas a categoria selecionada
+  Column(
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: ViewAllTitleRow(
+          title: searchText.isEmpty 
+          ? "Menu: ${catArr.firstWhere((cat) => cat["id"] == selectedCategoryId, orElse: () => {"name": "Loading..."})["name"]}"
+          : 'Search Results',
+        onView: () {},
+        ),
+      ),
+      buildMenuItems(context, filteredMenuItems),
+    ],
   ),
-),
-              // 
-              buildMenuItems(context, filteredMenuItems),
 
               // Seção de itens recentes
               // Padding(
@@ -408,6 +457,87 @@ Padding(
           ),
         ),
       ),
+    );
+  }
+
+  // Método para mostrar todos os pratos agrupados por categoria
+  Widget buildAllCategoriesMenu(BuildContext context) {
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      itemCount: allMenuItems.length,
+      itemBuilder: (context, categoryIndex) {
+        var category = allMenuItems[categoryIndex];
+        var products = category['products'] as List? ?? [];
+        
+        // Pular categorias sem produtos
+        if (products.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Converter produtos para o formato esperado
+        List<Map<String, dynamic>> categoryItems = products.map((product) {
+          return {
+            "id": product['id'],
+            "image": product['image_url'] ?? "assets/img/dess_1.png",
+            "name": product['name'],
+            "rate": "4.9",
+            "rating": "124",
+            "type": category['category_name'],
+            "food_type": category['category_name'],
+            "description": product['description'] ?? '',
+            "price": double.tryParse(product['current_price'].toString()) ?? 0.0,
+            "regular_price": double.tryParse(product['regular_price'].toString()) ?? 0.0,
+            "is_on_promotion": product['is_on_promotion'] ?? false,
+          };
+        }).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header da categoria
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Text(
+                category['category_name'] ?? 'Category',
+                style: TextStyle(
+                  color: TColor.primaryText,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            
+            // Lista de produtos da categoria
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: categoryItems.length,
+              itemBuilder: (context, productIndex) {
+                var mObj = categoryItems[productIndex];
+                
+                return MenuItemRow(
+                  mObj: mObj,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FoodItemDetailsView(
+                          foodDetails: mObj,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+            
+            const SizedBox(height: 24),
+          ],
+        );
+      },
     );
   }
 
@@ -646,6 +776,8 @@ void updateMenuItems() {
     }
   });
 }
+
+// Método para mostrar todos os produtos de todas as categorias
 
   String getDefaultCategoryImage(int index) {
   // Lista de imagens padrão que você pode rotacionar

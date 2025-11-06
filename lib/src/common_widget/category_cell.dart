@@ -5,54 +5,47 @@ import '../common/color_extension.dart';
 class CategoryCell extends StatelessWidget {
   final Map cObj;
   final VoidCallback onTap;
-  const CategoryCell({super.key, required this.cObj, required this.onTap });
+  final bool isSelected;
+  
+  const CategoryCell({
+    super.key, 
+    required this.cObj, 
+    required this.onTap,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          children: [
-            ClipRRect(
-  borderRadius: BorderRadius.circular(10),
-  child: cObj["image"] != null && cObj["image"].toString().isNotEmpty
-      ? Image.network(
-          cObj["image"].toString(),
-          width: 85,
-          height: 85,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Image.asset(
-              'assets/images/dish.png',
-              width: 85,
-              height: 85,
-              fit: BoxFit.cover,
-            );
-          },
-        )
-      : Image.asset(
-          'assets/images/dish.png',
-          width: 85,
-          height: 85,
-          fit: BoxFit.cover,
-        ),
-),
-            const SizedBox(
-              height: 8,
+      margin: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            decoration: BoxDecoration(
+              color: isSelected ? TColor.primary : Colors.grey.shade800,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: isSelected ? [
+                BoxShadow(
+                  color: TColor.primary.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ] : [],
             ),
-            Text(
-              cObj["name"].length > 15
-              ? cObj["name"].substring(0, 15) + '...'
-              : cObj["name"],
-              textAlign: TextAlign.center,
+            child: Text(
+              cObj["name"].toString(),
               style: TextStyle(
-                  color: TColor.primaryText,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700),
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );

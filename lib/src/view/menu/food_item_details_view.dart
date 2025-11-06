@@ -2,13 +2,10 @@ import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/cart_service.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
 import 'package:dribbble_challenge/src/common_widget/round_icon_button.dart';
-import 'package:dribbble_challenge/src/recipes/domain/recipe.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../more/my_order_view.dart';
-
-import 'package:dribbble_challenge/src/core/theme/app_colors.dart';
 
 class FoodItemDetailsView extends StatefulWidget {
   final Map<String, dynamic> foodDetails;
@@ -25,6 +22,45 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
   int qty = 1;
   bool isFav = false;
   bool isAddingToCart = false;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Carregar quantidade existente do carrinho
+    _loadQuantityFromCart();
+    
+    // Escutar mudanças no carrinho
+    CartService.cartUpdateNotifier.addListener(_onCartUpdated);
+  }
+  
+  @override
+  void dispose() {
+    // Remover listener quando o widget for destruído
+    CartService.cartUpdateNotifier.removeListener(_onCartUpdated);
+    super.dispose();
+  }
+  
+  void _loadQuantityFromCart() {
+    var cartItems = CartService.getCartItems();
+    var existingItem = cartItems.firstWhere(
+      (item) => item["name"] == widget.foodDetails["name"],
+      orElse: () => {},
+    );
+    
+    if (existingItem.isNotEmpty) {
+      qty = int.parse(existingItem["qty"].toString());
+    }
+  }
+  
+  void _onCartUpdated() {
+    // Atualizar a UI quando o carrinho mudar
+    if (mounted) {
+      setState(() {
+        _loadQuantityFromCart();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +80,13 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
     return Scaffold(
       backgroundColor: TColor.primaryText,
       body: Stack(
-        alignment: Alignment.topCenter,
         children: [
-          // Imagem de fundo
-          Container(
+          // Conteúdo principal com scroll
+          Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              // Imagem de fundo
+              Container(
   width: media.width,
   height: imageHeight,
   child: Image.network(
@@ -113,220 +152,238 @@ class _FoodItemDetailsViewState extends State<FoodItemDetailsView> {
   ),
 ),
           
-          // Gradiente sobre a imagem
-          Container(
-            width: media.width,
-            height: imageHeight,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.black, Colors.transparent, Colors.black],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter
+              // Gradiente sobre a imagem
+              Container(
+                width: media.width,
+                height: imageHeight,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black, Colors.transparent, Colors.black],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter
+                  ),
+                ),
               ),
-            ),
-          ),
           
-          // Conteúdo principal
-          Center(
-            child: Container(
-              constraints: BoxConstraints(maxWidth: contentMaxWidth),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: [
-                      Column(
+              // Conteúdo principal
+              Center(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Stack(
+                        alignment: Alignment.topCenter,
                         children: [
-                          SizedBox(
-                            height: imageHeight - 60,
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: TColor.white,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(30),
-                                topRight: Radius.circular(30)
-                              )
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 35),
-                                
-                                // Nome do item
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                                  child: Text(
-                                    widget.foodDetails["name"],
-                                    style: TextStyle(
-                                      color: TColor.primaryText,
-                                      fontSize: isWideScreen ? 26 : 22,
-                                      fontWeight: FontWeight.w800
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                
-                                // Avaliações e preço
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                                  child: isWideScreen 
-                                      ? Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: [
-                                            _buildRatingWidget(),
-                                            _buildPriceWidget(),
-                                          ],
-                                        )
-                                      : Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            _buildRatingWidget(),
-                                            _buildPriceWidget(),
-                                          ],
-                                        ),
-                                ),
-                                const SizedBox(height: 15),
-                                
-                                // Descrição
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                                  child: Text(
-                                    AppLocalizations.of(context).description,
-                                    style: TextStyle(
-                                      color: TColor.primaryText,
-                                      fontSize: isWideScreen ? 16 : 14,
-                                      fontWeight: FontWeight.w700
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                                  child: Text(
-                                    widget.foodDetails["description"],
-                                    style: TextStyle(
-                                      color: TColor.secondaryText,
-                                      fontSize: isWideScreen ? 14 : 12
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                
-                                // Divisor
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                                  child: Divider(
-                                    color: TColor.secondaryText.withOpacity(0.4),
-                                    height: 1,
+                          Column(
+                            children: [
+                              SizedBox(
+                                height: imageHeight - 60,
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: TColor.white,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(30),
+                                    topRight: Radius.circular(30)
                                   )
                                 ),
-                                const SizedBox(height: 20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 35),
                                 
-                                // Número de porções
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        AppLocalizations.of(context).numberPortions,
+                                    // Nome do item
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                                      child: Text(
+                                        widget.foodDetails["name"],
+                                        style: TextStyle(
+                                          color: TColor.primaryText,
+                                          fontSize: isWideScreen ? 26 : 22,
+                                          fontWeight: FontWeight.w800
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                
+                                    // Avaliações e preço
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                                      child: isWideScreen 
+                                          ? Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                _buildRatingWidget(),
+                                                _buildPriceWidget(),
+                                              ],
+                                            )
+                                          : Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                _buildRatingWidget(),
+                                                _buildPriceWidget(),
+                                              ],
+                                            ),
+                                    ),
+                                    const SizedBox(height: 15),
+                                
+                                    // Descrição
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                                      child: Text(
+                                        AppLocalizations.of(context).description,
                                         style: TextStyle(
                                           color: TColor.primaryText,
                                           fontSize: isWideScreen ? 16 : 14,
                                           fontWeight: FontWeight.w700
                                         ),
                                       ),
-                                      const Spacer(),
-                                      _buildQuantitySelector(),
-                                    ],
-                                  ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                                      child: Text(
+                                        widget.foodDetails["description"],
+                                        style: TextStyle(
+                                          color: TColor.secondaryText,
+                                          fontSize: isWideScreen ? 14 : 12
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                
+                                    // Divisor
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                                      child: Divider(
+                                        color: TColor.secondaryText.withOpacity(0.4),
+                                        height: 1,
+                                      )
+                                    ),
+                                    const SizedBox(height: 20),
+                                
+                                    // Número de porções
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            AppLocalizations.of(context).numberPortions,
+                                            style: TextStyle(
+                                              color: TColor.primaryText,
+                                              fontSize: isWideScreen ? 16 : 14,
+                                              fontWeight: FontWeight.w700
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          _buildQuantitySelector(),
+                                        ],
+                                      ),
+                                    ),
+                                
+                                    // Espaço extra no final para não ficar escondido atrás do footer fixo
+                                    SizedBox(height: isWideScreen ? 100 : 200),
+                                  ]
                                 ),
-                                
-                                // Preço total e botão de adicionar ao carrinho
-                                isWideScreen 
-                                    ? _buildWideScreenTotalPriceWidget()
-                                    : _buildMobileScreenTotalPriceWidget(media),
-                                
-                                const SizedBox(height: 20),
-                              ]
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+                      
+                          // Botão de favoritos
+                          Container(
+                            height: imageHeight - 20,
+                            alignment: Alignment.bottomRight,
+                            margin: const EdgeInsets.only(right: 4),
+                            child: InkWell(
+                              onTap: () {
+                                isFav = !isFav;
+                                setState(() {});
+                              },
+                              child: Image.asset(
+                                isFav ? "assets/img/favorites_btn.png" : "assets/img/favorites_btn_2.png",
+                                width: 70,
+                                height: 70
+                              )
                             ),
                           ),
-                          const SizedBox(height: 20),
                         ],
                       ),
-                      
-                      // Botão de favoritos
-                      Container(
-                        height: imageHeight - 20,
-                        alignment: Alignment.bottomRight,
-                        margin: const EdgeInsets.only(right: 4),
-                        child: InkWell(
-                          onTap: () {
-                            isFav = !isFav;
-                            setState(() {});
-                          },
-                          child: Image.asset(
-                            isFav ? "assets/img/favorites_btn.png" : "assets/img/favorites_btn_2.png",
-                            width: 70,
-                            height: 70
-                          )
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
+              ),
+            ],
+          ),
+          
+          // Card de preço total fixo no rodapé
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                child: isWideScreen 
+                    ? _buildWideScreenTotalPriceWidget()
+                    : _buildMobileScreenTotalPriceWidget(media),
               ),
             ),
           ),
           
           // Barra de navegação superior
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              children: [
-                SizedBox(height: MediaQuery.of(context).padding.top + 15),
-                Container(
-                  constraints: BoxConstraints(maxWidth: contentMaxWidth),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: Image.asset(
-                            "assets/img/btn_back.png",
-                            width: 20,
-                            height: 20,
-                            color: TColor.white,
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  SizedBox(height: MediaQuery.of(context).padding.top + 15),
+                  Container(
+                    constraints: BoxConstraints(maxWidth: contentMaxWidth),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            icon: Image.asset(
+                              "assets/img/btn_back.png",
+                              width: 20,
+                              height: 20,
+                              color: TColor.white,
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MyOrderView()
-                              )
-                            );
-                          },
-                          icon: Image.asset(
-                            "assets/img/shopping_cart.png",
-                            width: 25,
-                            height: 25,
-                            color: TColor.white,
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MyOrderView()
+                                )
+                              );
+                            },
+                            icon: Image.asset(
+                              "assets/img/shopping_cart.png",
+                              width: 25,
+                              height: 25,
+                              color: TColor.white,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -448,11 +505,22 @@ Widget _buildPriceWidget() {
       children: [
         InkWell(
           onTap: () {
-            qty = qty - 1;
-            if (qty < 1) {
-              qty = 1;
+            int newQty = qty - 1;
+            if (newQty < 1) {
+              newQty = 1;
             }
-            setState(() {});
+            
+            // Atualizar o carrinho
+            CartService.addToCart(
+              widget.foodDetails["name"], 
+              newQty, 
+              price, 
+              widget.foodDetails["id"]
+            );
+            
+            setState(() {
+              qty = newQty;
+            });
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -493,8 +561,19 @@ Widget _buildPriceWidget() {
         const SizedBox(width: 8),
         InkWell(
           onTap: () {
-            qty = qty + 1;
-            setState(() {});
+            int newQty = qty + 1;
+            
+            // Atualizar o carrinho
+            CartService.addToCart(
+              widget.foodDetails["name"], 
+              newQty, 
+              price, 
+              widget.foodDetails["id"]
+            );
+            
+            setState(() {
+              qty = newQty;
+            });
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -521,16 +600,16 @@ Widget _buildPriceWidget() {
   // Layout do preço total para telas largas (web/desktop)
   Widget _buildWideScreenTotalPriceWidget() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 25),
+      margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 25),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 12,
-            offset: Offset(0, 4)
+            color: Colors.black26,
+            blurRadius: 15,
+            offset: Offset(0, -5)
           )
         ]
       ),
@@ -640,22 +719,25 @@ Widget _buildPriceWidget() {
   
   // Layout do preço total para telas móveis
   Widget _buildMobileScreenTotalPriceWidget(Size media) {
-    return SizedBox(
-      height: media.width < 400 ? 180 : 220,
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: [
-          Container(
-            width: media.width < 400 ? media.width * 0.2 : media.width * 0.25,
-            height: 160,
-            decoration: BoxDecoration(
-              color: TColor.primary,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(35),
-                bottomRight: Radius.circular(35)
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.only(bottom: 20),
+      child: SizedBox(
+        height: media.width < 400 ? 160 : 180,
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            Container(
+              width: media.width < 400 ? media.width * 0.2 : media.width * 0.25,
+              height: 160,
+              decoration: BoxDecoration(
+                color: TColor.primary,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(35),
+                  bottomRight: Radius.circular(35)
+                ),
               ),
             ),
-          ),
           Center(
             child: Stack(
               alignment: Alignment.centerRight,
@@ -783,6 +865,7 @@ Widget _buildPriceWidget() {
           )
         ],
       ),
+    ),
     );
   }
 }
