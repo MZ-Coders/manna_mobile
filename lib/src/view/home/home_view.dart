@@ -16,7 +16,6 @@ import '../../common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/category_cell.dart';
 import 'package:dribbble_challenge/src/common_widget/view_all_title_row.dart';
 import '../more/my_order_view.dart';
-import '../offer/offer_view.dart';
 import 'events_modal.dart';
 
 
@@ -105,6 +104,12 @@ void _performSearch() {
     }).toList();
   }
 }
+
+  Future<void> _refreshData() async {
+    print("Pull-to-refresh ativado - recarregando dados...");
+    await loadMenuData();
+    print("Dados recarregados com sucesso!");
+  }
 
   Future<void> loadTableId() async {
     final prefs = await SharedPreferences.getInstance();
@@ -211,10 +216,13 @@ void _performSearch() {
           ],
         ),
       )
-    : SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
+    : RefreshIndicator(
+        onRefresh: _refreshData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
             children: [
               const SizedBox(height: 10),
               Padding(
@@ -610,7 +618,28 @@ else
         onView: () {},
         ),
       ),
-      buildMenuItems(context, filteredMenuItems),
+      AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 0.1),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOut,
+              )),
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          key: ValueKey<int>(selectedCategoryId),
+          child: buildMenuItems(context, filteredMenuItems),
+        ),
+      ),
     ],
   ),
 
@@ -639,7 +668,8 @@ else
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   // Método para mostrar todos os pratos agrupados por categoria

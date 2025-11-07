@@ -22,27 +22,39 @@ class CategoryCell extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(25),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? TColor.primary : Colors.grey.shade800,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: isSelected ? [
+              color: isSelected ? TColor.primary : Colors.white,
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: isSelected ? TColor.primary : Colors.grey.shade300,
+                width: 1.5,
+              ),
+              boxShadow: [
                 BoxShadow(
-                  color: TColor.primary.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: isSelected 
+                    ? TColor.primary.withOpacity(0.4) 
+                    : Colors.grey.withOpacity(0.2),
+                  blurRadius: isSelected ? 12 : 6,
+                  offset: const Offset(0, 3),
+                  spreadRadius: isSelected ? 1 : 0,
                 ),
-              ] : [],
+              ],
             ),
-            child: Text(
-              cObj["name"].toString(),
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
               style: TextStyle(
-                color: Colors.white,
+                color: isSelected ? Colors.white : TColor.primaryText,
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+              child: Text(
+                cObj["name"].toString(),
               ),
             ),
           ),
