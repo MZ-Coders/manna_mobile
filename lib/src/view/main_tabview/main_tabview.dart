@@ -101,9 +101,9 @@ class _MainTabViewState extends State<MainTabView> {
         activeOrdersCount = count;
       });
       
-      print("Verificação de pedidos na TabBar: $count pedidos ativos encontrados");
+      // print("Verificação de pedidos na TabBar: $count pedidos ativos encontrados");
     } catch (e) {
-      print("Erro ao verificar pedidos ativos na TabBar: $e");
+      // print("Erro ao verificar pedidos ativos na TabBar: $e");
     }
   }
 
@@ -120,7 +120,6 @@ class _MainTabViewState extends State<MainTabView> {
 
   @override
   Widget build(BuildContext context) {
-    print('Table ID: $tableId');
     return WillPopScope(
       onWillPop: () async {
         // Se estiver na Home (aba central), impedir voltar
