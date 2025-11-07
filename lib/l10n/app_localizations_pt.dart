@@ -234,6 +234,30 @@ String get subTotal => 'Subtotal';
 String get offers => 'Ofertas';
 
 @override
+String get specialOffers => 'Ofertas Especiais';
+
+@override
+String get checkPromotions => 'Confira nossas promoções especiais!';
+
+@override
+String get events => 'Eventos';
+
+@override
+String get checkEvents => 'Confira nossos eventos especiais!';
+
+@override
+String get noEventsAvailable => 'Nenhum evento disponível';
+
+@override
+String get checkBackLater => 'Volte mais tarde para atualizações!';
+
+@override
+String get announcement => 'ANÚNCIO';
+
+@override
+String get event => 'EVENTO';
+
+@override
 String get myOrders => 'Meus Pedidos';
 
 @override

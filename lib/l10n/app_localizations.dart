@@ -124,6 +124,14 @@ String get subTotal;
 
 // Navigation
 String get offers;
+String get specialOffers;
+String get checkPromotions;
+String get events;
+String get checkEvents;
+String get noEventsAvailable;
+String get checkBackLater;
+String get announcement;
+String get event;
 String get myOrders;
 String get home;
 String get profile;

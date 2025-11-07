@@ -230,6 +230,30 @@ String get confirmAndGenerateReceipt => '确认并生成收据';
   String get offers => '优惠';
 
   @override
+  String get specialOffers => '特别优惠';
+
+  @override
+  String get checkPromotions => '查看我们的特别促销！';
+
+  @override
+  String get events => '活动';
+
+  @override
+  String get checkEvents => '查看我们的特别活动！';
+
+  @override
+  String get noEventsAvailable => '暂无活动';
+
+  @override
+  String get checkBackLater => '请稍后查看更新！';
+
+  @override
+  String get announcement => '公告';
+
+  @override
+  String get event => '活动';
+
+  @override
   String get myOrders => '我的订单';
 
   @override

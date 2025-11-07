@@ -16,6 +16,8 @@ import '../../common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/category_cell.dart';
 import 'package:dribbble_challenge/src/common_widget/view_all_title_row.dart';
 import '../more/my_order_view.dart';
+import '../offer/offer_view.dart';
+import 'events_modal.dart';
 
 
 class HomeView extends StatefulWidget {
@@ -234,6 +236,56 @@ void _performSearch() {
       ),
       const SizedBox(width: 8),
       LanguageSelector(), // Adicionar o seletor de idioma
+      const SizedBox(width: 4),
+      // Botão de Ofertas
+      Stack(
+        clipBehavior: Clip.none,
+        children: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const OfferView()),
+              );
+            },
+            icon: const Icon(
+              Icons.local_offer_outlined,
+              color: Color(0xFF4A4B4D),
+              size: 26,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: AppLocalizations.of(context).offers,
+          ),
+          // Badge com porcentagem
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: TColor.primary,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: const Center(
+                child: Text(
+                  '%',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(width: 4),
       ValueListenableBuilder<int>(
         valueListenable: CartService.cartUpdateNotifier,
         builder: (context, value, child) {
@@ -321,6 +373,91 @@ void _performSearch() {
     ),
   ),
 ),
+              const SizedBox(height: 16),
+
+// Banner de Ofertas (apenas se não estiver pesquisando)
+if (searchText.isEmpty)
+  GestureDetector(
+    onTap: () {
+      // Abrir modal de eventos
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => const EventsModal(),
+      );
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [TColor.primary, TColor.primary.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: TColor.primary.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Ícone
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.celebration,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // Texto
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).events,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppLocalizations.of(context).checkEvents,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Seta
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white,
+            size: 20,
+          ),
+        ],
+      ),
+    ),
+  ),
+
               const SizedBox(height: 20),
 
 // Mostrar resultado da pesquisa se houver texto
@@ -777,6 +914,46 @@ void updateMenuItems() {
   print("=== updateMenuItems chamada ===");
   print("selectedCategoryId: $selectedCategoryId");
   setState(() {
+    // Verificar se é a categoria especial "OFERTAS" (ID = -1)
+    if (selectedCategoryId == -1) {
+      // Filtrar todos os produtos que estão em promoção
+      List<Map<String, dynamic>> promoItems = [];
+      
+      for (var category in allMenuItems) {
+        if (category['products'] != null) {
+          List products = category['products'];
+          for (var product in products) {
+            if (product['is_on_promotion'] == true) {
+              promoItems.add({
+                "id": product['id'],
+                "image": product['image_url'] ?? "assets/img/dess_1.png",
+                "name": product['name'],
+                "rate": "4.9",
+                "rating": "124",
+                "type": category['category_name'],
+                "food_type": category['category_name'],
+                "description": product['description'] ?? '',
+                "price": double.tryParse(product['current_price'].toString()) ?? 0.0,
+                "regular_price": double.tryParse(product['regular_price'].toString()) ?? 0.0,
+                "is_on_promotion": true,
+              });
+            }
+          }
+        }
+      }
+      
+      originalFilteredItems = List.from(promoItems);
+      
+      if (searchText.isNotEmpty) {
+        _performSearch();
+      } else {
+        filteredMenuItems = List.from(originalFilteredItems);
+      }
+      
+      print("Número de itens em promoção: ${filteredMenuItems.length}");
+      return;
+    }
+    
     // Encontrar a categoria selecionada pelos dados reais da API
     var selectedCategory = allMenuItems.firstWhere(
       (category) => category['category_id'] == selectedCategoryId,
@@ -873,6 +1050,14 @@ String _buildWelcomeMessage() {
 
   List newCatArr = [];
   
+  // Adicionar categoria fixa "OFERTAS" como primeira
+  newCatArr.add({
+    "id": -1, // ID numérico especial para ofertas (negativo para não conflitar)
+    "image": "assets/img/cat_offer.png", // Pode usar uma imagem padrão ou ícone
+    "name": "OFERTAS"
+  });
+  
+  // Adicionar categorias da API
   for (int i = 0; i < allMenuItems.length; i++) {
     var menuCategory = allMenuItems[i];
     
@@ -902,9 +1087,9 @@ Future<void> loadMenuData() async {
       // Criar categorias dinamicamente baseadas nos dados em cache
       createCategoriesFromAPI();
       
-      // Selecionar a primeira categoria automaticamente
-      if (catArr.isNotEmpty) {
-        selectedCategoryId = catArr[0]['id'];
+      // Selecionar a primeira categoria da API (índice 1, pois 0 é OFERTAS)
+      if (catArr.length > 1) {
+        selectedCategoryId = catArr[1]['id']; // Pular "OFERTAS" e pegar primeira categoria real
         updateMenuItems();
       }
       
@@ -927,9 +1112,9 @@ Future<void> loadMenuData() async {
         // Criar categorias dinamicamente baseadas nos dados
         createCategoriesFromAPI();
         
-        // Selecionar a primeira categoria automaticamente
-        if (catArr.isNotEmpty) {
-          selectedCategoryId = catArr[0]['id'];
+        // Selecionar a primeira categoria da API (índice 1, pois 0 é OFERTAS)
+        if (catArr.length > 1) {
+          selectedCategoryId = catArr[1]['id']; // Pular "OFERTAS" e pegar primeira categoria real
           updateMenuItems();
         }
         
@@ -964,9 +1149,9 @@ Future<void> getDataFromApi() async {
                 // Criar categorias dinamicamente baseadas na API
                 createCategoriesFromAPI();
                 
-                // Selecionar a primeira categoria automaticamente
-                if (catArr.isNotEmpty) {
-                  selectedCategoryId = catArr[0]['id'];
+                // Selecionar a primeira categoria da API (índice 1, pois 0 é OFERTAS)
+                if (catArr.length > 1) {
+                  selectedCategoryId = catArr[1]['id']; // Pular "OFERTAS" e pegar primeira categoria real
                   updateMenuItems();
                 }
                 
