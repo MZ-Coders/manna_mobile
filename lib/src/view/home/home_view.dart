@@ -238,53 +238,53 @@ void _performSearch() {
       LanguageSelector(), // Adicionar o seletor de idioma
       const SizedBox(width: 4),
       // Botão de Ofertas
-      Stack(
-        clipBehavior: Clip.none,
-        children: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const OfferView()),
-              );
-            },
-            icon: const Icon(
-              Icons.local_offer_outlined,
-              color: Color(0xFF4A4B4D),
-              size: 26,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            tooltip: AppLocalizations.of(context).offers,
-          ),
-          // Badge com porcentagem
-          Positioned(
-            right: -2,
-            top: -2,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: TColor.primary,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Center(
-                child: Text(
-                  '%',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      // Stack(
+      //   clipBehavior: Clip.none,
+      //   children: [
+      //     IconButton(
+      //       onPressed: () {
+      //         Navigator.push(
+      //           context,
+      //           MaterialPageRoute(builder: (context) => const OfferView()),
+      //         );
+      //       },
+      //       icon: const Icon(
+      //         Icons.local_offer_outlined,
+      //         color: Color(0xFF4A4B4D),
+      //         size: 26,
+      //       ),
+      //       padding: EdgeInsets.zero,
+      //       constraints: const BoxConstraints(),
+      //       tooltip: AppLocalizations.of(context).offers,
+      //     ),
+      //     // Badge com porcentagem
+      //     Positioned(
+      //       right: -2,
+      //       top: -2,
+      //       child: Container(
+      //         padding: const EdgeInsets.all(4),
+      //         decoration: BoxDecoration(
+      //           color: TColor.primary,
+      //           shape: BoxShape.circle,
+      //         ),
+      //         constraints: const BoxConstraints(
+      //           minWidth: 16,
+      //           minHeight: 16,
+      //         ),
+      //         child: const Center(
+      //           child: Text(
+      //             '%',
+      //             style: TextStyle(
+      //               color: Colors.white,
+      //               fontSize: 9,
+      //               fontWeight: FontWeight.bold,
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
       const SizedBox(width: 4),
       ValueListenableBuilder<int>(
         valueListenable: CartService.cartUpdateNotifier,
