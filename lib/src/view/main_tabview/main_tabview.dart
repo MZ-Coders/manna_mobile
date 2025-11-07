@@ -1,12 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:dribbble_challenge/l10n/app_localizations.dart';
 import 'package:dribbble_challenge/src/common/order_count_notifier.dart';
 import 'package:dribbble_challenge/src/common/order_tracking_service.dart';
-import 'package:dribbble_challenge/src/common_widget/tab_button.dart';
-import 'package:dribbble_challenge/src/common_widget/tab_button_with_badge.dart';
-import 'package:dribbble_challenge/src/view/more/my_order_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dribbble_challenge/src/common/color_extension.dart';
@@ -16,7 +12,6 @@ import 'package:dribbble_challenge/src/common/web_utils.dart';
 import 'package:dribbble_challenge/src/view/restaurant_setup/restaurant_setup_view.dart';
 
 import '../home/home_view.dart';
-import '../offer/offer_view.dart';
 
 class MainTabView extends StatefulWidget {
   const MainTabView({super.key});
@@ -194,89 +189,6 @@ class _MainTabViewState extends State<MainTabView> {
           ],
         ),
         backgroundColor: const Color(0xfff5f5f5),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.miniCenterDocked,
-        floatingActionButton: SizedBox(
-          width: 60,
-          height: 60,
-          child: FloatingActionButton(
-            onPressed: () {
-              if (selctTab != 2) {
-                selctTab = 2;
-                selectPageView = const HomeView();
-              }
-              if (mounted) {
-                setState(() {});
-              }
-            },
-            shape: const CircleBorder(),
-            backgroundColor: selctTab == 2 ? TColor.primary : TColor.placeholder,
-            child: Image.asset(
-              "assets/img/tab_home.png",
-              width: 30,
-              height: 30,
-            ),
-          ),
-        ),
-        bottomNavigationBar: BottomAppBar(
-          surfaceTintColor: TColor.white,
-          shadowColor: Colors.black,
-          elevation: 1,
-          notchMargin: 12,
-          height: 64,
-          shape: const CircularNotchedRectangle(),
-          child: SafeArea(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                // TabButton(
-                //     title: "Menu",
-                //     icon: "assets/img/tab_menu.png",
-                //     onTap: () {
-                //       if (selctTab != 0) {
-                //         selctTab = 0;
-                //         selectPageView = const MenuView();
-                //       }
-                //       if (mounted) {
-                //         setState(() {});
-                //       }
-                //     },
-                //     isSelected: selctTab == 0),
-                TabButton(
-                    title: AppLocalizations.of(context).offers,
-                    icon: "assets/img/tab_offer.png",
-                    onTap: () {
-                      if (selctTab != 1) {
-                        selctTab = 1;
-                        selectPageView = const OfferView();
-                      }
-                      if (mounted) {
-                        setState(() {});
-                      }
-                    },
-                    isSelected: selctTab == 1),
-              const  SizedBox(width: 40, height: 40, ),
-                TabButtonWithBadge(
-                    title: AppLocalizations.of(context).myOrders,
-                    icon: "assets/img/shopping_cart.png",
-                    onTap: () {
-                      if (selctTab != 4) {
-                        selctTab = 4;
-                        selectPageView = const MyOrderView();
-                        checkActiveOrders();
-                      }
-                      if (mounted) {
-                        setState(() {});
-                      }
-                    },
-                    isSelected: selctTab == 4,
-                    badgeCount: activeOrdersCount,
-                    showBadge: hasActiveOrders && activeOrdersCount > 0,
-                  ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
