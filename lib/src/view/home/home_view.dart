@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/globs.dart';
 import '../../common/service_call.dart';
+import '../../common/cart_service.dart';
 import 'package:dribbble_challenge/src/common_widget/category_cell.dart';
 import 'package:dribbble_challenge/src/common_widget/view_all_title_row.dart';
 import '../more/my_order_view.dart';
@@ -213,35 +214,79 @@ void _performSearch() {
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             children: [
-              const SizedBox(height: 46),
+              const SizedBox(height: 10),
               Padding(
   padding: const EdgeInsets.symmetric(horizontal: 20),
   child: Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       Expanded(
         child: Text(
           _buildWelcomeMessage(),
           style: TextStyle(
               color: TColor.primaryText,
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.w800),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
+      const SizedBox(width: 8),
       LanguageSelector(), // Adicionar o seletor de idioma
-      IconButton(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const MyOrderView()));
+      ValueListenableBuilder<int>(
+        valueListenable: CartService.cartUpdateNotifier,
+        builder: (context, value, child) {
+          int cartItemCount = CartService.getTotalItems();
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MyOrderView()));
+                },
+                icon: Image.asset(
+                  "assets/img/shopping_cart.png",
+                  width: 25,
+                  height: 25,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              if (cartItemCount > 0)
+                Positioned(
+                  right: -8,
+                  top: -8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: TColor.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 20,
+                      minHeight: 20,
+                    ),
+                    child: Center(
+                      child: Text(
+                        cartItemCount > 99 ? '99+' : cartItemCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
         },
-        icon: Image.asset(
-          "assets/img/shopping_cart.png",
-          width: 25,
-          height: 25,
-        ),
       ),
+      const SizedBox(width: 40), // Espaço para não sobrepor o menu de 3 pontos
     ],
   ),
 ),

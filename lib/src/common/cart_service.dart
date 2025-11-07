@@ -67,9 +67,14 @@ class CartService {
     return itemArr.any((item) => item["name"] == name);
   }
 
-  // Função extra útil: obter quantidade total de itens
-  static int getTotalItems() {
+  // Função extra útil: obter quantidade total de itens (soma das quantidades)
+  static int getTotalQuantity() {
     return itemArr.fold(0, (sum, item) => sum + int.parse(item["qty"]));
+  }
+
+  // Função para obter número de itens únicos no carrinho
+  static int getTotalItems() {
+    return itemArr.length;
   }
 
 
